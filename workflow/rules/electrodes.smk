@@ -44,5 +44,3 @@ rule label_electrodes_atlas:
 #                subcategory='Atlas: {atlas}, Template: {template}')           
     group: 'preproc'
     script: '../scripts/label_electrodes_atlas.py'
-
-

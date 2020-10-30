@@ -16,6 +16,22 @@ rule qc_reg:
     group: 'preproc'
     script: '../scripts/vis_regqc.py'
 
+rule qc_reg_ct:
+    input:
+        ref = bids(root=join(config['out_dir'],'results'),subject='{subject}',suffix='T1w.nii.gz'),
+        flo = bids(root=join(config['out_dir'],'results'),subject='{subject}',suffix='ct.nii.gz',space='T1w',desc='{desc}'),
+    output:
+        png = report(bids(root=join(config['out_dir'],'qc'),subject='{subject}',suffix='regqc.png',from_='ct', to='T1w',desc='{desc}'),
+                caption='../reports/regqc.rst',
+                category='Registration QC',
+                subcategory='{desc} T1w'),
+        html = bids(root=join(config['out_dir'],'qc'),subject='{subject}',suffix='regqc.html',from_='ct', to='T1w', desc='{desc}'),
+#        html = report(bids(root='qc',subject='{subject}',suffix='regqc.html',from_='subject', to='{template}', desc='{desc}'),
+#                caption='../reports/regqc.rst',
+#                category='Registration QC',
+#                subcategory='{desc} {template}'),
+    group: 'preproc'
+    script: '../scripts/vis_regqc.py'
 
 rule qc_probseg:
     input:
