@@ -1,9 +1,16 @@
 #
 #--- dicom2bids
 #
+
 dicom_dir: /home/greydon/Documents/GitHub/seeg2bids-pipeline/data/dicoms
 out_dir: /home/greydon/Documents/GitHub/seeg2bids-pipeline/data/output
 clinical_event_file: /home/greydon/Documents/GitHub/seeg2bids-pipeline/data/clinical_events.tsv
+
+subject_seega_scene: /home/greydon/Documents/GitHub/seeg2bids-pipeline/data/seega_scenes/sub-{subject}
+
+#dicom_dir: /media/veracrypt6/projects/iEEG/working_dir/dicoms
+#out_dir: /media/veracrypt6/projects/iEEG/working_dir/out
+#clinical_event_file: /media/veracrypt6/projects/iEEG/working_dir/clinical_events.tsv
 
 heuristic: resources/heuristics/clinical_imaging.py
 dcm_config: resources/dcm_config.json
@@ -23,6 +30,7 @@ sub_group: patient
 #
 #--- segmentation
 #
+
 singularity:
     neuroglia: /project/6050199/akhanf/singularity/bids-apps/khanlab_neuroglia-core_latest.sif
 # use this URI if not on khanlab compute canada:
@@ -33,7 +41,12 @@ subject_t1w: /bids/sub-P{subject}/ses-pre/anat/sub-P{subject}_ses-pre_run-01_T1w
 #use this if a particular subject has a custom path
 subject_t1w_custom: []
 
-subject_electrodes: /deriv/seega_coordinates/sub-{subject}/sub-{subject}_space-native_desc-ieeg_SEEGA.fcsv
+subject_ct: /bids/sub-P{subject}/ses-post/ct/sub-P{subject}_ses-post_acq-Electrode_run-01_ct.nii.gz
+
+#use this if a particular subject has a custom path
+subject_ct_custom: []
+
+subject_electrodes: /deriv/seega_coordinates/sub-P{subject}/sub-P{subject}_space-native_SEEGA.fcsv
 
 #use this if a particular subject has custom path
 subject_electrodes_custom: []

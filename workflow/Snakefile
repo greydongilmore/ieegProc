@@ -18,19 +18,20 @@ subjects = [x.split('-')[1] for x in listdir(config['dicom_dir']) if isdir(join(
 include: 'rules/common.smk'
 
 rule all:
-    input:
-        reg_vis = expand(bids(root=join(config['out_dir'],'qc'),subject='{subject}',suffix='regqc.png',from_='subject', to='{template}',desc='{desc}'),
-                subject=subjects, desc=['affine','SyN'],template=config['template']),
-        #electrode_vis = expand(bids(root=join(config['out_dir'],'qc'),subject='{subject}',suffix='electrodevis.png',desc='{desc}',space='{template}'),
-        #        subject=subjects, desc=['affine'],template=config['template']),
-        probseg_vis = expand(bids(root=join(config['out_dir'],'qc'),subject='{subject}',suffix='probseg.png', desc='atropos3seg'),
-                subject=subjects ),
-        atlas_vis = expand(bids(root=join(config['out_dir'],'qc'),subject='{subject}',suffix='dseg.png',atlas='{atlas}', from_='{template}'),
-                subject=subjects, atlas=config['atlases'],template=config['template']),
-        #tsv = expand(bids(root=join(config['out_dir'],'results'),subject='{subject}',suffix='electrodes.tsv',atlas='{atlas}',desc='dilated',from_='{template}'),
-        #        subject=subjects, atlas=config['atlases'],template=config['template']),
-        #results = [join(config['out_dir'],'results.tar'), join(config['out_dir'],'results_tsv_only.tar')]
-                
+        input:
+            reg_vis = expand(bids(root=join(config['out_dir'],'qc'),subject='{subject}',suffix='regqc.png',from_='subject', to='{template}',desc='{desc}'),
+                    subject=subjects, desc=['affine','SyN'],template=config['template']),
+            electrode_vis = expand(bids(root=join(config['out_dir'],'qc'),subject='{subject}',suffix='electrodevis.png',desc='{desc}',space='{template}'),
+                    subject=subjects, desc=['affine'],template=config['template']),
+            probseg_vis = expand(bids(root=join(config['out_dir'],'qc'),subject='{subject}',suffix='probseg.png', desc='atropos3seg'),
+                    subject=subjects ),
+            atlas_vis = expand(bids(root=join(config['out_dir'],'qc'),subject='{subject}',suffix='dseg.png',atlas='{atlas}', from_='{template}'),
+                    subject=subjects, atlas=config['atlases'],template=config['template']),
+            tsv = expand(bids(root=join(config['out_dir'],'results'),subject='{subject}',suffix='electrodes.tsv',atlas='{atlas}',desc='dilated',from_='{template}'),
+                    subject=subjects, atlas=config['atlases'],template=config['template']),
+            xfm_ras = expand(bids(root=join(config['out_dir'],'results'),subject='{subject}',suffix='ct.nii.gz',from_='atropos3seg',desc='masked'),subject=subjects),
+            #results = [join(config['out_dir'],'results.tar'), join(config['out_dir'],'results_tsv_only.tar')]
+
 #rule tar_results:
 #    input:
 #        tsv = expand(bids(root=join(config['out_dir'],'results'),subject='{subject}',suffix='electrodes.tsv',atlas='{atlas}',desc='dilated',from_='{template}'),
@@ -55,5 +56,5 @@ rule all:
 include: 'rules/dicom2bids.smk'
 include: "rules/registration.smk"
 include: "rules/segmentation.smk"
-#include: "rules/electrodes.smk"
+include: "rules/electrodes.smk"
 include: "rules/visqc.smk"

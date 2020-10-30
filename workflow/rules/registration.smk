@@ -7,12 +7,36 @@ def get_t1w_filename(wildcards):
     else:
         return config['out_dir'] + config['subject_t1w']
 
+def get_ct_filename(wildcards): 
+    if wildcards.subject in config['subject_ct_custom']:
+        return config['out_dir'] + config['subject_ct_custom'][wildcards.subject]
+    else:
+        return config['out_dir'] + config['subject_ct']
+
 
 rule import_subj_t1:
     input: get_t1w_filename
     output: bids(root=join(config['out_dir'],'results'),subject='{subject}',suffix='T1w.nii.gz')
     group: 'preproc'
     shell: 'cp {input} {output}'
+
+rule import_subj_ct:
+    input: get_ct_filename
+    output: bids(root=join(config['out_dir'],'results'),subject='{subject}',suffix='ct.nii.gz')
+    group: 'preproc'
+    shell: 'cp {input} {output}'
+
+rule rigonly_aladin:
+    input: 
+        flo = bids(root=join(config['out_dir'],'results'),subject='{subject}',suffix='ct.nii.gz'),
+        ref = bids(root=join(config['out_dir'],'results'),subject='{subject}',suffix='T1w.nii.gz'),
+    output: 
+        warped_subj = bids(root=join(config['out_dir'],'results'),subject='{subject}',suffix='ct.nii.gz',space='T1w',desc='affine'),
+        xfm_ras = bids(root=join(config['out_dir'],'results'),subject='{subject}',suffix='xfm.txt',from_='ct',to='T1w',desc='affine',type_='ras'),
+    #container: config['singularity']['neuroglia']
+    group: 'preproc'
+    shell:
+        'reg_aladin -flo {input.flo} -ref {input.ref} -res {output.warped_subj} -aff {output.xfm_ras} -rigOnly -interp 0 -speeeeed'
 
 rule affine_aladin:
     input: 
@@ -24,7 +48,7 @@ rule affine_aladin:
     #container: config['singularity']['neuroglia']
     group: 'preproc'
     shell:
-        'reg_aladin -flo {input.flo} -ref {input.ref} -res {output.warped_subj} -aff {output.xfm_ras}'
+        'reg_aladin -flo {input.flo} -ref {input.ref} -res {output.warped_subj} -aff {output.xfm_ras} -speeeeed'
 
 rule convert_xfm_ras2itk:
     input:
@@ -99,6 +123,17 @@ rule mask_subject_t1w:
     group: 'preproc'
     shell:
         'fslmaths {input.t1} -mas {input.mask} {output}'
+
+rule mask_subject_ct:
+    input:
+        ct = bids(root=join(config['out_dir'],'results'),subject='{subject}',desc='affine',space='T1w', suffix='ct.nii.gz'),
+        mask = bids(root=join(config['out_dir'],'results'),subject='{subject}',suffix='mask.nii.gz',from_='atropos3seg',desc='brain')
+    output:
+        ct = bids(root=join(config['out_dir'],'results'),subject='{subject}',suffix='ct.nii.gz',from_='{atropos3seg}',desc='masked'),
+    #container: config['singularity']['neuroglia']
+    group: 'preproc'
+    shell:
+        'fslmaths {input.ct} -mas {input.mask} {output.ct}'
 
 rule ants_syn_affine_init:
     input: 

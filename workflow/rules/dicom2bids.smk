@@ -41,6 +41,7 @@ rule cleanSessions:
 	output:
 		touch_dicom2bids=touch(join(config['out_dir'], 'logs', 'sub-P' + '{subject}' + "_dicom2bids.done")),
 		t1w_file=config['out_dir'] +config['subject_t1w'],
+		ct_file=config['out_dir'] +config['subject_ct'],
 	params:
 		clinical_events=config['clinical_event_file'],
 		bids_fold = join(config['out_dir'], 'bids_tmp', 'sub-P' + '{subject}'),

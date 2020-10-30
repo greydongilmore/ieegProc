@@ -48,7 +48,10 @@ def find_markers(img_data, threshold):
 
 class cluster():
 	
-	method_dic={
+	def __init__(self, pcd_list=None, method=None):
+		self.pcd_list = pcd_list
+		
+		method_dic={
 			"kmeans":{
 				'method': KMeans,
 				'options':{
@@ -71,10 +74,8 @@ class cluster():
 					}
 				}
 			}
-	
-	def __init__(self, pcd_list=None, method=None):
-		self.pcd_list = pcd_list
-		self.method = method
+		
+		self.method = method_dic[method]
 		
 	def clusterData(self):
 		"""
@@ -89,7 +90,7 @@ class cluster():
 		pcd_list = np.array(self.pcd_list)[:,:2]
 	
 		# Build the estimator with the given options
-		estimator = method_dic[self.method]['method'](**method_dic[self.method]['options'])
+		estimator =self.method['method'](**self.method['options'])
 	
 		# Fit the estimator
 		estimator.fit(self.pcd_list)
@@ -124,10 +125,10 @@ class cluster():
 #%%
 
 filen = r'/home/greydon/Documents/GitHub/seeg2bids-pipeline/resources/sub-P221_ses-post_acq-DBS_ct.nii.gz'
-filen = r'/home/greydon/Documents/GitHub/seeg2bids-pipeline/resources/sub-P048_ses-post_acq-SEEG_ct.nii.gz'
+filen = r'/media/veracrypt6/projects/iEEG/working_dir/out/results/sub-049/sub-049_desc-masked_from-atropos3seg_ct.nii.gz'
 
 # threshold for CT
-threshold=2200
+threshold=2000
 
 img = nib.load(filen)
 img_data = img.get_fdata()
