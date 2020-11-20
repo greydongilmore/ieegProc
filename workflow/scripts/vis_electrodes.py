@@ -32,6 +32,5 @@ adjacency_matrix = np.zeros([len(coords),len(coords)])
 
 
 display = plotting.plot_connectome(adjacency_matrix, tcoords)
-display.savefig(snakemake.output.png)
+display.savefig(snakemake.output.png,dpi=250)
 display.close()
-

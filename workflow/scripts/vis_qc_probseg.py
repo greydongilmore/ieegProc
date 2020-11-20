@@ -14,6 +14,6 @@ matplotlib.use('Agg')
 
 
 display = plotting.plot_prob_atlas(bg_img=snakemake.input.img,maps_img=snakemake.input.seg4d,display_mode='ortho')
-display.savefig(snakemake.output.png)
+display.savefig(snakemake.output.png,dpi=250)
 display.close()
 

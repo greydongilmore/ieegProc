@@ -180,7 +180,7 @@ if not os.path.exists(patient_output):
 snakemake.input.seega_scene
 
 patient_files = []
-for dirpath, subdirs, subfiles in os.walk(r'/media/veracrypt6/projects/iEEG/imaging/clinical/deriv/seega_scenes/sub-P049'):
+for dirpath, subdirs, subfiles in os.walk(snakemake.input.seega_scene):
 	for x in subfiles:
 		if x.endswith(".fcsv") and not x.startswith('coords'):
 			patient_files.append(os.path.join(dirpath, x))

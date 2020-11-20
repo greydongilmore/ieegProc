@@ -4,6 +4,8 @@ import pandas as pd
 from glob import glob
 from shutil import copyfile
 from snakemake.utils import validate
+import pandas as pd 
+import numpy as np
 
 configfile: 'config/config.yml'
 validate(config, "schemas/config.schema.yml")
@@ -11,47 +13,59 @@ validate(config, "schemas/config.schema.yml")
 if not exists(join(config['out_dir'],'logs')):
     makedirs(join(config['out_dir'],'logs'))
 
-subjects = [x.split('-')[1] for x in listdir(config['dicom_dir']) if isdir(join(config['dicom_dir'], x))]
+if config['participants_tsv']:
+    df = pd.read_table(config['participants_tsv'])
+    subjects=df.participant_id.to_list()
+    if isinstance(subjects[0],str):
+        subjects = [ s.strip('sub-P') for s in subjects]
+    else:
+        subjects = [ str(s).zfill(3) for s in subjects]
+else:
+    subjects = [x.split('-')[1] for x in listdir(config['dicom_dir']) if isdir(join(config['dicom_dir'], x))]
 
 #this include is for the bids() function, and 
 #and any other global function declarations
 include: 'rules/common.smk'
 
+subject_id = config['subject_prefix']+'{subject}'
+
 rule all:
         input:
-            reg_vis = expand(bids(root=join(config['out_dir'],'qc'),subject='{subject}',suffix='regqc.png',from_='subject', to='{template}',desc='{desc}'),
+            reg_vis = expand(bids(root=join(config['out_dir'], 'deriv', 'atlasreg'),prefix='sub-'+subject_id+'/qc/sub-'+subject_id,suffix='regqc.png',from_='subject', to='{template}',desc='{desc}',include_subject_dir=False),
                     subject=subjects, desc=['affine','SyN'],template=config['template']),
-            reg_vis_ct = expand(bids(root=join(config['out_dir'],'qc'),subject='{subject}',suffix='regqc.png',from_='ct', to='T1w',desc='{desc}'), 
-                    subject=subjects, desc='affine'),
-            electrode_vis = expand(bids(root=join(config['out_dir'],'qc'),subject='{subject}',suffix='electrodevis.png',desc='{desc}',space='{template}'),
+            reg_vis_ct = expand(bids(root=join(config['out_dir'], 'deriv', 'atlasreg'),prefix='sub-'+subject_id+'/qc/sub-'+subject_id,suffix='regqc.png',from_='ct', to='T1w',desc='masked',include_subject_dir=False), 
+                    subject=subjects),
+            electrode_vis = expand(bids(root=join(config['out_dir'], 'deriv', 'atlasreg'),prefix='sub-'+subject_id+'/qc/sub-'+subject_id,suffix='electrodevis.png',desc='{desc}',space='{template}',include_subject_dir=False),
                     subject=subjects, desc=['affine'],template=config['template']),
-            probseg_vis = expand(bids(root=join(config['out_dir'],'qc'),subject='{subject}',suffix='probseg.png', desc='atropos3seg'),
+            contact_vis = expand(bids(root=join(config['out_dir'], 'deriv', 'atlasreg'),prefix='sub-'+subject_id+'/qc/sub-'+subject_id,suffix='contacts.html',desc='mask',space='ct',include_subject_dir=False),
+                    subject=subjects),
+            probseg_vis = expand(bids(root=join(config['out_dir'], 'deriv', 'atlasreg'),prefix='sub-'+subject_id+'/qc/sub-'+subject_id,suffix='probseg.png', desc='atropos3seg',include_subject_dir=False),
                     subject=subjects ),
-            atlas_vis = expand(bids(root=join(config['out_dir'],'qc'),subject='{subject}',suffix='dseg.png',atlas='{atlas}', from_='{template}'),
+            atlas_vis = expand(bids(root=join(config['out_dir'], 'deriv', 'atlasreg'),prefix='sub-'+subject_id+'/qc/sub-'+subject_id,suffix='dseg.png',atlas='{atlas}', from_='{template}',include_subject_dir=False),
                     subject=subjects, atlas=config['atlases'],template=config['template']),
-            tsv = expand(bids(root=join(config['out_dir'],'results'),subject='{subject}',suffix='electrodes.tsv',atlas='{atlas}',desc='dilated',from_='{template}'),
+            tsv = expand(bids(root=join(config['out_dir'], 'deriv', 'atlasreg'),subject=subject_id,suffix='electrodes.tsv',atlas='{atlas}',desc='dilated',from_='{template}'),
                     subject=subjects, atlas=config['atlases'],template=config['template']),
-            #results = [join(config['out_dir'],'results.tar'), join(config['out_dir'],'results_tsv_only.tar')]
+            #results = [join(config['out_dir'], 'deriv', 'atlasreg', 'results.tar'), join(config['out_dir'], 'deriv', 'atlasreg', 'results_tsv_only.tar')]
 
 #rule tar_results:
 #    input:
-#        tsv = expand(bids(root=join(config['out_dir'],'results'),subject='{subject}',suffix='electrodes.tsv',atlas='{atlas}',desc='dilated',from_='{template}'),
+#        tsv = expand(bids(root=join(config['out_dir'], 'deriv', 'atlasreg'),subject='{subject}',suffix='electrodes.tsv',atlas='{atlas}',desc='dilated',from_='{template}'),
 #                subject=subjects, atlas=config['atlases'],template=config['template']),
-#        dseg_nii = expand(bids(root=join(config['out_dir'],'results'),subject='{subject}',suffix='dseg.nii.gz',desc='dilated',atlas='{atlas}',from_='{template}',reg='SyN'),
+#        dseg_nii = expand(bids(root=join(config['out_dir'], 'deriv', 'atlasreg'),subject='{subject}',suffix='dseg.nii.gz',desc='dilated',atlas='{atlas}',from_='{template}',reg='SyN'),
 #                subject=subjects, atlas=config['atlases'],template=config['template']),
-#        tissue_seg = expand(bids(root=join(config['out_dir'],'results'),subject='{subject}',suffix='probseg.nii.gz',label='{tissue}',desc='atropos3seg'),
+#        tissue_seg = expand(bids(root=join(config['out_dir'], 'deriv', 'atlasreg'),subject='{subject}',suffix='probseg.nii.gz',label='{tissue}',desc='atropos3seg'),
 #                            tissue=config['tissue_labels'],subject=subjects),
-#        t1w = expand(bids(root=join(config['out_dir'],'results'),subject='{subject}',suffix='T1w.nii.gz',from_='atropos3seg',desc='masked'),
+#        t1w = expand(bids(root=join(config['out_dir'], 'deriv', 'atlasreg'),subject='{subject}',suffix='T1w.nii.gz',from_='atropos3seg',desc='masked'),
 #                    subject=subjects)
 #
-#    output: join(config['out_dir'],'results.tar')
+#    output: join(config['out_dir'], 'deriv', 'atlasreg', 'results.tar')
 #    shell: 'tar -cvf {output} {input}'
 #
 #rule tar_tsv_only:
 #    input:
-#        tsv = expand(bids(root=join(config['out_dir'],'results'),subject='{subject}',suffix='electrodes.tsv',atlas='{atlas}',desc='dilated',from_='{template}'),
+#        tsv = expand(bids(root=join(config['out_dir'], 'deriv', 'atlasreg'),subject='{subject}',suffix='electrodes.tsv',atlas='{atlas}',desc='dilated',from_='{template}'),
 #                subject=subjects, atlas=config['atlases'],template=config['template']),
-#    output: join(config['out_dir'],'results_tsv_only.tar')
+#    output: join(config['out_dir'], 'deriv', 'atlasreg', 'results_tsv_only.tar')
 #    shell: 'tar -cvf {output} {input}'
 
 include: 'rules/dicom2bids.smk'

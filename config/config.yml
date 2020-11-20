@@ -5,25 +5,31 @@
 dicom_dir: /home/greydon/Documents/GitHub/seeg2bids-pipeline/data/dicoms
 out_dir: /home/greydon/Documents/GitHub/seeg2bids-pipeline/data/output
 clinical_event_file: /home/greydon/Documents/GitHub/seeg2bids-pipeline/data/clinical_events.tsv
+participants_tsv: /home/greydon/Documents/GitHub/seeg2bids-pipeline/data/participants.tsv
+subject_seega_scene: /home/greydon/Documents/GitHub/seeg2bids-pipeline/data/seega_scenes/sub-P{subject}
 
-subject_seega_scene: /home/greydon/Documents/GitHub/seeg2bids-pipeline/data/seega_scenes/sub-{subject}
+#dicom_dir: /media/veracrypt6/projects/iEEG/single/dicoms
+#out_dir: /media/veracrypt6/projects/iEEG/single/out
+#clinical_event_file: /media/veracrypt6/projects/iEEG/single/clinical_events.tsv
+#participants_tsv: /media/veracrypt6/projects/iEEG/single/participants.tsv
+#subject_seega_scene: /media/veracrypt6/projects/iEEG/imaging/clinical/deriv/seega_scenes/sub-P{subject}
 
-#dicom_dir: /media/veracrypt6/projects/iEEG/working_dir/dicoms
-#out_dir: /media/veracrypt6/projects/iEEG/working_dir/out
-#clinical_event_file: /media/veracrypt6/projects/iEEG/working_dir/clinical_events.tsv
+
+#
+#--- dicom2bids
+#
 
 heuristic: resources/heuristics/clinical_imaging.py
 dcm_config: resources/dcm_config.json
-
-anonymize: True
+anonymize: False
+sub_group: patient
+subject_prefix: P
 
 # Session determination
 session_calc:
   peri: 0
-  dur_multi_event: -30
+  dur_multi_event: -15
   override_peri: True
-
-sub_group: patient
 
 
 
@@ -39,12 +45,32 @@ singularity:
 subject_t1w: /bids/sub-P{subject}/ses-pre/anat/sub-P{subject}_ses-pre_run-01_T1w.nii.gz
 
 #use this if a particular subject has a custom path
-subject_t1w_custom: []
+subject_t1w_custom:
+    '001': /bids/sub-P{subject}/ses-pre/anat/sub-P{subject}_ses-pre_run-02_T1w.nii.gz
+    '007': /bids/sub-P{subject}/ses-pre/anat/sub-P{subject}_ses-pre_run-03_T1w.nii.gz
+    '017': /bids/sub-P{subject}/ses-pre/anat/sub-P{subject}_ses-pre_run-02_T1w.nii.gz
+    '018': /bids/sub-P{subject}/ses-pre/anat/sub-P{subject}_ses-pre_run-02_T1w.nii.gz
+    '020': /seega_old/sub-P{subject}/preop_mri.nii.gz
+    '024': /bids/sub-P{subject}/ses-pre/anat/sub-P{subject}_ses-pre_run-02_T1w.nii.gz
+    '033': /bids/sub-P{subject}/ses-pre/anat/sub-P{subject}_ses-pre_run-02_T1w.nii.gz
+    '042': /seega_old/sub-P{subject}/preop_mri.nii.gz
+    #'048': /bids/sub-P{subject}/ses-pre/anat/sub-P{subject}_ses-pre_run-02_T1w.nii.gz
+    '052': /bids/sub-P{subject}/ses-pre/anat/sub-P{subject}_ses-pre_run-02_T1w.nii.gz
+    '053': /sub-P053/Stokes_David/Data/sub-P053_3D_T1_BRAVO.nii.gz
 
 subject_ct: /bids/sub-P{subject}/ses-post/ct/sub-P{subject}_ses-post_acq-Electrode_run-01_ct.nii.gz
 
 #use this if a particular subject has a custom path
-subject_ct_custom: []
+subject_ct_custom:
+    '002': /seega_old/sub-P{subject}/ct_to_mri.nii.gz
+    '007': /seega_old/sub-P{subject}/ct_to_mri.nii.gz
+    '010': /seega_old/sub-P{subject}/ct_to_mri.nii.gz
+    '011': /seega_old/sub-P{subject}/ct_to_mri.nii.gz
+    '019': /seega_old/sub-P{subject}/ct_to_mri.nii.gz
+    '020': /seega_old/sub-P{subject}/ct_to_mri.nii.gz
+    '030': /seega_old/sub-P{subject}/ct_to_mri.nii.gz
+    '042': /seega_old/sub-P{subject}/ct_to_mri.nii.gz
+    '047': /bids/sub-P{subject}/ses-post/ct/sub-P{subject}_ses-post_acq-Electrode_run-03_ct.nii.gz
 
 subject_electrodes: /deriv/seega_coordinates/sub-P{subject}/sub-P{subject}_space-native_SEEGA.fcsv
 

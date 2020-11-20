@@ -1,0 +1,258 @@
+search_terms: {}
+ 
+bids_dir: '/media/veracrypt6/projects/iEEG/working_dir/dicoms'
+output_dir: '/media/veracrypt6/projects/iEEG/working_dir/out'
+
+# can these be added?
+clinical_event_file: /media/veracrypt6/projects/iEEG/working_dir/clinical_events.tsv
+heuristic: resources/heuristics/clinical_imaging.py
+dcm_config: resources/dcm_config.json
+anonymize: False
+
+derivatives:
+  - /media/veracrypt6/projects/iEEG/working_dir/out/deriv/atlasreg
+  - /media/veracrypt6/projects/iEEG/working_dir/out/deriv/seega_coordinates
+
+#mappings from analysis_level to set of target rules or files
+
+analysis_levels: &analysis_levels
+ - participant
+
+
+targets_by_analysis_level:
+  participant:
+    - ''
+
+pybids_inputs:
+  atlasreg:
+    filters:
+      suffix: 'SEEGA'
+      space: 'native'
+      extension: '.tsv'
+      scope: 'derivatives' #raw, derivatives (or can be pipeline name too!)
+      invalid_filters: 'allow'
+    wildcards:
+      - subject
+
+#enable printing debug statements during parsing -- disable if generating dag visualization
+debug: False
+
+singularity:
+  fsl: '/project/6050199/akhanf/singularity/bids-apps/fsl_6.0.4_cuda9.1.sif' 
+
+confounds: &confounds
+  - name: csf_wm_motion
+    regressors:
+      - csf
+      - white_matter
+      - trans_x
+      - trans_y
+      - trans_z
+      - rot_x
+      - rot_y
+      - rot_z
+
+  - name: csf_wm_motion_quadexp
+    regressors:
+      - csf
+      - csf_derivative1
+      - csf_derivative1_power2
+      - csf_power2
+      - white_matter
+      - white_matter_derivative1
+      - white_matter_derivative1_power2
+      - white_matter_power2
+      - trans_x
+      - trans_x_derivative1
+      - trans_x_power2
+      - trans_x_derivative1_power2
+      - trans_y
+      - trans_y_derivative1
+      - trans_y_power2
+      - trans_y_derivative1_power2
+      - trans_z
+      - trans_z_derivative1
+      - trans_z_power2
+      - trans_z_derivative1_power2
+      - rot_x
+      - rot_x_derivative1
+      - rot_x_derivative1_power2
+      - rot_x_power2
+      - rot_y
+      - rot_y_derivative1
+      - rot_y_power2
+      - rot_y_derivative1_power2
+      - rot_z
+      - rot_z_derivative1
+      - rot_z_derivative1_power2
+      - rot_z_power2
+
+  - name: global_csf_wm_motion_quadexp
+    regressors:
+      - global_signal
+      - global_signal_derivative1
+      - global_signal_derivative1_power2
+      - global_signal_power2
+      - csf
+      - csf_derivative1
+      - csf_derivative1_power2
+      - csf_power2
+      - white_matter
+      - white_matter_derivative1
+      - white_matter_derivative1_power2
+      - white_matter_power2
+      - trans_x
+      - trans_x_derivative1
+      - trans_x_power2
+      - trans_x_derivative1_power2
+      - trans_y
+      - trans_y_derivative1
+      - trans_y_power2
+      - trans_y_derivative1_power2
+      - trans_z
+      - trans_z_derivative1
+      - trans_z_power2
+      - trans_z_derivative1_power2
+      - rot_x
+      - rot_x_derivative1
+      - rot_x_derivative1_power2
+      - rot_x_power2
+      - rot_y
+      - rot_y_derivative1
+      - rot_y_power2
+      - rot_y_derivative1_power2
+      - rot_z
+      - rot_z_derivative1
+      - rot_z_derivative1_power2
+      - rot_z_power2
+
+
+  - name: csf_wm_motion_quadexp_outliers
+    regressors:
+      - csf
+      - csf_derivative1
+      - csf_derivative1_power2
+      - csf_power2
+      - white_matter
+      - white_matter_derivative1
+      - white_matter_derivative1_power2
+      - white_matter_power2
+      - trans_x
+      - trans_x_derivative1
+      - trans_x_power2
+      - trans_x_derivative1_power2
+      - trans_y
+      - trans_y_derivative1
+      - trans_y_power2
+      - trans_y_derivative1_power2
+      - trans_z
+      - trans_z_derivative1
+      - trans_z_power2
+      - trans_z_derivative1_power2
+      - rot_x
+      - rot_x_derivative1
+      - rot_x_derivative1_power2
+      - rot_x_power2
+      - rot_y
+      - rot_y_derivative1
+      - rot_y_power2
+      - rot_y_derivative1_power2
+      - rot_z
+      - rot_z_derivative1
+      - rot_z_derivative1_power2
+      - rot_z_power2
+      - framewise_displacement
+      - rmsd
+      - dvars
+      - std_dvars
+
+
+  - name: global_csf_wm_motion_quadexp_outliers
+    regressors:
+      - global_signal
+      - global_signal_derivative1
+      - global_signal_derivative1_power2
+      - global_signal_power2
+      - csf
+      - csf_derivative1
+      - csf_derivative1_power2
+      - csf_power2
+      - white_matter
+      - white_matter_derivative1
+      - white_matter_derivative1_power2
+      - white_matter_power2
+      - trans_x
+      - trans_x_derivative1
+      - trans_x_power2
+      - trans_x_derivative1_power2
+      - trans_y
+      - trans_y_derivative1
+      - trans_y_power2
+      - trans_y_derivative1_power2
+      - trans_z
+      - trans_z_derivative1
+      - trans_z_power2
+      - trans_z_derivative1_power2
+      - rot_x
+      - rot_x_derivative1
+      - rot_x_derivative1_power2
+      - rot_x_power2
+      - rot_y
+      - rot_y_derivative1
+      - rot_y_power2
+      - rot_y_derivative1_power2
+      - rot_z
+      - rot_z_derivative1
+      - rot_z_derivative1_power2
+      - rot_z_power2
+      - framewise_displacement
+      - rmsd
+      - dvars
+      - std_dvars
+
+
+   
+
+#these are the command-line parameters
+parse_args:
+
+  bids_dir:
+    help: The directory with the input dataset formatted according 
+          to the BIDS standard.
+
+  output_dir:
+    help: The directory where the output files 
+          should be stored. If you are running group level analysis
+          this folder should be prepopulated with the results of the
+          participant level analysis.
+
+  analysis_level: 
+    help: Level of the analysis that will be performed. 
+    choices: *analysis_levels
+
+  --participant_label:
+    help: The label(s) of the participant(s) that should be analyzed. The label 
+          corresponds to sub-<participant_label> from the BIDS spec 
+          (so it does not include "sub-"). If this parameter is not 
+          provided all subjects should be analyzed. Multiple 
+          participants can be specified with a space separated list.
+    nargs: '+'
+
+  --confounds_config:
+    help: 'Config defining groups of confounds to use for denoising (default: %(default)s)'
+    nargs: '+'
+    default: *confounds
+#config/confounds.yml'
+
+  --fwhm:
+    help: 'Smoothing levels to apply after denoising (fwhm in mm), for 0 will not smooth, but will simply remove non-finite values (default: %(default)s)'
+    default: 
+      - 0
+      - 5
+      - 10
+    nargs: '+'
+
+  --derivatives:
+    help: 'Path to the derivatives folder that contains the fmriprep dataset, default will look under the derivatives subfolder of bids dataset (default: %(default)s) '
+    default: True
+

@@ -8,6 +8,7 @@ Created on Sat Oct 24 01:19:14 2020
 import pandas as pd
 import numpy as np
 import nibabel as nib
+import os
 
 #read fcsv electrodes file
 df_elec = pd.read_table(snakemake.input.fcsv,sep=',',header=2)
@@ -66,5 +67,6 @@ for label in snakemake.config['tissue_labels']:
 #create new dataframe with selected variables and save it
 out_df = df_elec[['label','atlas_label'] + snakemake.config['tissue_labels'] + ['x','y','z']]
 out_df.to_csv(snakemake.output.tsv,sep='\t',float_format='%.3f',index=False)
+out_df.to_excel(os.path.splitext(snakemake.output.tsv)[0]+'.xlsx',float_format='%.3f',index=False)
 
 out_df

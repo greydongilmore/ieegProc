@@ -35,7 +35,7 @@ def find_markers(img_data, threshold):
 			
 			centx = int(np.sqrt(((right[0] + left[0])**2)/4))
 			centy = int(np.sqrt(((right[1] + left[1])**2)/4 ))
-			if np.all([slice_img[centx,centy] > threshold, contour.shape[0] < 70]):
+			if np.all([slice_img[centx,centy] > threshold, contour.shape[0] < 40]):
 				final_loc.append([centx, centy, slice_idx,slice_img[centx,centy]])
 		
 		if final_loc:
@@ -64,7 +64,7 @@ class cluster():
 			"affinity":{
 				'method': AffinityPropagation,
 				'options':{
-					'preference':-10
+					'preference':-1
 					}
 				},
 			"dbscan":{
@@ -138,14 +138,14 @@ final_location = find_markers(img_data, threshold)
 
 
 # cluster the points (mthod can be: kmeans, affinity, dbscan)
-clust = cluster(final_location, method="kmeans")
+clust = cluster(final_location, method="affinity")
 clusters = clust.clusterData()
 
 
 # plot the clusters
 fig = plt.figure()
 ax = fig.add_subplot(111, projection='3d')
-ax.scatter(*clusters[:,0:3].T, s=1, c=clusters[:,3])
+ax.scatter(*clusters[:,0:3].T, s=2, c=clusters[:,3])
 
 
 

@@ -205,12 +205,19 @@ def main():
 		bids_files = [x for x in os.listdir(os.path.join(output_dir, 'bids_tmp')) if os.path.isfile(os.path.join(output_dir, 'bids_tmp', x))]
 		for ifile in bids_files:
 			if ifile == 'participants.tsv':
-				patient_tsv = pd.read_csv(os.path.join(output_dir, 'bids_tmp', 'participants.tsv'), sep='\t')
+				if os.path.exists(os.path.join(final_dir, ifile)):
+					patient_tsv_old = pd.read_csv(os.path.join(output_dir, 'bids_tmp', 'participants.tsv'), sep='\t')
+					patient_tsv = pd.read_csv(os.path.join(final_dir, 'participants.tsv'), sep='\t')
+					patient_tsv = patient_tsv.append(patient_tsv_old).reset_index(drop=True)
+				else:
+					patient_tsv = pd.read_csv(os.path.join(output_dir, 'bids_tmp', 'participants.tsv'), sep='\t')
+
 				patient_tsv = patient_tsv.sort_values(by=['participant_id']).reset_index(drop=True)
 				patient_tsv['group'] = patient_tsv['group'].replace('control',snakemake.params.sub_group)
 				patient_tsv.to_csv(os.path.join(final_dir, ifile), sep='\t', index=False, na_rep='n/a', line_terminator="")
 			else:
-				shutil.copyfile(os.path.join(output_dir, 'bids_tmp', ifile), os.path.join(final_dir, ifile))
+				if not os.path.exists(os.path.join(final_dir, ifile)):
+					shutil.copyfile(os.path.join(output_dir, 'bids_tmp', ifile), os.path.join(final_dir, ifile))
 
 		shutil.rmtree(os.path.join(output_dir, 'bids_tmp'))
 		

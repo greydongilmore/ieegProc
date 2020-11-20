@@ -14,6 +14,6 @@ html_view.save_as_html(snakemake.output.html)
 
 
 display = plotting.plot_roi(roi_img=snakemake.input.seg, bg_img=snakemake.input.img, display_mode='ortho')
-display.savefig(snakemake.output.png)
+display.savefig(snakemake.output.png,dpi=250)
 display.close()
 
