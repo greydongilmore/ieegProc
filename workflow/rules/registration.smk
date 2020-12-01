@@ -1,26 +1,9 @@
 
-
-#if custom path is defined in the config for subject, use that
-def get_t1w_filename(wildcards): 
-    if wildcards.subject in config['subject_t1w_custom']:
-        print('yes')
-        return config['out_dir'] + config['subject_t1w_custom'][wildcards.subject]
-    else:
-        print('no')
-        return config['out_dir'] + config['subject_t1w']
-
-def get_ct_filename(wildcards): 
-    if wildcards.subject in config['subject_ct_custom']:
-        return config['out_dir'] + config['subject_ct_custom'][wildcards.subject]
-    else:
-        return config['out_dir'] + config['subject_ct']
-
-
 rule import_subj_t1:
     input: lambda wildcards: config['out_dir'] + config['subject_t1w_custom'][wildcards.subject] if wildcards.subject in config['subject_t1w_custom'] else config['out_dir'] + config['subject_t1w'],
-    output: bids(root=join(config['out_dir'], 'deriv', 'atlasreg'),subject=subject_id,suffix='T1w.nii.gz')
+    output: bids(root=join(config['out_dir'], 'deriv', 'atlasreg'),subject=subject_id,suffix='T1w.nii.gz'),
     group: 'preproc'
-    shell: 'cp {input} {output}'
+    shell: "cp {input} {output}"
 
 rule import_subj_ct:
     input: lambda wildcards: config['out_dir'] + config['subject_ct_custom'][wildcards.subject] if wildcards.subject in config['subject_ct_custom'] else config['out_dir'] + config['subject_ct'],
@@ -116,16 +99,48 @@ rule mask_template_t1w:
     shell:
         'fslmaths {input.t1} -mas {input.mask} {output}'
 
-rule mask_subject_t1w:
-    input:
-        t1 = bids(root=join(config['out_dir'], 'deriv', 'atlasreg'),subject=subject_id,desc='n4', suffix='T1w.nii.gz'),
-        mask = bids(root=join(config['out_dir'], 'deriv', 'atlasreg'),subject=subject_id,suffix='mask.nii.gz',from_='atropos3seg',desc='brain')
-    output:
-        t1 = bids(root=join(config['out_dir'], 'deriv', 'atlasreg'),subject=subject_id,suffix='T1w.nii.gz',from_='{atropos3seg}',desc='masked'),
-    #container: config['singularity']['neuroglia']
-    group: 'preproc'
-    shell:
-        'fslmaths {input.t1} -mas {input.mask} {output}'
+if config['deface']:
+    rule deface_subject:
+        input: 
+            t1=bids(root=join(config['out_dir'], 'deriv', 'atlasreg'),subject=subject_id,desc='n4', suffix='T1w.nii.gz'),
+            ct=bids(root=join(config['out_dir'],'deriv', 'atlasreg'),subject=subject_id,suffix='ct.nii.gz',space='T1w',desc='affine'),
+            mask = bids(root=join(config['out_dir'], 'deriv', 'atlasreg'),subject=subject_id,suffix='mask.nii.gz',from_='atropos3seg',desc='brain'),
+        params:
+            template=config['mean_reg2mean'],
+            facemask=config['facemask']
+        output:
+            t1_masked = bids(root=join(config['out_dir'], 'deriv', 'atlasreg'),subject=subject_id,suffix='T1w.nii.gz',from_='atropos3seg',desc='masked'),
+            template_to_t1=bids(root=join(config['out_dir'],'deriv', 'atlasreg'),subject=subject_id,suffix='template.nii.gz',space='subject',desc='affine'),
+            template_to_t1_matrix = bids(root=join(config['out_dir'],'deriv', 'atlasreg'),subject=subject_id,suffix='xfm.txt',from_='template',to='subject',desc='affine',type_='ras'),
+            template_to_t1_itk = bids(root=join(config['out_dir'],'deriv', 'atlasreg'),subject=subject_id,suffix='xfm.txt',from_='template',to='subject',desc='affine',type_='itk'),
+            warped_mask=bids(root=join(config['out_dir'],'deriv', 'atlasreg'),subject=subject_id,suffix='facemask.nii.gz',space='subject',desc='affine'),
+            #warped_mask_matrix = bids(root=join(config['out_dir'],'deriv', 'atlasreg'),subject=subject_id,suffix='xfm.txt',from_='facemask',to='subject',desc='affine',type_='ras'),
+            #warped_mask_itk = bids(root=join(config['out_dir'],'deriv', 'atlasreg'),subject=subject_id,suffix='xfm.txt',from_='facemask',to='subject',desc='affine',type_='itk'),
+            defaced_t1=bids(root=join(config['out_dir'], 'deriv', 'atlasreg'),subject=subject_id,suffix='T1w.nii.gz',desc='defaced'),
+            defaced_ct=bids(root=join(config['out_dir'], 'deriv', 'atlasreg'),subject=subject_id,suffix='ct.nii.gz',desc='defaced',space='T1w'),
+        group: 'preproc'
+        #shell: 'cp {input} {output.t1w} &&\
+        #        flirt -in {params.template} -ref {input} -out {output.template_reg} -omat {output.out_matrix} -cost mutualinfo &&\
+        #        flirt -in {params.facemask} -ref {input} -init {output.template_reg} -applyxfm -out {output.warped_mask} -omat {output.out_mask_matrix} &&\
+        #        fslmaths {input} -mas {output.warped_mask} {output.deface}'
+
+        shell: 'fslmaths {input.t1} -mas {input.mask} {output.t1_masked} &&\
+                reg_aladin -flo {params.template} -ref {input.t1} -res {output.template_to_t1} -aff {output.template_to_t1_matrix} -interp 0 -speeeeed &&\
+                c3d_affine_tool {output.template_to_t1_matrix}  -oitk {output.template_to_t1_itk} &&\
+                antsApplyTransforms -d 3 -i {params.facemask} -o {output.warped_mask} -r {input.t1} -t [{output.template_to_t1_itk},0] &&\
+                fslmaths {input.t1} -mas {output.warped_mask} {output.defaced_t1} &&\
+                fslmaths {input.ct} -mas {output.warped_mask} {output.defaced_ct}'
+else:
+    rule mask_subject_t1w:
+        input:
+            t1 = bids(root=join(config['out_dir'], 'deriv', 'atlasreg'),subject=subject_id,desc='n4', suffix='T1w.nii.gz'),
+            mask = bids(root=join(config['out_dir'], 'deriv', 'atlasreg'),subject=subject_id,suffix='mask.nii.gz',from_='atropos3seg',desc='brain')
+        output:
+            t1 = bids(root=join(config['out_dir'], 'deriv', 'atlasreg'),subject=subject_id,suffix='T1w.nii.gz',from_='{atropos3seg}',desc='masked'),
+        #container: config['singularity']['neuroglia']
+        group: 'preproc'
+        shell:
+            'fslmaths {input.t1} -mas {input.mask} {output}'
 
 rule mask_subject_ct:
     input:
@@ -246,11 +261,11 @@ rule dilate_brainmask:
 #dilate labels N times to provide more of a fudge factor when assigning GM labels
 rule dilate_atlas_labels:
     input:
-        dseg = bids(root=join(config['out_dir'], 'deriv', 'atlasreg'),subject=subject_id,suffix='dseg.nii.gz',atlas='{atlas}',from_='{template}'),
+        dseg = bids(root=join(config['out_dir'], 'deriv', 'atlasreg'),subject=subject_id,suffix='dseg.nii.gz',atlas='{atlas}',from_='{template}',reg='SyN'),
     params:
         dil_opt =  ' '.join([ '-dilD' for i in range(config['n_atlas_dilate'])])
     output:
-        dseg = bids(root=join(config['out_dir'], 'deriv', 'atlasreg'),subject=subject_id,suffix='dseg.nii.gz',atlas='{atlas}',from_='{template}',desc='dilated'),
+        dseg = bids(root=join(config['out_dir'], 'deriv', 'atlasreg'),subject=subject_id,suffix='dseg.nii.gz',atlas='{atlas}',from_='{template}',desc='dilated',reg='SyN'),
     #container: config['singularity']['neuroglia']
     group: 'preproc'
     shell:

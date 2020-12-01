@@ -76,24 +76,29 @@ def resample_img(img):
 	# Decompose the image affine to allow scaling
 	u,s,v = np.linalg.svd(target_affine[:3,:3],full_matrices=False)
 	
-	# Reconstruct the affine
-	target_affine[:3,:3] = u @ np.diag(voxel_dims) @ v
-	
 	# Calculate the translation part of the affine
 	spatial_dimensions = (img.header['dim'] * img.header['pixdim'])[1:4]
+	resize_factor = spatial_dimensions / voxel_dims
+	real_resize_factor = np.round(img.shape * resize_factor) / img.shape
+	new_spacing = spatial_dimensions / real_resize_factor
 	
-	# Calculate the translation affine as a proportion of the real world
-	# spatial dimensions
-	image_center_as_prop = img.affine[0:3,3] / spatial_dimensions
+	# Reconstruct the affine
+	target_affine[:3,:3] = u @ np.diag(new_spacing) @ v
 	
-	# Calculate the equivalent center coordinates in the target image
-	dimensions_of_target_image = (np.array(voxel_dims) * np.array(target_shape))
-	target_center_coords =  dimensions_of_target_image * image_center_as_prop
 	
-	target_affine[:3,3] = target_center_coords
+
+# 	# Calculate the translation affine as a proportion of the real world
+# 	# spatial dimensions
+# 	image_center_as_prop = img.affine[0:3,3] / spatial_dimensions
+# 	
+# 	# Calculate the equivalent center coordinates in the target image
+# 	dimensions_of_target_image = (np.array(voxel_dims) * np.array(target_shape))
+# 	target_center_coords =  dimensions_of_target_image * image_center_as_prop
+# 	
+# 	target_affine[:3,3] = target_center_coords
 	
-	resampled_img = image.resample_img(img, target_affine=target_affine,target_shape=target_shape)
-	resampled_img.header.set_zooms((np.absolute(voxel_dims)))
+	resampled_img = image.resample_img(img, target_affine=target_affine, interpolation='nearest')
+	resampled_img.header.set_zooms((np.absolute(new_spacing)))
 
 
 bids_dir=r'/media/veracrypt6/projects/iEEG/imaging/clinical/bids'

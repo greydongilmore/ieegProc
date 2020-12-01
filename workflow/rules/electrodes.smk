@@ -8,6 +8,8 @@ def get_electrodes_filename(wildcards):
 rule electrode_coords:
     input:
         seega_scene = config['subject_seega_scene']
+    params:
+        sub=subject_id
     output:
         seega_fcsv = bids(root=join(config['out_dir'],'deriv','seega_coordinates'),subject=subject_id,space='native', suffix='SEEGA.fcsv'),
     group: 'preproc'

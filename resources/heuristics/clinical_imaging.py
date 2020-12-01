@@ -71,6 +71,10 @@ def infotodict(seqinfo):
 	ct = create_key('{bids_subject_session_dir}/ct/{bids_subject_session_prefix}_run-{item:02d}_ct')
 	ct_acq = create_key('{bids_subject_session_dir}/ct/{bids_subject_session_prefix}_acq-{acq}_run-{item:02d}_ct')
 	
+	#pet
+	pet = create_key('{bids_subject_session_dir}/pet/{bids_subject_session_prefix}_task-rest_run-{item:02d}_pet')
+	pet_acq = create_key('{bids_subject_session_dir}/pet/{bids_subject_session_prefix}_task-rest_acq-{acq}_run-{item:02d}_pet')
+
 	info = {t1w:[],
 			t1w_acq:[],
 			t2w:[],
@@ -83,7 +87,9 @@ def infotodict(seqinfo):
 			fa:[],
 			fa_acq:[],
 			ct:[],
-			ct_acq:[]}
+			ct_acq:[],
+			pet:[],
+			pet_acq:[]}
 	
 	for idx, s in enumerate(seqinfo):
 		if any(substring in s.study_description.upper() for substring in {'MR'}):
@@ -170,7 +176,14 @@ def infotodict(seqinfo):
 					info[fa_acq].append({'item': s.series_id, 'acq': 'Electrode'})
 				else:
 					info[fa].append({'item': s.series_id})
-					
+		
+		elif any(substring in s.study_description.upper() for substring in {'PET'}):
+			if any(substring in s.series_description.upper() for substring in {'RECON'}) and (s.dim3 == 47) and (s.TR == -1):
+				if 'FBP' in s.series_description.upper():
+					info[pet_acq].append({'item': s.series_id, 'acq': 'FBP'})
+				else:
+					info[pet].append({'item': s.series_id})
+
 		#   CT SCANS
 		ct_scan = False
 		if s.study_description =='':

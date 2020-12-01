@@ -2,17 +2,17 @@
 #--- dicom2bids
 #
 
-dicom_dir: /home/greydon/Documents/GitHub/seeg2bids-pipeline/data/dicoms
-out_dir: /home/greydon/Documents/GitHub/seeg2bids-pipeline/data/output
-clinical_event_file: /home/greydon/Documents/GitHub/seeg2bids-pipeline/data/clinical_events.tsv
-participants_tsv: /home/greydon/Documents/GitHub/seeg2bids-pipeline/data/participants.tsv
-subject_seega_scene: /home/greydon/Documents/GitHub/seeg2bids-pipeline/data/seega_scenes/sub-P{subject}
+#dicom_dir: /home/greydon/Documents/GitHub/seeg2bids-pipeline/data/dicoms
+#out_dir: /home/greydon/Documents/GitHub/seeg2bids-pipeline/data/output
+#clinical_event_file: /home/greydon/Documents/GitHub/seeg2bids-pipeline/data/clinical_events.tsv
+#participants_tsv: /home/greydon/Documents/GitHub/seeg2bids-pipeline/data/participants.tsv
+#subject_seega_scene: /home/greydon/Documents/GitHub/seeg2bids-pipeline/data/seega_scenes/sub-P{subject}
 
-#dicom_dir: /media/veracrypt6/projects/iEEG/single/dicoms
-#out_dir: /media/veracrypt6/projects/iEEG/single/out
-#clinical_event_file: /media/veracrypt6/projects/iEEG/single/clinical_events.tsv
-#participants_tsv: /media/veracrypt6/projects/iEEG/single/participants.tsv
-#subject_seega_scene: /media/veracrypt6/projects/iEEG/imaging/clinical/deriv/seega_scenes/sub-P{subject}
+dicom_dir: /media/veracrypt6/projects/iEEG/single/dicoms
+out_dir: /media/veracrypt6/projects/iEEG/single/out
+clinical_event_file: /media/veracrypt6/projects/iEEG/single/clinical_events.tsv
+participants_tsv: 
+subject_seega_scene: /media/veracrypt6/projects/iEEG/imaging/clinical/deriv/seega_scenes/sub-P{subject}/surg01
 
 
 #
@@ -22,6 +22,7 @@ subject_seega_scene: /home/greydon/Documents/GitHub/seeg2bids-pipeline/data/seeg
 heuristic: resources/heuristics/clinical_imaging.py
 dcm_config: resources/dcm_config.json
 anonymize: False
+deface: False
 sub_group: patient
 subject_prefix: P
 
@@ -31,7 +32,8 @@ session_calc:
   dur_multi_event: -15
   override_peri: True
 
-
+facemask: resources/facemask.nii.gz
+mean_reg2mean: resources/mean_reg2mean.nii.gz
 
 #
 #--- segmentation
@@ -76,7 +78,6 @@ subject_electrodes: /deriv/seega_coordinates/sub-P{subject}/sub-P{subject}_space
 
 #use this if a particular subject has custom path
 subject_electrodes_custom: []
-
 template: MNI152NLin2009cSym
 
 template_t1w: resources/tpl-{template}/tpl-{template}_res-1_T1w.nii.gz

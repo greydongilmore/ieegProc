@@ -64,5 +64,22 @@ rule qc_dseg:
     group: 'preproc'
     script: '../scripts/vis_qc_dseg.py'
 
+rule qc_dseg_dilated:
+    input:
+        img = bids(root=join(config['out_dir'], 'deriv', 'atlasreg'),subject=subject_id,desc='n4', suffix='T1w.nii.gz'),
+        seg = bids(root=join(config['out_dir'], 'deriv', 'atlasreg'),subject=subject_id,suffix='dseg.nii.gz',atlas='{atlas}',from_='{template}',desc='dilated',reg='SyN'),
+    output:
+        png = report(bids(root=join(config['out_dir'], 'deriv', 'atlasreg'),prefix='sub-'+subject_id+'/qc/sub-'+subject_id,suffix='dseg.png',atlas='{atlas}', from_='{template}',desc='dilated',include_subject_dir=False),
+                caption='../reports/segqc.rst',
+                category='Segmentation QC',
+                subcategory='{atlas} Atlas from {template} dilated'),
+        html = bids(root=join(config['out_dir'], 'deriv', 'atlasreg'),prefix='sub-'+subject_id+'/qc/sub-'+subject_id,suffix='dseg.html',atlas='{atlas}', from_='{template}',desc='dilated',include_subject_dir=False),
+#        html = report(bids(root='qc',subject=subject_id,suffix='dseg.html',atlas='{atlas}', from_='{template}'),
+#                caption='../reports/segqc.rst',
+#                category='Segmentation QC',
+#                subcategory='{atlas} Atlas from {template}'),
+    group: 'preproc'
+    script: '../scripts/vis_qc_dseg.py'
+
 
 

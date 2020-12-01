@@ -171,7 +171,7 @@ def make_bids_filename(subject_id, space_id, desc_id, suffix, prefix):
 		
 	return filename
 
-isub=os.path.basename(snakemake.input.seega_scene)
+isub='sub-'+snakemake.params.sub
 
 patient_output = os.path.join(snakemake.config['out_dir'], 'deriv','seega_coordinates',isub)
 if not os.path.exists(patient_output):
