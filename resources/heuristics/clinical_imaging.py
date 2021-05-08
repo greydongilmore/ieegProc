@@ -1,16 +1,4 @@
 # -*- coding: utf-8 -*-
-"""
-Created on Thu Sep 19 22:57:55 2019
-
-@author: Greydon
-"""
-
-# -*- coding: utf-8 -*-
-"""
-Created on Sat Jun 23 16:14:57 2018
-
-@author: Greydon
-"""
 
 def create_key(template, outtype=('nii.gz'), annotation_classes=None):
 	if template is None or not template:
@@ -74,6 +62,7 @@ def infotodict(seqinfo):
 	#pet
 	pet = create_key('{bids_subject_session_dir}/pet/{bids_subject_session_prefix}_task-rest_run-{item:02d}_pet')
 	pet_acq = create_key('{bids_subject_session_dir}/pet/{bids_subject_session_prefix}_task-rest_acq-{acq}_run-{item:02d}_pet')
+	pet_task = create_key('{bids_subject_session_dir}/pet/{bids_subject_session_prefix}_task-{task}_acq-{acq}_run-{item:02d}_pet')
 
 	info = {t1w:[],
 			t1w_acq:[],
@@ -89,7 +78,8 @@ def infotodict(seqinfo):
 			ct:[],
 			ct_acq:[],
 			pet:[],
-			pet_acq:[]}
+			pet_acq:[],
+			pet_task:[]}
 	
 	for idx, s in enumerate(seqinfo):
 		if any(substring in s.study_description.upper() for substring in {'MR'}):
@@ -133,7 +123,15 @@ def infotodict(seqinfo):
 					info[t1w_acq].append({'item': s.series_id, 'acq': 'MPGR2D'})
 				else:
 					info[t1w_acq].append({'item': s.series_id, 'acq': 'MPGR3D'})
-					
+			
+			elif 'RAGE' in s.series_description.upper():
+				if postop:
+					info[t1w_acq].append({'item': s.series_id, 'acq': 'ElectrodeMPRAGE'})
+				elif 'AX' in s.series_description.upper():
+					info[t1w_acq].append({'item': s.series_id, 'acq': 'MPRAGE2D'})
+				else:
+					info[t1w_acq].append({'item': s.series_id, 'acq': 'MPRAGE'})
+
 			elif any(substring in s.series_description.upper() for substring in {'IR_FSPGR', 'FSPGR','IR-FSPGR'}):
 				if postop:
 					info[t1w_acq].append({'item': s.series_id, 'acq': 'ElectrodeFSPGR'})
@@ -183,6 +181,20 @@ def infotodict(seqinfo):
 					info[pet_acq].append({'item': s.series_id, 'acq': 'FBP'})
 				else:
 					info[pet].append({'item': s.series_id})
+
+			elif '3d' in s.protocol_name.lower() and (s.dim3 > 1) and (s.TR == -1):
+				if 'axial' in s.series_description.lower():
+					info[pet_acq].append({'item': s.series_id, 'acq': 'AX'})
+				elif 'coronal' in s.series_description.lower():
+					info[pet_acq].append({'item': s.series_id, 'acq': 'COR'})
+				elif 'sagittal' in s.series_description.lower():
+					info[pet_acq].append({'item': s.series_id, 'acq': 'SAG'})
+
+			elif 'volumetrix' in s.protocol_name.lower() and (s.dim3 == 1) and (s.TR == -1):
+				if 'axial' in s.series_description.lower():
+					info[pet_task].append({'item': s.series_id, 'task': 'volumetrix', 'acq': 'AX'})
+				elif 'coronal' in s.series_description.lower():
+					info[pet_task].append({'item': s.series_id, 'task': 'volumetrix', 'acq': 'COR'})
 
 		#   CT SCANS
 		ct_scan = False

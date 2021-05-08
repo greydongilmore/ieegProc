@@ -261,15 +261,15 @@ def sort_rule_clinical(filename, args):
             # This will skip any order sheets and localizers
             elif 'ImageType' not in dataset:
                 return None
-            elif any(x in  dataset.ImageType for x in {'SECONDARY', 'LOCALIZER'}):
+            elif any(x in  dataset.ImageType for x in {'LOCALIZER'}):
                 return None
             else:
-                if 'Manufacturer' in dataset:
-                    if 'SIEMENS' in dataset.Manufacturer:
-                        errorInfoTemp = "\t".join(['P' + [s for s in filename.split(os.sep) if 'sub' in s][0].split('-')[1], study_date,
-                                                   clean_path('{series:04d}'.format(series=dataset.SeriesNumber)), 'SIEMENS'])
-                        write_error_file(error_file, errorInfoTemp)
-                        return None
+                # if 'Manufacturer' in dataset:
+                #     if 'SIEMENS' in dataset.Manufacturer:
+                #         errorInfoTemp = "\t".join(['P' + [s for s in filename.split(os.sep) if 'sub' in s][0].split('-')[1], study_date,
+                #                                    clean_path('{series:04d}'.format(series=dataset.SeriesNumber)), 'SIEMENS'])
+                #         write_error_file(error_file, errorInfoTemp)
+                #         return None
                 try:
                     csaReader = ds.wrapper_from_data(dataset)
                     modality = dataset.Modality

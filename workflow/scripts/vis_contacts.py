@@ -28,12 +28,13 @@ mask_ants_reg_applied = ants.apply_transforms(ct_ants, mask_ants, transformlist=
 mask_resample = ants.to_nibabel(mask_ants_reg_applied)
 
 mask_params = {
-				'symmetric_cmap': True,
-				'cut_coords':[0,0,0],
-				'dim': 1,
-				'cmap':'viridis',
-				'opacity':0.7
-				}
+			'symmetric_cmap': True,
+			'cut_coords':[0,0,0],
+			'dim': 1,
+			'cmap':'viridis',
+			'opacity':0.7
+			}
 
 html_view = plotting.view_img(stat_map_img=mask_resample,bg_img=ct_resample,**mask_params)
 html_view.save_as_html(snakemake.output.html)
+

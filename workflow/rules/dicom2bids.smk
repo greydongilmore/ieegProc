@@ -13,6 +13,15 @@ def get_dicom_dir(wildcards):
 	else:
 		return join(config['dicom_dir'],'sub-' + wildcards.subject)
 
+def get_pre_filename(wildcards):
+    file=expand(bids(root=join(config['out_dir'], 'bids'), subject=config['subject_prefix']+'{subject}', datatype='anat', ses='pre', suffix='run-*_T1w.nii.gz'),subject=wildcards.subject)
+    if len(file) <=1:
+        file=expand(bids(root=join(config['out_dir'], 'bids'), subject=config['subject_prefix']+'{subject}', datatype='anat', ses='pre', suffix='run-01_T1w.nii.gz'),subject=wildcards.subject)
+    else:
+        file=expand(bids(root=join(config['out_dir'], 'bids'), subject=config['subject_prefix']+'{subject}', datatype='anat', ses='pre', suffix=f'run-{str(len(files)).zfill(2)}_T1w.nii.gz'),subject=wildcards.subject)
+    print(file)
+    return file
+
 rule dicom2tar:
 	input:
 		dicom = get_dicom_dir
@@ -38,19 +47,38 @@ rule tar2bids:
 	shell:
 		'heudiconv --files {input.tar} -o {params.bids} -f {params.heuristic_file} -c dcm2niix --dcmconfig {params.dcm_config} -b'
 
-rule cleanSessions:
-	input:
-		touch_tar2bids=join(config['out_dir'], 'logs', 'sub-' + subject_id + "_tar2bids.done"),
-	output:
-		touch_dicom2bids=touch(join(config['out_dir'], 'logs', 'sub-' + subject_id + "_dicom2bids.done")),
-		t1w_file= config['out_dir'] + config['subject_t1w_custom']['{subject}'] if '{subject}' in config['subject_t1w_custom'] else config['out_dir'] + config['subject_t1w'],
-		ct_file=config['out_dir'] + config['subject_ct_custom']['{subject}'] if '{subject}' in config['subject_ct_custom'] else config['out_dir'] + config['subject_ct'],
-	params:
-		clinical_events=config['clinical_event_file'],
-		bids_fold = join(config['out_dir'], 'bids_tmp', 'sub-' + subject_id),
-		num_subs = len(subjects),
-		ses_calc = config['session_calc'],
-		sub_group = config['sub_group']
-	#container: 'docker://greydongilmore/dicom2bids-clinical:latest'
-	script:
-		"../scripts/post_tar2bids/clean_sessions.py"
+if config['noncontrast_t1']['present']:
+	rule cleanSessions:
+		input:
+			touch_tar2bids=join(config['out_dir'], 'logs', 'sub-' + subject_id + "_tar2bids.done"),
+		output:
+			touch_dicom2bids=touch(join(config['out_dir'], 'logs', 'sub-' + subject_id + "_dicom2bids.done")),
+			noncontrast_file= bids(root=join(config['out_dir'], 'bids'), subject=subject_id, datatype='anat', session='pre', acq=config['noncontrast_t1']['flag'], run='01', suffix='T1w.nii.gz'),
+			t1w_file= bids(root=join(config['out_dir'], 'bids'), subject=subject_id, datatype='anat', session='pre', run='01', suffix='T1w.nii.gz'),
+			ct_file= bids(root=join(config['out_dir'], 'bids'), subject=subject_id, datatype='ct', session='post', acq='Electrode', run='01', suffix='ct.nii.gz'),
+		params:
+			clinical_events=config['clinical_event_file'],
+			bids_fold = join(config['out_dir'], 'bids_tmp', 'sub-' + subject_id),
+			num_subs = len(subjects),
+			ses_calc = config['session_calc'],
+			sub_group = config['sub_group']
+		#container: 'docker://greydongilmore/dicom2bids-clinical:latest'
+		script:
+			"../scripts/post_tar2bids/clean_sessions.py"
+else:
+	rule cleanSessions:
+		input:
+			touch_tar2bids=join(config['out_dir'], 'logs', 'sub-' + subject_id + "_tar2bids.done"),
+		output:
+			touch_dicom2bids=touch(join(config['out_dir'], 'logs', 'sub-' + subject_id + "_dicom2bids.done")),
+			t1w_file= bids(root=join(config['out_dir'], 'bids'), subject=subject_id, datatype='anat', session='pre', run='01', suffix='T1w.nii.gz'),
+			ct_file= bids(root=join(config['out_dir'], 'bids'), subject=subject_id, datatype='ct', session='post', acq='Electrode', run='01', suffix='ct.nii.gz'),
+		params:
+			clinical_events=config['clinical_event_file'],
+			bids_fold = join(config['out_dir'], 'bids_tmp', 'sub-' + subject_id),
+			num_subs = len(subjects),
+			ses_calc = config['session_calc'],
+			sub_group = config['sub_group']
+		#container: 'docker://greydongilmore/dicom2bids-clinical:latest'
+		script:
+			"../scripts/post_tar2bids/clean_sessions.py"

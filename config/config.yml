@@ -8,12 +8,12 @@
 #participants_tsv: /home/greydon/Documents/GitHub/seeg2bids-pipeline/data/participants.tsv
 #subject_seega_scene: /home/greydon/Documents/GitHub/seeg2bids-pipeline/data/seega_scenes/sub-P{subject}
 
-dicom_dir: /media/veracrypt6/projects/iEEG/single/dicoms
-out_dir: /media/veracrypt6/projects/iEEG/single/out
-clinical_event_file: /media/veracrypt6/projects/iEEG/single/clinical_events.tsv
-participants_tsv: 
-subject_seega_scene: /media/veracrypt6/projects/iEEG/imaging/clinical/deriv/seega_scenes/sub-P{subject}/surg01
-
+dicom_dir: /media/veracrypt6/projects/iEEG/imaging/clinical/sourcedata/dicoms
+out_dir: /media/veracrypt6/projects/iEEG/imaging/clinical
+clinical_event_file: /media/veracrypt6/projects/iEEG/imaging/clinical/clinical_events.tsv
+participants_tsv: /media/veracrypt6/projects/iEEG/imaging/clinical/participants.tsv
+#participants_tsv: /media/veracrypt6/projects/iEEG/imaging/clinical/participants.tsv
+subject_seega_scene: /media/veracrypt6/projects/iEEG/imaging/clinical/deriv/seega_scenes/sub-P{subject}
 
 #
 #--- dicom2bids
@@ -44,35 +44,31 @@ singularity:
 # use this URI if not on khanlab compute canada:
 #    neuroglia: docker://khanlab/neuroglia-core:latest
 
-subject_t1w: /bids/sub-P{subject}/ses-pre/anat/sub-P{subject}_ses-pre_run-01_T1w.nii.gz
+noncontrast_t1:
+    present: False
+    flag: FSPGR
+
+subject_t1w: /bids/sub-f'{config['subject_prefix']}'{subject}/ses-pre/anat/sub-f'{config['subject_prefix']}'{subject}_ses-pre_acq-FSPGR_run-01_T1w.nii.gz
 
 #use this if a particular subject has a custom path
-subject_t1w_custom:
-    '001': /bids/sub-P{subject}/ses-pre/anat/sub-P{subject}_ses-pre_run-02_T1w.nii.gz
-    '007': /bids/sub-P{subject}/ses-pre/anat/sub-P{subject}_ses-pre_run-03_T1w.nii.gz
-    '017': /bids/sub-P{subject}/ses-pre/anat/sub-P{subject}_ses-pre_run-02_T1w.nii.gz
-    '018': /bids/sub-P{subject}/ses-pre/anat/sub-P{subject}_ses-pre_run-02_T1w.nii.gz
-    '020': /seega_old/sub-P{subject}/preop_mri.nii.gz
-    '024': /bids/sub-P{subject}/ses-pre/anat/sub-P{subject}_ses-pre_run-02_T1w.nii.gz
-    '033': /bids/sub-P{subject}/ses-pre/anat/sub-P{subject}_ses-pre_run-02_T1w.nii.gz
-    '042': /seega_old/sub-P{subject}/preop_mri.nii.gz
-    #'048': /bids/sub-P{subject}/ses-pre/anat/sub-P{subject}_ses-pre_run-02_T1w.nii.gz
-    '052': /bids/sub-P{subject}/ses-pre/anat/sub-P{subject}_ses-pre_run-02_T1w.nii.gz
-    '053': /sub-P053/Stokes_David/Data/sub-P053_3D_T1_BRAVO.nii.gz
+subject_t1w_custom: []
+    #'007': /bids/sub-P{subject}/ses-pre/anat/sub-P{subject}_ses-pre_run-03_T1w.nii.gz
+    #'017': /bids/sub-P{subject}/ses-pre/anat/sub-P{subject}_ses-pre_run-02_T1w.nii.gz
+    #'018': /bids/sub-P{subject}/ses-pre/anat/sub-P{subject}_ses-pre_run-02_T1w.nii.gz
+    #'023': /bids/sub-P{subject}/ses-pre/anat/sub-P{subject}_ses-pre_run-02_T1w.nii.gz
+    #'024': /bids/sub-P{subject}/ses-pre/anat/sub-P{subject}_ses-pre_run-02_T1w.nii.gz
+    #'033': /bids/sub-P{subject}/ses-pre/anat/sub-P{subject}_ses-pre_run-02_T1w.nii.gz
+    ##'048': /bids/sub-P{subject}/ses-pre/anat/sub-P{subject}_ses-pre_run-02_T1w.nii.gz
+    #'052': /bids/sub-P{subject}/ses-pre/anat/sub-P{subject}_ses-pre_run-02_T1w.nii.gz
+    #'053': /sub-P053/Stokes_David/Data/sub-P053_3D_T1_BRAVO.nii.gz
 
-subject_ct: /bids/sub-P{subject}/ses-post/ct/sub-P{subject}_ses-post_acq-Electrode_run-01_ct.nii.gz
+subject_elec_ct: /bids/sub-f'{config['subject_prefix']}'{subject}/ses-post/ct/sub-f'{config['subject_prefix']}'{subject}_ses-post_acq-Electrode_run-01_ct.nii.gz
+subject_elec_t1w: /bids/sub-f'{config['subject_prefix']}'{subject}/ses-post/anat/sub-f'{config['subject_prefix']}'{subject}_ses-post_acq-Electrode3D_run-01_T1w.nii.gz
 
 #use this if a particular subject has a custom path
-subject_ct_custom:
-    '002': /seega_old/sub-P{subject}/ct_to_mri.nii.gz
-    '007': /seega_old/sub-P{subject}/ct_to_mri.nii.gz
-    '010': /seega_old/sub-P{subject}/ct_to_mri.nii.gz
-    '011': /seega_old/sub-P{subject}/ct_to_mri.nii.gz
-    '019': /seega_old/sub-P{subject}/ct_to_mri.nii.gz
-    '020': /seega_old/sub-P{subject}/ct_to_mri.nii.gz
-    '030': /seega_old/sub-P{subject}/ct_to_mri.nii.gz
-    '042': /seega_old/sub-P{subject}/ct_to_mri.nii.gz
-    '047': /bids/sub-P{subject}/ses-post/ct/sub-P{subject}_ses-post_acq-Electrode_run-03_ct.nii.gz
+subject_elec_ct_custom: []
+    #'047': /bids/sub-P{subject}/ses-post/ct/sub-P{subject}_ses-post_acq-Electrode_run-03_ct.nii.gz
+subject_elec_t1w_custom: []
 
 subject_electrodes: /deriv/seega_coordinates/sub-P{subject}/sub-P{subject}_space-native_SEEGA.fcsv
 
@@ -100,7 +96,7 @@ atlases:
 n_atlas_dilate: 3
 n_init_mask_dilate: 1 
 
-default_k_tissue_classes: 5 #higher than 3 to capture contrast-enhanced regions too
+default_k_tissue_classes: 7 #higher than 3 to capture contrast-enhanced regions too
 
 #use this to specify custom values for subjects, e.g. here sub-P001 will have k=4 tissue classes for Atropos initialization
 subject_k_tissue_classes:

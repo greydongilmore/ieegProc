@@ -6,7 +6,7 @@ def get_k_tissue_classes(wildcards):
 
 #this performs Atropos with k-means as initialization
 rule tissue_seg_kmeans_init:
-    input: 
+    input:
         t1 = bids(root=join(config['out_dir'], 'deriv', 'atlasreg'),subject=subject_id,desc='n4', suffix='T1w.nii.gz'),
         mask = bids(root=join(config['out_dir'], 'deriv', 'atlasreg'),subject=subject_id,suffix='mask.nii.gz',from_='{template}'.format(template=config['template']),reg='affine',desc='brain'),
     params:

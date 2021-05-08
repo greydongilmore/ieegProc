@@ -16,6 +16,24 @@ rule qc_reg:
     group: 'preproc'
     script: '../scripts/vis_regqc.py'
 
+if config['noncontrast_t1']['present']:
+    rule qc_reg_noncontrast:
+        input:
+            ref = bids(root=join(config['out_dir'], 'deriv', 'atlasreg'),subject=subject_id,suffix='T1w.nii.gz'),
+            flo = bids(root=join(config['out_dir'], 'deriv', 'atlasreg'),subject=subject_id,acq='noncontrast',suffix='T1w.nii.gz',from_='atropos3seg',desc='masked')
+        output:
+            png = report(bids(root=join(config['out_dir'], 'deriv', 'atlasreg'),prefix='sub-'+subject_id+'/qc/sub-'+subject_id,suffix='regqc.png',from_='T1w', to='T1w',acq='noncontrast',desc='masked',include_subject_dir=False),
+                    caption='../reports/regqc.rst',
+                    category='Registration QC',
+                    subcategory='{desc} T1w'),
+            html = bids(root=join(config['out_dir'], 'deriv', 'atlasreg'),prefix='sub-'+subject_id+'/qc/sub-'+subject_id,suffix='regqc.html',from_='T1w', to='T1w', acq='noncontrast',desc='masked',include_subject_dir=False),
+    #        html = report(bids(root='qc',subject=subject_id,suffix='regqc.html',from_='subject', to='{template}', desc='{desc}'),
+    #                caption='../reports/regqc.rst',
+    #                category='Registration QC',
+    #                subcategory='{desc} {template}'),
+        group: 'preproc'
+        script: '../scripts/vis_regqc.py'
+
 rule qc_reg_ct:
     input:
         ref = bids(root=join(config['out_dir'], 'deriv', 'atlasreg'),subject=subject_id,suffix='T1w.nii.gz'),

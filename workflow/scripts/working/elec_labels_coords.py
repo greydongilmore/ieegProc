@@ -171,13 +171,33 @@ def make_bids_filename(subject_id, space_id, desc_id, suffix, prefix):
 		
 	return filename
 
+debug = False
+
+if debug:
+	class dotdict(dict):
+		"""dot.notation access to dictionary attributes"""
+		__getattr__ = dict.get
+		__setattr__ = dict.__setitem__
+		__delattr__ = dict.__delitem__
+	
+	class Namespace:
+		def __init__(self, **kwargs):
+			self.__dict__.update(kwargs)
+	
+	sub='P063'
+	config=dotdict({'out_dir':'/media/veracrypt6/projects/iEEG/working_dir/out'})
+	params=dotdict({'sub':sub})
+	
+	input=dotdict({'seega_scene':f'/media/veracrypt6/projects/iEEG/imaging/clinical/deriv/seega_scenes/sub-{sub}'})
+	
+	snakemake = Namespace(params=params, input=input,config=config)
+	
+#%%
 isub='sub-'+snakemake.params.sub
 
 patient_output = os.path.join(snakemake.config['out_dir'], 'deriv','seega_coordinates',isub)
 if not os.path.exists(patient_output):
 	os.makedirs(patient_output)
-
-snakemake.input.seega_scene
 
 patient_files = []
 for dirpath, subdirs, subfiles in os.walk(snakemake.input.seega_scene):

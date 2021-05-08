@@ -1,15 +1,77 @@
 
+def get_noncontrast_filename(wildcards):
+    file=expand(bids(root=join(config['out_dir'], 'bids'), subject=config['subject_prefix']+'{subject}', datatype='anat', session='pre', acq=config['noncontrast_t1']['flag'], run='*', suffix='T1w.nii.gz'),subject=wildcards.subject)
+    files=glob(file[0])
+    if len(files) <=1:
+        file=expand(bids(root=join(config['out_dir'], 'bids'), subject=config['subject_prefix']+'{subject}', datatype='anat', session='pre', acq=config['noncontrast_t1']['flag'], run='01', suffix='T1w.nii.gz'),subject=wildcards.subject)
+    else:
+        file=files[-1]
+    return file
+
+def get_pre_t1_filename(wildcards):
+    file=expand(bids(root=join(config['out_dir'], 'bids'), subject=config['subject_prefix']+'{subject}', datatype='anat', session='pre', run='*', suffix='T1w.nii.gz'),subject=wildcards.subject)
+    files=glob(file[0])
+    if len(files) <=1:
+        file=expand(bids(root=join(config['out_dir'], 'bids'), subject=config['subject_prefix']+'{subject}', datatype='anat', session='pre', run='01', suffix='T1w.nii.gz'),subject=wildcards.subject)
+    else:
+        file=files[-1]
+    return file
+
+def get_t1w_filename(wildcards): 
+    if wildcards.subject in config['subject_t1w_custom']:
+        return config['subject_t1w_custom'][wildcards.subject]
+    else:
+        return config['subject_t1w']
+
+def get_postop_filename(wildcards):
+    file=expand(bids(root=join(config['out_dir'], 'bids'), subject=config['subject_prefix']+'{subject}', datatype='ct', session='post', acq='Electrode', run='*', suffix='ct.nii.gz'),subject=wildcards.subject)
+    if len(file) <=1:
+        file=expand(bids(root=join(config['out_dir'], 'bids'), subject=config['subject_prefix']+'{subject}', datatype='ct', session='post', acq='Electrode', run='01', suffix='ct.nii.gz'),subject=wildcards.subject)
+    else:
+        file=expand(bids(root=join(config['out_dir'], 'bids'), subject=config['subject_prefix']+'{subject}', datatype='ct', session='post', acq='Electrode', run=f'{str(len(files)).zfill(2)}', suffix='ct.nii.gz'),subject=wildcards.subject)
+    print(file)
+    return file
+
+    post_ct=config['out_dir'] + config['subject_elec_ct_custom'][wildcards.subject] if wildcards.subject in config['subject_elec_ct_custom'] else config['out_dir'] + config['subject_elec_ct']
+    post_t1w=config['out_dir'] + config['subject_elec_t1w_custom'][wildcards.subject] if wildcards.subject in config['subject_elec_t1w_custom'] else config['out_dir'] + config['subject_elec_t1w']
+    print(post_ct)
+    print(post_t1w)
+    if exists(post_ct):
+        return post_ct
+    elif exists(post_t1w):
+        return post_t1w
+
 rule import_subj_t1:
-    input: lambda wildcards: config['out_dir'] + config['subject_t1w_custom'][wildcards.subject] if wildcards.subject in config['subject_t1w_custom'] else config['out_dir'] + config['subject_t1w'],
+    input: get_pre_t1_filename,
     output: bids(root=join(config['out_dir'], 'deriv', 'atlasreg'),subject=subject_id,suffix='T1w.nii.gz'),
     group: 'preproc'
-    shell: "cp {input} {output}"
+    shell: "echo {input} &&cp {input} {output}"
 
 rule import_subj_ct:
-    input: lambda wildcards: config['out_dir'] + config['subject_ct_custom'][wildcards.subject] if wildcards.subject in config['subject_ct_custom'] else config['out_dir'] + config['subject_ct'],
+    input: get_postop_filename,
     output: bids(root=join(config['out_dir'],'deriv', 'atlasreg'),subject=subject_id,suffix='ct.nii.gz')
     group: 'preproc'
     shell: 'cp {input} {output}'
+
+if config['noncontrast_t1']['present']:
+    rule import_subj_nocontrast:
+        input: get_noncontrast_filename,
+        output: bids(root=join(config['out_dir'],'deriv', 'atlasreg'),subject=subject_id,acq='noncontrast',suffix='T1w.nii.gz')
+        group: 'preproc'
+        shell: 'cp {input} {output}'
+
+    rule rigonly_aladin_noncontrast:
+        input: 
+            flo = bids(root=join(config['out_dir'],'deriv', 'atlasreg'),subject=subject_id,acq='noncontrast',suffix='T1w.nii.gz'),
+            ref = bids(root=join(config['out_dir'],'deriv', 'atlasreg'),subject=subject_id,suffix='T1w.nii.gz'),
+        output: 
+            warped_subj = bids(root=join(config['out_dir'],'deriv', 'atlasreg'),subject=subject_id,acq='noncontrast',suffix='T1w.nii.gz',space='T1w',desc='affine'),
+            xfm_ras = bids(root=join(config['out_dir'],'deriv', 'atlasreg'),subject=subject_id,acq='noncontrast',suffix='xfm.txt',from_='T1w',to='T1w',desc='affine',type_='ras'),
+        #container: config['singularity']['neuroglia']
+        group: 'preproc'
+        shell:
+            'reg_aladin -flo {input.flo} -ref {input.ref} -res {output.warped_subj} -aff {output.xfm_ras} -speeeeed'
+            #'flirt -in {input.flo} -ref {input.ref} -out {output.warped_subj} -omat {output.xfm_ras} -dof 6'
 
 rule rigonly_aladin:
     input: 
@@ -22,7 +84,7 @@ rule rigonly_aladin:
     group: 'preproc'
     shell:
         'reg_aladin -flo {input.flo} -ref {input.ref} -res {output.warped_subj} -aff {output.xfm_ras} -speeeeed'
-       # 'flirt -in {input.flo} -ref {input.ref} -out {output.warped_subj} -omat {output.xfm_ras} -dof 6'
+        #'flirt -in {input.flo} -ref {input.ref} -out {output.warped_subj} -omat {output.xfm_ras} -dof 6'
 
 rule affine_aladin:
     input: 
@@ -141,6 +203,18 @@ else:
         group: 'preproc'
         shell:
             'fslmaths {input.t1} -mas {input.mask} {output}'
+
+if config['noncontrast_t1']['present']:
+    rule mask_subject_noncontrast:
+        input:
+            t1s = bids(root=join(config['out_dir'], 'deriv', 'atlasreg'),subject=subject_id,acq='noncontrast',suffix='T1w.nii.gz',desc='affine',space='T1w'),
+            mask = bids(root=join(config['out_dir'], 'deriv', 'atlasreg'),subject=subject_id,suffix='mask.nii.gz',from_='atropos3seg',desc='brain')
+        output:
+            t1s = bids(root=join(config['out_dir'], 'deriv', 'atlasreg'),subject=subject_id,acq='noncontrast',suffix='T1w.nii.gz',from_='atropos3seg',desc='masked'),
+        #container: config['singularity']['neuroglia']
+        group: 'preproc'
+        shell:
+            'fslmaths {input.t1s} -mas {input.mask} {output.t1s}'
 
 rule mask_subject_ct:
     input:
