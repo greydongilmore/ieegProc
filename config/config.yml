@@ -8,10 +8,10 @@
 #participants_tsv: /home/greydon/Documents/GitHub/seeg2bids-pipeline/data/participants.tsv
 #subject_seega_scene: /home/greydon/Documents/GitHub/seeg2bids-pipeline/data/seega_scenes/sub-P{subject}
 
-dicom_dir: /media/veracrypt6/projects/iEEG/imaging/clinical/sourcedata/dicoms
-out_dir: /media/veracrypt6/projects/iEEG/imaging/clinical
-clinical_event_file: /media/veracrypt6/projects/iEEG/imaging/clinical/clinical_events.tsv
-participants_tsv: /media/veracrypt6/projects/iEEG/imaging/clinical/participants.tsv
+dicom_dir: /media/veracrypt6/projects/iEEG/working_dir/dicoms
+out_dir: /media/veracrypt6/projects/iEEG/working_dir/out
+clinical_event_file: /media/veracrypt6/projects/iEEG/working_dir/clinical_events.tsv
+participants_tsv: 
 #participants_tsv: /media/veracrypt6/projects/iEEG/imaging/clinical/participants.tsv
 subject_seega_scene: /media/veracrypt6/projects/iEEG/imaging/clinical/deriv/seega_scenes/sub-P{subject}
 

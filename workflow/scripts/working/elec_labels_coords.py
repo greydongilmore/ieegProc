@@ -171,7 +171,7 @@ def make_bids_filename(subject_id, space_id, desc_id, suffix, prefix):
 		
 	return filename
 
-debug = False
+debug = True
 
 if debug:
 	class dotdict(dict):
@@ -184,7 +184,7 @@ if debug:
 		def __init__(self, **kwargs):
 			self.__dict__.update(kwargs)
 	
-	sub='P063'
+	sub='P069'
 	config=dotdict({'out_dir':'/media/veracrypt6/projects/iEEG/working_dir/out'})
 	params=dotdict({'sub':sub})
 	

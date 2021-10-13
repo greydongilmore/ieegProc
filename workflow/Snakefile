@@ -44,12 +44,12 @@ if config['noncontrast_t1']['present']:
                         subject=subjects, atlas=config['atlases'],template=config['template']),
                 atlas_dilated_vis = expand(bids(root=join(config['out_dir'], 'deriv', 'atlasreg'),prefix='sub-'+subject_id+'/qc/sub-'+subject_id,suffix='dseg.png',atlas='{atlas}', from_='{template}',desc='{desc}',include_subject_dir=False),
                         subject=subjects, atlas=config['atlases'],template=config['template'], desc=['dilated'],),
-                electrode_vis = expand(bids(root=join(config['out_dir'], 'deriv', 'atlasreg'),prefix='sub-'+subject_id+'/qc/sub-'+subject_id,suffix='electrodevis.png',desc='{desc}',space='{template}',include_subject_dir=False),
-                        subject=subjects, desc=['affine'],template=config['template']),
-                contact_vis = expand(bids(root=join(config['out_dir'], 'deriv', 'atlasreg'),prefix='sub-'+subject_id+'/qc/sub-'+subject_id,suffix='contacts.html',desc='mask',space='ct',include_subject_dir=False),
-                        subject=subjects),
-                tsv = expand(bids(root=join(config['out_dir'], 'deriv', 'atlasreg'),subject=subject_id,suffix='electrodes.tsv',atlas='{atlas}',desc='dilated',from_='{template}'),
-                        subject=subjects, atlas=config['atlases'],template=config['template']),
+                #electrode_vis = expand(bids(root=join(config['out_dir'], 'deriv', 'atlasreg'),prefix='sub-'+subject_id+'/qc/sub-'+subject_id,suffix='electrodevis.png',desc='{desc}',space='{template}',include_subject_dir=False),
+                #        subject=subjects, desc=['affine'],template=config['template']),
+                #contact_vis = expand(bids(root=join(config['out_dir'], 'deriv', 'atlasreg'),prefix='sub-'+subject_id+'/qc/sub-'+subject_id,suffix='contacts.html',desc='mask',space='ct',include_subject_dir=False),
+                #        subject=subjects),
+                #tsv = expand(bids(root=join(config['out_dir'], 'deriv', 'atlasreg'),subject=subject_id,suffix='electrodes.tsv',atlas='{atlas}',desc='dilated',from_='{template}'),
+                #        subject=subjects, atlas=config['atlases'],template=config['template']),
                 #results = [join(config['out_dir'], 'deriv', 'atlasreg', 'results.tar'), join(config['out_dir'], 'deriv', 'atlasreg', 'results_tsv_only.tar')]
 else:
     rule all:
