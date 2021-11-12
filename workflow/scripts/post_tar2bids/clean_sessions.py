@@ -191,9 +191,10 @@ def main():
 			sub_code_path = make_bids_folders(isub.split('-')[1], ilabel, 'info', os.path.join(final_dir,'.heudiconv'), True, False)
 			copytree(os.path.join(os.path.dirname(snakemake.params.bids_fold), '.heudiconv', isub.split('-')[1], ises,'info'), sub_code_path)
 			
-		scans_file = make_bids_filename(isub, 'ses-'+ilabel, None, None, None, 'scans.json', os.path.dirname(sub_path))
+		scans_file = make_bids_filename(isub, 'ses-' + ilabel, None, None, None, 'scans.json', os.path.dirname(sub_path))
 		scans_json = [x for x in os.listdir(os.path.join(snakemake.params.bids_fold, ises)) if x.endswith('scans.json')]
-		shutil.copyfile(os.path.join(snakemake.params.bids_fold, ises, scans_json[0]), scans_file)
+		if scans_json:
+			shutil.copyfile(os.path.join(snakemake.params.bids_fold, ises, scans_json[0]), scans_file)
 		
 		scans_file = make_bids_filename(isub, 'ses-'+ilabel, None, None, None, 'scans.tsv', os.path.dirname(sub_path))
 		scans_tsv_new = pd.DataFrame(scans_tsv_new)
