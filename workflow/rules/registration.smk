@@ -1,7 +1,6 @@
 
 def get_noncontrast_filename(wildcards):
-    file=expand(bids(root=join(config['out_dir'], 'bids'), subject=config['subject_prefix']+'{subject}', datatype='anat', session='pre', acq=config['noncontrast_t1']['flag'], run='*', suffix='T1w.nii.gz'),subject=wildcards.subject)
-    files=glob(file[0])
+    files=glob(bids(root=join(config['out_dir'], 'bids'), subject=config['subject_prefix']+f'{wildcards.subject}', datatype='anat', session='pre', acq=config['noncontrast_t1']['flag'], run='*', suffix='T1w.nii.gz'))
     if len(files) <=1:
         file=expand(bids(root=join(config['out_dir'], 'bids'), subject=config['subject_prefix']+'{subject}', datatype='anat', session='pre', acq=config['noncontrast_t1']['flag'], run='01', suffix='T1w.nii.gz'),subject=wildcards.subject)
     else:
@@ -9,26 +8,19 @@ def get_noncontrast_filename(wildcards):
     return file
 
 def get_pre_t1_filename(wildcards):
-    file=expand(bids(root=join(config['out_dir'], 'bids'), subject=config['subject_prefix']+'{subject}', datatype='anat', session='pre', run='*', suffix='T1w.nii.gz'),subject=wildcards.subject)
-    files=glob(file[0])
+    files=glob(bids(root=join(config['out_dir'], 'bids'), subject=config['subject_prefix']+f'{wildcards.subject}', datatype='anat', session='pre', run='*', suffix='T1w.nii.gz'))
     if len(files) <=1:
         file=expand(bids(root=join(config['out_dir'], 'bids'), subject=config['subject_prefix']+'{subject}', datatype='anat', session='pre', run='01', suffix='T1w.nii.gz'),subject=wildcards.subject)
     else:
-        file=files[-1]
+        file=files[0]
     return file
 
-def get_t1w_filename(wildcards): 
-    if wildcards.subject in config['subject_t1w_custom']:
-        return config['subject_t1w_custom'][wildcards.subject]
-    else:
-        return config['subject_t1w']
-
 def get_postop_filename(wildcards):
-    file=expand(bids(root=join(config['out_dir'], 'bids'), subject=config['subject_prefix']+'{subject}', datatype='ct', session='post', acq='Electrode', run='*', suffix='ct.nii.gz'),subject=wildcards.subject)
-    if len(file) <=1:
+    files=glob(bids(root=join(config['out_dir'], 'bids'), subject=config['subject_prefix']+f'{wildcards.subject}', datatype='ct', session='post', acq='Electrode', run='*', suffix='ct.nii.gz'))
+    if len(files) <=1:
         file=expand(bids(root=join(config['out_dir'], 'bids'), subject=config['subject_prefix']+'{subject}', datatype='ct', session='post', acq='Electrode', run='01', suffix='ct.nii.gz'),subject=wildcards.subject)
     else:
-        file=expand(bids(root=join(config['out_dir'], 'bids'), subject=config['subject_prefix']+'{subject}', datatype='ct', session='post', acq='Electrode', run=f'{str(len(files)).zfill(2)}', suffix='ct.nii.gz'),subject=wildcards.subject)
+        file=files[-1]
     print(file)
     return file
 
