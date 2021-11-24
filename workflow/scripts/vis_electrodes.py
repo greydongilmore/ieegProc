@@ -89,6 +89,6 @@ _, idx = np.unique(colors, return_index=True, axis=0)
 
 label_dict=dict(zip(groups,colors[np.sort(idx)].tolist()))
 
-display = plotting.plot_connectome(adjacency_matrix, tcoords, node_color=colors, node_size=5)
-display.savefig(snakemake.output.png,dpi=250)
+display = plotting.plot_connectome(adjacency_matrix, tcoords, node_color=colors, node_size=3)
+display.savefig(snakemake.output.png,dpi=300)
 display.close()

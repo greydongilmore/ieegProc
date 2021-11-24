@@ -29,8 +29,34 @@ include: 'rules/common.smk'
 
 subject_id = config['subject_prefix']+'{subject}'
 
-if config['noncontrast_t1']['present']:
+
+if config['contrast_t1']['present'] and not config['noncontrast_t1']['present'] and not config['post_ct']['present']:
     rule all:
+            input:
+                reg_vis = expand(bids(root=join(config['out_dir'], 'deriv', 'atlasreg'),prefix='sub-'+subject_id+'/qc/sub-'+subject_id,suffix='regqc.png',from_='subject', to='{template}',desc='{desc}',include_subject_dir=False),
+                        subject=subjects, desc=['affine','SyN'],template=config['template']),
+                probseg_vis = expand(bids(root=join(config['out_dir'], 'deriv', 'atlasreg'),prefix='sub-'+subject_id+'/qc/sub-'+subject_id,suffix='probseg.png', desc='atropos3seg',include_subject_dir=False),
+                        subject=subjects ),
+                atlas_vis = expand(bids(root=join(config['out_dir'], 'deriv', 'atlasreg'),prefix='sub-'+subject_id+'/qc/sub-'+subject_id,suffix='dseg.png',atlas='{atlas}', from_='{template}',include_subject_dir=False),
+                        subject=subjects, atlas=config['atlases'],template=config['template']),
+                atlas_dilated_vis = expand(bids(root=join(config['out_dir'], 'deriv', 'atlasreg'),prefix='sub-'+subject_id+'/qc/sub-'+subject_id,suffix='dseg.png',atlas='{atlas}', from_='{template}',desc='{desc}',include_subject_dir=False),
+                        subject=subjects, atlas=config['atlases'],template=config['template'], desc=['dilated'],),
+elif config['contrast_t1']['present'] and config['noncontrast_t1']['present'] and not config['post_ct']['present']:
+     rule all:
+            input:
+                reg_vis = expand(bids(root=join(config['out_dir'], 'deriv', 'atlasreg'),prefix='sub-'+subject_id+'/qc/sub-'+subject_id,suffix='regqc.png',from_='subject', to='{template}',desc='{desc}',include_subject_dir=False),
+                        subject=subjects, desc=['affine','SyN'],template=config['template']),
+                reg_vis_noncontrast = expand(bids(root=join(config['out_dir'], 'deriv', 'atlasreg'),prefix='sub-'+subject_id+'/qc/sub-'+subject_id,suffix='regqc.png',from_='T1w', to='T1w',acq='noncontrast',desc='masked',include_subject_dir=False), 
+                        subject=subjects),
+                probseg_vis = expand(bids(root=join(config['out_dir'], 'deriv', 'atlasreg'),prefix='sub-'+subject_id+'/qc/sub-'+subject_id,suffix='probseg.png', desc='atropos3seg',include_subject_dir=False),
+                        subject=subjects ),
+                atlas_vis = expand(bids(root=join(config['out_dir'], 'deriv', 'atlasreg'),prefix='sub-'+subject_id+'/qc/sub-'+subject_id,suffix='dseg.png',atlas='{atlas}', from_='{template}',include_subject_dir=False),
+                        subject=subjects, atlas=config['atlases'],template=config['template']),
+                atlas_dilated_vis = expand(bids(root=join(config['out_dir'], 'deriv', 'atlasreg'),prefix='sub-'+subject_id+'/qc/sub-'+subject_id,suffix='dseg.png',atlas='{atlas}', from_='{template}',desc='{desc}',include_subject_dir=False),
+                        subject=subjects, atlas=config['atlases'],template=config['template'], desc=['dilated'],),
+
+elif config['contrast_t1']['present'] and config['noncontrast_t1']['present'] and config['post_ct']['present'] and not config['seega']['present']:
+     rule all:
             input:
                 reg_vis = expand(bids(root=join(config['out_dir'], 'deriv', 'atlasreg'),prefix='sub-'+subject_id+'/qc/sub-'+subject_id,suffix='regqc.png',from_='subject', to='{template}',desc='{desc}',include_subject_dir=False),
                         subject=subjects, desc=['affine','SyN'],template=config['template']),
@@ -51,8 +77,46 @@ if config['noncontrast_t1']['present']:
                 #tsv = expand(bids(root=join(config['out_dir'], 'deriv', 'atlasreg'),subject=subject_id,suffix='electrodes.tsv',atlas='{atlas}',desc='dilated',from_='{template}'),
                 #        subject=subjects, atlas=config['atlases'],template=config['template']),
                 #results = [join(config['out_dir'], 'deriv', 'atlasreg', 'results.tar'), join(config['out_dir'], 'deriv', 'atlasreg', 'results_tsv_only.tar')]
-else:
-    rule all:
+
+elif config['contrast_t1']['present'] and config['noncontrast_t1']['present'] and config['post_ct']['present'] and config['seega']['present']:
+     rule all:
+            input:
+                reg_vis = expand(bids(root=join(config['out_dir'], 'deriv', 'atlasreg'),prefix='sub-'+subject_id+'/qc/sub-'+subject_id,suffix='regqc.png',from_='subject', to='{template}',desc='{desc}',include_subject_dir=False),
+                        subject=subjects, desc=['affine','SyN'],template=config['template']),
+                reg_vis_noncontrast = expand(bids(root=join(config['out_dir'], 'deriv', 'atlasreg'),prefix='sub-'+subject_id+'/qc/sub-'+subject_id,suffix='regqc.png',from_='T1w', to='T1w',acq='noncontrast',desc='masked',include_subject_dir=False), 
+                        subject=subjects),
+                reg_vis_ct = expand(bids(root=join(config['out_dir'], 'deriv', 'atlasreg'),prefix='sub-'+subject_id+'/qc/sub-'+subject_id,suffix='regqc.png',from_='ct', to='T1w',desc='masked',include_subject_dir=False), 
+                        subject=subjects),
+                probseg_vis = expand(bids(root=join(config['out_dir'], 'deriv', 'atlasreg'),prefix='sub-'+subject_id+'/qc/sub-'+subject_id,suffix='probseg.png', desc='atropos3seg',include_subject_dir=False),
+                        subject=subjects ),
+                atlas_vis = expand(bids(root=join(config['out_dir'], 'deriv', 'atlasreg'),prefix='sub-'+subject_id+'/qc/sub-'+subject_id,suffix='dseg.png',atlas='{atlas}', from_='{template}',include_subject_dir=False),
+                        subject=subjects, atlas=config['atlases'],template=config['template']),
+                atlas_dilated_vis = expand(bids(root=join(config['out_dir'], 'deriv', 'atlasreg'),prefix='sub-'+subject_id+'/qc/sub-'+subject_id,suffix='dseg.png',atlas='{atlas}', from_='{template}',desc='{desc}',include_subject_dir=False),
+                        subject=subjects, atlas=config['atlases'],template=config['template'], desc=['dilated'],),
+                electrode_vis = expand(bids(root=join(config['out_dir'], 'deriv', 'atlasreg'),prefix='sub-'+subject_id+'/qc/sub-'+subject_id,suffix='electrodevis.png',desc='{desc}',space='{template}',include_subject_dir=False),
+                        subject=subjects, desc=['affine'],template=config['template']),
+                contact_vis = expand(bids(root=join(config['out_dir'], 'deriv', 'atlasreg'),prefix='sub-'+subject_id+'/qc/sub-'+subject_id,suffix='contacts.html',desc='mask',space='ct',include_subject_dir=False),
+                        subject=subjects),
+                tsv = expand(bids(root=join(config['out_dir'], 'deriv', 'atlasreg'),subject=subject_id,suffix='electrodes.tsv',atlas='{atlas}',desc='dilated',from_='{template}'),
+                        subject=subjects, atlas=config['atlases'],template=config['template']),
+                #results = [join(config['out_dir'], 'deriv', 'atlasreg', 'results.tar'), join(config['out_dir'], 'deriv', 'atlasreg', 'results_tsv_only.tar')]
+
+elif config['contrast_t1']['present'] and not config['noncontrast_t1']['present'] and config['post_ct']['present'] and not config['seega']['present']:
+     rule all:
+            input:
+                reg_vis = expand(bids(root=join(config['out_dir'], 'deriv', 'atlasreg'),prefix='sub-'+subject_id+'/qc/sub-'+subject_id,suffix='regqc.png',from_='subject', to='{template}',desc='{desc}',include_subject_dir=False),
+                        subject=subjects, desc=['affine','SyN'],template=config['template']),
+                reg_vis_ct = expand(bids(root=join(config['out_dir'], 'deriv', 'atlasreg'),prefix='sub-'+subject_id+'/qc/sub-'+subject_id,suffix='regqc.png',from_='ct', to='T1w',desc='masked',include_subject_dir=False), 
+                        subject=subjects),
+                probseg_vis = expand(bids(root=join(config['out_dir'], 'deriv', 'atlasreg'),prefix='sub-'+subject_id+'/qc/sub-'+subject_id,suffix='probseg.png', desc='atropos3seg',include_subject_dir=False),
+                        subject=subjects ),
+                atlas_vis = expand(bids(root=join(config['out_dir'], 'deriv', 'atlasreg'),prefix='sub-'+subject_id+'/qc/sub-'+subject_id,suffix='dseg.png',atlas='{atlas}', from_='{template}',include_subject_dir=False),
+                        subject=subjects, atlas=config['atlases'],template=config['template']),
+                atlas_dilated_vis = expand(bids(root=join(config['out_dir'], 'deriv', 'atlasreg'),prefix='sub-'+subject_id+'/qc/sub-'+subject_id,suffix='dseg.png',atlas='{atlas}', from_='{template}',desc='{desc}',include_subject_dir=False),
+                        subject=subjects, atlas=config['atlases'],template=config['template'], desc=['dilated'],)
+
+elif config['contrast_t1']['present'] and not config['noncontrast_t1']['present'] and config['post_ct']['present'] and config['seega']['present']:
+     rule all:
             input:
                 reg_vis = expand(bids(root=join(config['out_dir'], 'deriv', 'atlasreg'),prefix='sub-'+subject_id+'/qc/sub-'+subject_id,suffix='regqc.png',from_='subject', to='{template}',desc='{desc}',include_subject_dir=False),
                         subject=subjects, desc=['affine','SyN'],template=config['template']),
@@ -71,6 +135,25 @@ else:
                 tsv = expand(bids(root=join(config['out_dir'], 'deriv', 'atlasreg'),subject=subject_id,suffix='electrodes.tsv',atlas='{atlas}',desc='dilated',from_='{template}'),
                         subject=subjects, atlas=config['atlases'],template=config['template']),
                 #results = [join(config['out_dir'], 'deriv', 'atlasreg', 'results.tar'), join(config['out_dir'], 'deriv', 'atlasreg', 'results_tsv_only.tar')]
+    #rule all:
+    #        input:
+    #            reg_vis = expand(bids(root=join(config['out_dir'], 'deriv', 'atlasreg'),prefix='sub-'+subject_id+'/qc/sub-'+subject_id,suffix='regqc.png',from_='subject', to='{template}',desc='{desc}',include_subject_dir=False),
+    #                    subject=subjects, desc=['affine','SyN'],template=config['template']),
+    #            reg_vis_ct = expand(bids(root=join(config['out_dir'], 'deriv', 'atlasreg'),prefix='sub-'+subject_id+'/qc/sub-'+subject_id,suffix='regqc.png',from_='ct', to='T1w',desc='masked',include_subject_dir=False), 
+    #                    subject=subjects),
+    #            probseg_vis = expand(bids(root=join(config['out_dir'], 'deriv', 'atlasreg'),prefix='sub-'+subject_id+'/qc/sub-'+subject_id,suffix='probseg.png', desc='atropos3seg',include_subject_dir=False),
+    #                    subject=subjects ),
+    #            atlas_vis = expand(bids(root=join(config['out_dir'], 'deriv', 'atlasreg'),prefix='sub-'+subject_id+'/qc/sub-'+subject_id,suffix='dseg.png',atlas='{atlas}', from_='{template}',to='subject',include_subject_dir=False),
+    #                    subject=subjects, atlas=config['atlases'],template=config['template']),
+    #            atlas_dilated_vis = expand(bids(root=join(config['out_dir'], 'deriv', 'atlasreg'),prefix='sub-'+subject_id+'/qc/sub-'+subject_id,suffix='dseg.png',atlas='{atlas}', from_='{template}',to='subject',desc='{desc}',include_subject_dir=False),
+    #                    subject=subjects, atlas=config['atlases'],template=config['template'], desc=['dilated'],),
+    #            #electrode_vis = expand(bids(root=join(config['out_dir'], 'deriv', 'atlasreg'),prefix='sub-'+subject_id+'/qc/sub-'+subject_id,suffix='electrodevis.png',desc='{desc}',space='{template}',include_subject_dir=False),
+    #            #        subject=subjects, desc=['affine'],template=config['template']),
+    #            #contact_vis = expand(bids(root=join(config['out_dir'], 'deriv', 'atlasreg'),prefix='sub-'+subject_id+'/qc/sub-'+subject_id,suffix='contacts.html',desc='mask',space='ct',include_subject_dir=False),
+    #            #        subject=subjects),
+    #            #tsv = expand(bids(root=join(config['out_dir'], 'deriv', 'atlasreg'),subject=subject_id,suffix='electrodes.tsv',atlas='{atlas}',desc='dilated',from_='{template}'),
+    #            #        subject=subjects, atlas=config['atlases'],template=config['template']),
+    #            #results = [join(config['out_dir'], 'deriv', 'atlasreg', 'results.tar'), join(config['out_dir'], 'deriv', 'atlasreg', 'results_tsv_only.tar')]
 
 #rule tar_results:
 #    input:
