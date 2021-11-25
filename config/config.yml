@@ -55,7 +55,7 @@ post_ct:
     present: True
 
 seega:
-    present: False
+    present: True
 
 subject_t1w: /bids/sub-f'{config['subject_prefix']}'{subject}/ses-pre/anat/sub-f'{config['subject_prefix']}'{subject}_ses-pre_acq-FSPGR_run-01_T1w.nii.gz
 
