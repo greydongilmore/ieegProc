@@ -2,3 +2,5 @@
 workflow/scripts/dicom2tar/__pycache__/*.pyc
 workflow/scripts/dicom2tar/__pycache__/*.pyc
 resources/heuristics/__pycache__/*.pyc
+workflow/scripts/dicom2tar/__pycache__/clinical_helpers.cpython-39.pyc
+*.pyc

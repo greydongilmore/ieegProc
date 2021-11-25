@@ -2,19 +2,18 @@
 #--- dicom2bids
 #
 
-dicom_dir: /home/greydon/Documents/data/SEEG/sourcedata/dicoms
-out_dir: /home/greydon/Documents/data/SEEG
-clinical_event_file: /home/greydon/Documents/data/SEEG/events.tsv
+#dicom_dir: /home/greydon/Documents/data/SEEG/sourcedata/dicoms
+#out_dir: /home/greydon/Documents/data/SEEG
+#clinical_event_file: /home/greydon/Documents/data/SEEG/events.tsv
 #participants_tsv: /home/greydon/Documents/GitHub/seeg2bids-pipeline/data/participants.tsv
-subject_seega_scene: /home/greydon/Documents/data/SEEG/derivatives/seega_scenes/sub-P{subject}
+#subject_seega_scene: /home/greydon/Documents/data/SEEG/derivatives/seega_scenes/sub-P{subject}
 
-#dicom_dir: /media/stereotaxy/3E7CE0407CDFF11F/data/iEEG/imaging/clinical/sourcedata/dicoms
-#out_dir: /media/stereotaxy/3E7CE0407CDFF11F/data/iEEG/imaging/clinical
-#clinical_event_file: /media/stereotaxy/3E7CE0407CDFF11F/data/iEEG/imaging/clinical/events.tsv
-#participants_tsv: /media/veracrypt6/projects/iEEG/imaging/clinical/participants.tsv
-#subject_seega_scene: /media/stereotaxy/3E7CE0407CDFF11F/data/iEEG/imaging/clinical/derivatives/seega_scenes/sub-P{subject}
+dicom_dir: /media/stereotaxy/3E7CE0407CDFF11F/data/SEEG/imaging/clinical/sourcedata/dicoms
+out_dir: /media/stereotaxy/3E7CE0407CDFF11F/data/SEEG/imaging/clinical
+clinical_event_file: /media/stereotaxy/3E7CE0407CDFF11F/data/SEEG/imaging/clinical/events.tsv
+participants_tsv: /media/stereotaxy/3E7CE0407CDFF11F/data/SEEG/imaging/clinical/participants_run.tsv
+subject_seega_scene: /media/stereotaxy/3E7CE0407CDFF11F/data/SEEG/imaging/clinical/derivatives/seega_scenes/sub-P{subject}
 
-participants_tsv: 
 
 #
 #--- dicom2bids
@@ -53,7 +52,7 @@ contrast_t1:
     present: True
 
 post_ct:
-    present: False
+    present: True
 
 seega:
     present: False
