@@ -7,15 +7,15 @@ def get_k_tissue_classes(wildcards):
 #this performs Atropos with k-means as initialization
 rule tissue_seg_kmeans_init:
     input:
-        t1 = bids(root=join(config['out_dir'], 'deriv', 'atlasreg'), subject=subject_id,desc='n4', suffix='T1w.nii.gz'),
-        mask = bids(root=join(config['out_dir'], 'deriv', 'atlasreg'),subject=subject_id,suffix='mask.nii.gz',from_='{template}'.format(template=config['template']),reg='affine',desc='brain'),
+        t1 = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'), subject=subject_id,desc='n4', suffix='T1w.nii.gz'),
+        mask = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,suffix='mask.nii.gz',from_='{template}'.format(template=config['template']),reg='affine',desc='brain'),
     params:
         k = get_k_tissue_classes,
         posterior_fmt = 'posteriors_%d.nii.gz',
         posterior_glob = 'posteriors_*.nii.gz',
     output:
-        seg = bids(root=join(config['out_dir'], 'deriv', 'atlasreg'),subject=subject_id,suffix='dseg.nii.gz',desc='atroposKseg'),
-        posteriors = bids(root=join(config['out_dir'], 'deriv', 'atlasreg'),subject=subject_id,suffix='probseg.nii.gz',desc='atroposKseg'),
+        seg = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,suffix='dseg.nii.gz',desc='atroposKseg'),
+        posteriors = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,suffix='probseg.nii.gz',desc='atroposKseg'),
     shadow: 'minimal'    
     #container: config['singularity']['neuroglia']
     group: 'preproc'
@@ -25,22 +25,22 @@ rule tissue_seg_kmeans_init:
 
 rule map_channels_to_tissue:
     input:
-        tissue_priors = expand(bids(root=join(config['out_dir'], 'deriv', 'atlasreg'),subject=subject_id,suffix='probseg.nii.gz',label='{tissue}',from_='{template}'.format(template=config['template']),reg='affine'),
+        tissue_priors = expand(bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,suffix='probseg.nii.gz',label='{tissue}',from_='{template}'.format(template=config['template']),reg='affine'),
                             tissue=config['tissue_labels'],allow_missing=True),
-        seg_channels_4d = bids(root=join(config['out_dir'], 'deriv', 'atlasreg'),subject=subject_id,suffix='probseg.nii.gz',desc='atroposKseg'),
+        seg_channels_4d = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,suffix='probseg.nii.gz',desc='atroposKseg'),
     output:
-        mapping_json = bids(root=join(config['out_dir'], 'deriv', 'atlasreg'),subject=subject_id,suffix='mapping.json',desc='atropos3seg'),
-        tissue_segs = expand(bids(root=join(config['out_dir'], 'deriv', 'atlasreg'),subject=subject_id,suffix='probseg.nii.gz',label='{tissue}',desc='atropos3seg'),
+        mapping_json = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,suffix='mapping.json',desc='atropos3seg'),
+        tissue_segs = expand(bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,suffix='probseg.nii.gz',label='{tissue}',desc='atropos3seg'),
                             tissue=config['tissue_labels'],allow_missing=True),
     group: 'preproc'
     script: '../scripts/map_channels_to_tissue.py'
        
 rule tissue_seg_to_4d:
     input:
-        tissue_segs = expand(bids(root=join(config['out_dir'], 'deriv', 'atlasreg'),subject=subject_id,suffix='probseg.nii.gz',label='{tissue}',desc='atropos3seg'),
+        tissue_segs = expand(bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,suffix='probseg.nii.gz',label='{tissue}',desc='atropos3seg'),
                             tissue=config['tissue_labels'],allow_missing=True),
     output:
-        tissue_seg = bids(root=join(config['out_dir'], 'deriv', 'atlasreg'),subject=subject_id,suffix='probseg.nii.gz',desc='atropos3seg')
+        tissue_seg = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,suffix='probseg.nii.gz',desc='atropos3seg')
     group: 'preproc'
     #container: config['singularity']['neuroglia']
     shell:
@@ -48,11 +48,11 @@ rule tissue_seg_to_4d:
 
 rule brainmask_from_tissue:
     input:
-        tissue_seg = bids(root=join(config['out_dir'], 'deriv', 'atlasreg'),subject=subject_id,suffix='probseg.nii.gz',desc='atropos3seg')
+        tissue_seg = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,suffix='probseg.nii.gz',desc='atropos3seg')
     params:
         threshold = 0.5
     output:
-        mask = bids(root=join(config['out_dir'], 'deriv', 'atlasreg'),subject=subject_id,suffix='mask.nii.gz',from_='atropos3seg',desc='brain')
+        mask = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,suffix='mask.nii.gz',from_='atropos3seg',desc='brain')
     #container: config['singularity']['neuroglia']
     group: 'preproc'
     shell:

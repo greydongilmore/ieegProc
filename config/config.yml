@@ -2,17 +2,17 @@
 #--- dicom2bids
 #
 
-#dicom_dir: /home/greydon/Documents/GitHub/seeg2bids-pipeline/data/dicoms
-#out_dir: /home/greydon/Documents/GitHub/seeg2bids-pipeline/data/output
-#clinical_event_file: /home/greydon/Documents/GitHub/seeg2bids-pipeline/data/clinical_events.tsv
+dicom_dir: /home/greydon/Documents/data/SEEG/sourcedata/dicoms
+out_dir: /home/greydon/Documents/data/SEEG
+clinical_event_file: /home/greydon/Documents/data/SEEG/events.tsv
 #participants_tsv: /home/greydon/Documents/GitHub/seeg2bids-pipeline/data/participants.tsv
-#subject_seega_scene: /home/greydon/Documents/GitHub/seeg2bids-pipeline/data/seega_scenes/sub-P{subject}
+subject_seega_scene: /home/greydon/Documents/data/SEEG/derivatives/seega_scenes/sub-P{subject}
 
-dicom_dir: /media/stereotaxy/3E7CE0407CDFF11F/data/iEEG/imaging/clinical/sourcedata/dicoms
-out_dir: /media/stereotaxy/3E7CE0407CDFF11F/data/iEEG/imaging/clinical
-clinical_event_file: /media/stereotaxy/3E7CE0407CDFF11F/data/iEEG/imaging/clinical/events.tsv
+#dicom_dir: /media/stereotaxy/3E7CE0407CDFF11F/data/iEEG/imaging/clinical/sourcedata/dicoms
+#out_dir: /media/stereotaxy/3E7CE0407CDFF11F/data/iEEG/imaging/clinical
+#clinical_event_file: /media/stereotaxy/3E7CE0407CDFF11F/data/iEEG/imaging/clinical/events.tsv
 #participants_tsv: /media/veracrypt6/projects/iEEG/imaging/clinical/participants.tsv
-subject_seega_scene: /media/stereotaxy/3E7CE0407CDFF11F/data/iEEG/imaging/clinical/derivatives/seega_scenes/sub-P{subject}
+#subject_seega_scene: /media/stereotaxy/3E7CE0407CDFF11F/data/iEEG/imaging/clinical/derivatives/seega_scenes/sub-P{subject}
 
 participants_tsv: 
 
@@ -53,10 +53,10 @@ contrast_t1:
     present: True
 
 post_ct:
-    present: True
+    present: False
 
 seega:
-    present: True
+    present: False
 
 subject_t1w: /bids/sub-f'{config['subject_prefix']}'{subject}/ses-pre/anat/sub-f'{config['subject_prefix']}'{subject}_ses-pre_acq-FSPGR_run-01_T1w.nii.gz
 
@@ -80,7 +80,7 @@ subject_elec_ct_custom: []
     #'047': /bids/sub-P{subject}/ses-post/ct/sub-P{subject}_ses-post_acq-Electrode_run-03_ct.nii.gz
 subject_elec_t1w_custom: []
 
-subject_electrodes: /deriv/seega_coordinates/sub-P{subject}/sub-P{subject}_space-native_SEEGA.fcsv
+subject_electrodes: /derivatives/seega_coordinates/sub-P{subject}/sub-P{subject}_space-native_SEEGA.fcsv
 
 #use this if a particular subject has custom path
 subject_electrodes_custom: []

@@ -184,18 +184,18 @@ if debug:
 		def __init__(self, **kwargs):
 			self.__dict__.update(kwargs)
 	
-	sub='P069'
-	config=dotdict({'out_dir':'/media/veracrypt6/projects/iEEG/working_dir/out'})
+	sub='P075'
+	config=dotdict({'out_dir':'/home/greydon/Documents/data/SEEG'})
 	params=dotdict({'sub':sub})
 	
-	input=dotdict({'seega_scene':f'/media/veracrypt6/projects/iEEG/imaging/clinical/deriv/seega_scenes/sub-{sub}'})
+	input=dotdict({'seega_scene':f'/home/greydon/Documents/data/SEEG/derivatives/seega_scenes/sub-{sub}'})
 	
 	snakemake = Namespace(params=params, input=input,config=config)
 	
 #%%
 isub='sub-'+snakemake.params.sub
 
-patient_output = os.path.join(snakemake.config['out_dir'], 'deriv','seega_coordinates',isub)
+patient_output = os.path.join(snakemake.config['out_dir'], 'derivatives','seega_coordinates',isub)
 if not os.path.exists(patient_output):
 	os.makedirs(patient_output)
 
