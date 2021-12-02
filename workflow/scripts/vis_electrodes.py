@@ -4,7 +4,7 @@ import numpy as np
 import matplotlib
 import re
 import matplotlib.pyplot as plt
-
+from nilearn import plotting
 
 matplotlib.use('Agg')
 
@@ -21,11 +21,14 @@ if debug:
 		def __init__(self, **kwargs):
 			self.__dict__.update(kwargs)
 	
-	input=dotdict({'fcsv':'/media/veracrypt6/projects/iEEG/imaging/clinical/deriv/seega_coordinates/sub-P061/sub-P061_space-native_SEEGA.fcsv',
-				'xfm_ras':'/media/veracrypt6/projects/iEEG/imaging/clinical/deriv/atlasreg/sub-P061/sub-P061_desc-affine_from-subject_to-MNI152NLin2009cSym_type-ras_xfm.txt'
+	isub="P077"
+	
+	input=dotdict({'fcsv':'/media/stereotaxy/3E7CE0407CDFF11F/data/SEEG/imaging/clinical/derivatives/seega_coordinates/' + f'sub-{isub}/sub-{isub}_space-native_SEEGA.fcsv',
+				'xfm_ras':'/media/stereotaxy/3E7CE0407CDFF11F/data/SEEG/imaging/clinical/derivatives/atlasreg/' + f'sub-{isub}/sub-{isub}_desc-affine_from-subject_to-MNI152NLin2009cSym_type-ras_xfm.txt'
 				})
-	output=dotdict({'html':'/home/greydon/Downloads/sub-P061_space-MNI152NLin2009cSym_desc-affine_electrodes.html',
-				'png':'/home/greydon/Downloads/sub-P061_space-MNI152NLin2009cSym_desc-affine_electrodevis.png'
+	
+	output=dotdict({'html':'/home/stereotaxy/Downloads/' + f'sub-{isub}_space-MNI152NLin2009cSym_desc-affine_electrodes.html',
+				'png':'/home/stereotaxy/Downloads/' + f'sub-{isub}_space-MNI152NLin2009cSym_desc-affine_electrodevis.png'
 				})
 	
 	snakemake = Namespace(output=output, input=input)
@@ -58,12 +61,7 @@ labels=[str(x) for x in  range(colors.shape[0])]
 sub2template= np.loadtxt(snakemake.input.xfm_ras)
 
 #plot electrodes transformed (affine) to MNI space, with MNI glass brain
-from nilearn import plotting
-
-print(plotting.__file__)
-
 coords = df[['x','y','z']].to_numpy()
-#print(coords.shape)
 
 #to plot in mni space, need to transform coords
 tcoords = np.zeros(coords.shape)
@@ -73,7 +71,7 @@ for i in range(len(coords)):
     tvec = np.linalg.inv(sub2template) @ vec.T
     tcoords[i,:] = tvec[:3]
 
-html_view = plotting.view_markers(tcoords, marker_size=6.0, marker_color=colors, marker_labels=df['label'].tolist())
+html_view = plotting.view_markers(tcoords, marker_size=4.0, marker_color=colors, marker_labels=df['label'].tolist(), title="3D Electrode Plot")
 #html_view.open_in_browser()
 html_view.save_as_html(snakemake.output.html)
 

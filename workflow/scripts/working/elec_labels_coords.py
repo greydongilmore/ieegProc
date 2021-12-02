@@ -171,7 +171,7 @@ def make_bids_filename(subject_id, space_id, desc_id, suffix, prefix):
 		
 	return filename
 
-debug = True
+debug = False
 
 if debug:
 	class dotdict(dict):
