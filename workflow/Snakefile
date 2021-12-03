@@ -10,6 +10,12 @@ import numpy as np
 configfile: 'config/config.yml'
 validate(config, "schemas/config.schema.yml")
 
+config['dicom_dir'] = join(config['bids_dir'], 'sourcedata', 'dicoms')
+config['out_dir'] = config['bids_dir']
+config['clinical_event_file'] = join(config['bids_dir'], 'events.tsv')
+config['participants_tsv'] = join(config['bids_dir'], 'participants_run.tsv')
+config['subject_seega_scene'] = join(config['bids_dir'], 'derivatives', 'seega_scenes', 'sub-P{subject}')
+
 if not exists(join(config['out_dir'],'logs')):
     makedirs(join(config['out_dir'],'logs'))
 

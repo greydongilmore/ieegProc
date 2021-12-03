@@ -17,7 +17,7 @@ rule electrode_coords:
 
 rule label_electrodes_atlas:
     input: 
-        fcsv = get_electrodes_filename,
+        fcsv = bids(root=join(config['out_dir'],'derivatives','seega_coordinates'),subject=subject_id,space='native', suffix='SEEGA.fcsv'),
         dseg_tsv = config['template_atlas_dseg_tsv'],
         dseg_nii = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,suffix='dseg.nii.gz',desc='dilated',atlas='{atlas}',from_='{template}',reg='SyN'),
         tissue_seg = expand(bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,suffix='probseg.nii.gz',label='{tissue}',desc='atropos3seg'),

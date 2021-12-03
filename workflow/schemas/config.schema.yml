@@ -20,12 +20,9 @@ definitions:
         type: string
 
 properties:
-  dicom_dir:
-    type: string
-  out_dir:
+  bids_dir:
     type: string
     
 required:
-  - dicom_dir
-  - out_dir
+  - bids_dir
 
