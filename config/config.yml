@@ -125,3 +125,11 @@ ants:
     shape_update:
         gradient_step: 0.25
 
+fastsurfer:
+    home: "/home/greydon/Documents/GitHub/FastSurfer"
+    py: "python3"
+    sid: 'fastsurfer'
+    batch: 8
+    order: 0    #(0=nearest,1=linear(default),2=quadratic,3=cubic)
+    seg_only: True
+    vol_segstats: True

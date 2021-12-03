@@ -12,7 +12,7 @@ def get_pre_t1_filename(wildcards):
     if len(files) <=1:
         file=expand(bids(root=join(config['out_dir'], 'bids'), subject=config['subject_prefix']+'{subject}', datatype='anat', session='pre', run='01', suffix='T1w.nii.gz'),subject=wildcards.subject)
     else:
-        file=files[0]
+        file=files[-1]
     return file
 
 def get_postop_filename(wildcards):
