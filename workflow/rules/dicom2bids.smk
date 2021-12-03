@@ -1,4 +1,5 @@
 def get_dicom_dir(wildcards):
+	print(f'{wildcards.subject}')
 	if config['anonymize']:
 		for root, folders, files in walk(join(config['dicom_dir'],'sub-' + wildcards.subject)):
 			for file in files:
@@ -11,17 +12,7 @@ def get_dicom_dir(wildcards):
 
 		return join(config['out_dir'], 'sourcedata', 'dicoms','sub-' + wildcards.subject)
 	else:
-		return join(config['dicom_dir'],'sub-' + wildcards.subject)
-
-def get_pre_filename(wildcards):
-    file=expand(bids(root=join(config['out_dir'], 'bids'), subject=config['subject_prefix']+'{subject}', datatype='anat', ses='pre', suffix='run-*_T1w.nii.gz'),subject=wildcards.subject)
-    files=glob(file[0])
-    if len(file) <=1:
-        file=expand(bids(root=join(config['out_dir'], 'bids'), subject=config['subject_prefix']+'{subject}', datatype='anat', ses='pre', suffix='run-01_T1w.nii.gz'),subject=wildcards.subject)
-    else:
-        file=expand(bids(root=join(config['out_dir'], 'bids'), subject=config['subject_prefix']+'{subject}', datatype='anat', ses='pre', suffix=f'run-{str(len(files)).zfill(2)}_T1w.nii.gz'),subject=wildcards.subject)
-    print(file)
-    return file
+		return join(config['dicom_dir'],'sub-' + f'{wildcards.subject}')
 
 rule dicom2tar:
 	input:

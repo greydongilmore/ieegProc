@@ -14,10 +14,13 @@ if not exists(join(config['out_dir'],'logs')):
     makedirs(join(config['out_dir'],'logs'))
 
 if config['participants_tsv']:
-    df = pd.read_table(config['participants_tsv'])
+    df = pd.read_table(config['participants_tsv'], dtype = str, header=0)
     subjects=df.participant_id.to_list()
-    if isinstance(subjects[0],str):
+    if 'sub-P' in subjects[0]:
         subjects = [ s.strip('sub-P') for s in subjects]
+    elif 'sub-' in subjects[0]:
+        subjects = [x.split('-')[1] for x in subjects]
+        print(subjects)
     else:
         subjects = [ str(s).zfill(3) for s in subjects]
 else:
@@ -40,7 +43,8 @@ if config['contrast_t1']['present'] and not config['noncontrast_t1']['present'] 
                 atlas_vis = expand(bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),prefix='sub-'+subject_id+'/qc/sub-'+subject_id,suffix='dseg.png',atlas='{atlas}', from_='{template}',include_subject_dir=False),
                         subject=subjects, atlas=config['atlases'],template=config['template']),
                 atlas_dilated_vis = expand(bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),prefix='sub-'+subject_id+'/qc/sub-'+subject_id,suffix='dseg.png',atlas='{atlas}', from_='{template}',desc='{desc}',include_subject_dir=False),
-                        subject=subjects, atlas=config['atlases'],template=config['template'], desc=['dilated'],),
+                        subject=subjects, atlas=config['atlases'],template=config['template'], desc=['dilated'],)
+
 elif config['contrast_t1']['present'] and config['noncontrast_t1']['present'] and not config['post_ct']['present']:
      rule all:
             input:
@@ -99,6 +103,7 @@ elif config['contrast_t1']['present'] and config['noncontrast_t1']['present'] an
                         subject=subjects),
                 tsv = expand(bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,suffix='electrodes.tsv',atlas='{atlas}',desc='dilated',from_='{template}'),
                         subject=subjects, atlas=config['atlases'],template=config['template']),
+                touch_fmriprep=expand(bids(root=join(config['out_dir'], 'logs'), subject=subject_id, suffix="fmriprep.done", include_subject_dir=False),subject=subjects),
                 #results = [join(config['out_dir'], 'derivatives', 'atlasreg', 'results.tar'), join(config['out_dir'], 'derivatives', 'atlasreg', 'results_tsv_only.tar')]
 
 elif config['contrast_t1']['present'] and not config['noncontrast_t1']['present'] and config['post_ct']['present'] and not config['seega']['present']:
@@ -178,6 +183,7 @@ elif config['contrast_t1']['present'] and not config['noncontrast_t1']['present'
 
 include: 'rules/dicom2bids.smk'
 include: "rules/registration.smk"
-include: "rules/segmentation.smk"
-include: "rules/electrodes.smk"
-include: "rules/visqc.smk"
+#include: "rules/segmentation.smk"
+#include: "rules/electrodes.smk"
+#include: "rules/visqc.smk"
+include: "rules/fmriprep.smk"
