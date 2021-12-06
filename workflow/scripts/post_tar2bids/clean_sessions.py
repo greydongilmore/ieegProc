@@ -90,7 +90,7 @@ def main():
 	if not os.path.exists(final_dir):
 		os.mkdir(final_dir)
 	
-	os.remove(snakemake.input.touch_tar2bids)
+	#os.remove(snakemake.input.touch_tar2bids)
 
 	print('Converting subject {} ...'.format(os.path.basename(snakemake.params.bids_fold)))
 	subject_event = []
@@ -201,8 +201,8 @@ def main():
 		scans_tsv_new.to_csv(scans_file, sep='\t', index=False, na_rep='n/a', line_terminator="")
 	
 	# Check to see if this is the last subject complete, copy main BIDS files if so
-	check_status = [x for x in os.listdir(os.path.join(output_dir,'logs')) if x.endswith('_dicom2bids.done')]
-	if len(check_status)==(snakemake.params.num_subs)-1:
+	check_status = [x for x in os.listdir(os.path.join(output_dir,'bids_tmp')) if os.path.isdir(os.path.join(output_dir, 'bids_tmp', x)) and not x.startswith('.')]
+	if len(check_status)==(snakemake.params.num_subs):
 		bids_files = [x for x in os.listdir(os.path.join(output_dir, 'bids_tmp')) if os.path.isfile(os.path.join(output_dir, 'bids_tmp', x))]
 		for ifile in bids_files:
 			if ifile == 'participants.tsv':
@@ -221,6 +221,8 @@ def main():
 					shutil.copyfile(os.path.join(output_dir, 'bids_tmp', ifile), os.path.join(final_dir, ifile))
 
 		shutil.rmtree(os.path.join(output_dir, 'bids_tmp'))
+	else:
+		shutil.rmtree(os.path.join(output_dir, 'bids_tmp',isub))
 		
 if __name__ == "__main__":
 

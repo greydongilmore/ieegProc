@@ -1,18 +1,18 @@
 def get_dicom_dir(wildcards):
-	print(f'{wildcards.subject}')
+	subji = wildcards.subject.strip(config['subject_prefix'])
 	if config['anonymize']:
-		for root, folders, files in walk(join(config['dicom_dir'],'sub-' + wildcards.subject)):
+		for root, folders, files in walk(join(config['dicom_dir'],'sub-' + subji)):
 			for file in files:
 				fileN = '_'.join([basename(root),file+'.dcm']) if not file.endswith('.dcm') else '_'.join([basename(root),file])
 				
-				if not exists(join(config['out_dir'], 'sourcedata', 'dicoms', 'sub-' + wildcards.subject)):
-					makedirs(join(config['out_dir'], 'sourcedata', 'dicoms', 'sub-' + wildcards.subject))
+				if not exists(join(config['out_dir'], 'sourcedata', 'dicoms', 'sub-' + subji)):
+					makedirs(join(config['out_dir'], 'sourcedata', 'dicoms', 'sub-' + subji))
 
-				copyfile(abspath(join(root,file)), join(config['out_dir'], 'sourcedata', 'dicoms', 'sub-' + wildcards.subject, fileN))
+				copyfile(abspath(join(root,file)), join(config['out_dir'], 'sourcedata', 'dicoms', 'sub-' + subji, fileN))
 
-		return join(config['out_dir'], 'sourcedata', 'dicoms','sub-' + wildcards.subject)
+		return join(config['out_dir'], 'sourcedata', 'dicoms','sub-' + subji)
 	else:
-		return join(config['dicom_dir'],'sub-' + f'{wildcards.subject}')
+		return join(config['dicom_dir'], 'sub-' + subji)
 
 rule dicom2tar:
 	input:
@@ -45,7 +45,7 @@ if not config['post_ct']['present']:
 			input:
 				touch_tar2bids=join(config['out_dir'], 'logs', 'sub-' + subject_id + "_tar2bids.done"),
 			output:
-				touch_dicom2bids=touch(join(config['out_dir'], 'logs', 'sub-' + subject_id + "_dicom2bids.done")),
+				touch_dicom2bids=touch(join(config['out_dir'], 'logs', 'sub-' + subject_id + "_cleanSessions.done")),
 				noncontrast_file= bids(root=join(config['out_dir'], 'bids'), subject=subject_id, datatype='anat', session='pre', acq=config['noncontrast_t1']['flag'], run='01', suffix='T1w.nii.gz'),
 				t1w_file= bids(root=join(config['out_dir'], 'bids'), subject=subject_id, datatype='anat', session='pre', run='01', suffix='T1w.nii.gz'),
 			params:
@@ -62,7 +62,7 @@ if not config['post_ct']['present']:
 			input:
 				touch_tar2bids=join(config['out_dir'], 'logs', 'sub-' + subject_id + "_tar2bids.done"),
 			output:
-				touch_dicom2bids=touch(join(config['out_dir'], 'logs', 'sub-' + subject_id + "_dicom2bids.done")),
+				touch_dicom2bids=touch(join(config['out_dir'], 'logs', 'sub-' + subject_id + "_cleanSessions.done")),
 				noncontrast_file= bids(root=join(config['out_dir'], 'bids'), subject=subject_id, datatype='anat', session='pre', acq=config['noncontrast_t1']['flag'], run='01', suffix='T1w.nii.gz'),
 			params:
 				clinical_events=config['clinical_event_file'],
@@ -78,7 +78,7 @@ if not config['post_ct']['present']:
 			input:
 				touch_tar2bids=join(config['out_dir'], 'logs', 'sub-' + subject_id + "_tar2bids.done"),
 			output:
-				touch_dicom2bids=touch(join(config['out_dir'], 'logs', 'sub-' + subject_id + "_dicom2bids.done")),
+				touch_dicom2bids=touch(join(config['out_dir'], 'logs', 'sub-' + subject_id + "_cleanSessions.done")),
 				t1w_file= bids(root=join(config['out_dir'], 'bids'), subject=subject_id, datatype='anat', session='pre', run='01', suffix='T1w.nii.gz'),
 			params:
 				clinical_events=config['clinical_event_file'],
@@ -95,7 +95,7 @@ else:
 			input:
 				touch_tar2bids=join(config['out_dir'], 'logs', 'sub-' + subject_id + "_tar2bids.done"),
 			output:
-				touch_dicom2bids=touch(join(config['out_dir'], 'logs', 'sub-' + subject_id + "_dicom2bids.done")),
+				touch_dicom2bids=touch(join(config['out_dir'], 'logs', 'sub-' + subject_id + "_cleanSessions.done")),
 				noncontrast_file= bids(root=join(config['out_dir'], 'bids'), subject=subject_id, datatype='anat', session='pre', acq=config['noncontrast_t1']['flag'], run='01', suffix='T1w.nii.gz'),
 				t1w_file= bids(root=join(config['out_dir'], 'bids'), subject=subject_id, datatype='anat', session='pre', run='01', suffix='T1w.nii.gz'),
 				ct_file= bids(root=join(config['out_dir'], 'bids'), subject=subject_id, datatype='ct', session='post', acq='Electrode', run='01', suffix='ct.nii.gz'),
@@ -113,7 +113,7 @@ else:
 			input:
 				touch_tar2bids=join(config['out_dir'], 'logs', 'sub-' + subject_id + "_tar2bids.done"),
 			output:
-				touch_dicom2bids=touch(join(config['out_dir'], 'logs', 'sub-' + subject_id + "_dicom2bids.done")),
+				touch_dicom2bids=touch(join(config['out_dir'], 'logs', 'sub-' + subject_id + "_cleanSessions.done")),
 				noncontrast_file= bids(root=join(config['out_dir'], 'bids'), subject=subject_id, datatype='anat', session='pre', acq=config['noncontrast_t1']['flag'], run='01', suffix='T1w.nii.gz'),
 				ct_file= bids(root=join(config['out_dir'], 'bids'), subject=subject_id, datatype='ct', session='post', acq='Electrode', run='01', suffix='ct.nii.gz'),
 			params:
@@ -130,7 +130,7 @@ else:
 			input:
 				touch_tar2bids=join(config['out_dir'], 'logs', 'sub-' + subject_id + "_tar2bids.done"),
 			output:
-				touch_dicom2bids=touch(join(config['out_dir'], 'logs', 'sub-' + subject_id + "_dicom2bids.done")),
+				touch_dicom2bids=touch(join(config['out_dir'], 'logs', 'sub-' + subject_id + "_cleanSessions.done")),
 				t1w_file= bids(root=join(config['out_dir'], 'bids'), subject=subject_id, datatype='anat', session='pre', run='01', suffix='T1w.nii.gz'),
 				ct_file= bids(root=join(config['out_dir'], 'bids'), subject=subject_id, datatype='ct', session='post', acq='Electrode', run='01', suffix='ct.nii.gz'),
 			params:

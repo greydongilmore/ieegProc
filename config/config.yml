@@ -1,14 +1,9 @@
 #
-#--- dicom2bids
+#--- filepaths
 #
 
-#dicom_dir: /home/greydon/Documents/data/SEEG/sourcedata/dicoms
-#out_dir: /home/greydon/Documents/data/SEEG
-#clinical_event_file: /home/greydon/Documents/data/SEEG/events.tsv
-#participants_tsv: /home/greydon/Documents/GitHub/seeg2bids-pipeline/data/participants.tsv
-#subject_seega_scene: /home/greydon/Documents/data/SEEG/derivatives/seega_scenes/sub-P{subject}
-
-bids_dir: /media/stereotaxy/3E7CE0407CDFF11F/data/SEEG
+#bids_dir: /media/stereotaxy/3E7CE0407CDFF11F/data/SEEG
+bids_dir: /home/greydon/Documents/data/SEEG
 
 
 #
@@ -32,13 +27,8 @@ facemask: resources/facemask.nii.gz
 mean_reg2mean: resources/mean_reg2mean.nii.gz
 
 #
-#--- segmentation
+#--- imaging volumes
 #
-
-singularity:
-    neuroglia: /project/6050199/akhanf/singularity/bids-apps/khanlab_neuroglia-core_latest.sif
-# use this URI if not on khanlab compute canada:
-#    neuroglia: docker://khanlab/neuroglia-core:latest
 
 noncontrast_t1:
     present: True
@@ -51,7 +41,7 @@ post_ct:
     present: True
 
 seega:
-    present: True
+    present: False
 
 subject_t1w: /bids/sub-f'{config['subject_prefix']}'{subject}/ses-pre/anat/sub-f'{config['subject_prefix']}'{subject}_ses-pre_acq-FSPGR_run-01_T1w.nii.gz
 
@@ -59,13 +49,15 @@ subject_t1w: /bids/sub-f'{config['subject_prefix']}'{subject}/ses-pre/anat/sub-f
 subject_t1w_custom: []
     #'007': /bids/sub-P{subject}/ses-pre/anat/sub-P{subject}_ses-pre_run-03_T1w.nii.gz
     #'017': /bids/sub-P{subject}/ses-pre/anat/sub-P{subject}_ses-pre_run-02_T1w.nii.gz
-    #'018': /bids/sub-P{subject}/ses-pre/anat/sub-P{subject}_ses-pre_run-02_T1w.nii.gz
-    #'023': /bids/sub-P{subject}/ses-pre/anat/sub-P{subject}_ses-pre_run-02_T1w.nii.gz
-    #'024': /bids/sub-P{subject}/ses-pre/anat/sub-P{subject}_ses-pre_run-02_T1w.nii.gz
-    #'033': /bids/sub-P{subject}/ses-pre/anat/sub-P{subject}_ses-pre_run-02_T1w.nii.gz
-    ##'048': /bids/sub-P{subject}/ses-pre/anat/sub-P{subject}_ses-pre_run-02_T1w.nii.gz
-    #'052': /bids/sub-P{subject}/ses-pre/anat/sub-P{subject}_ses-pre_run-02_T1w.nii.gz
-    #'053': /sub-P053/Stokes_David/Data/sub-P053_3D_T1_BRAVO.nii.gz
+
+#
+#--- segmentation
+#
+
+singularity:
+    neuroglia: /project/6050199/akhanf/singularity/bids-apps/khanlab_neuroglia-core_latest.sif
+# use this URI if not on khanlab compute canada:
+#    neuroglia: docker://khanlab/neuroglia-core:latest
 
 subject_elec_ct: /bids/sub-f'{config['subject_prefix']}'{subject}/ses-post/ct/sub-f'{config['subject_prefix']}'{subject}_ses-post_acq-Electrode_run-01_ct.nii.gz
 subject_elec_t1w: /bids/sub-f'{config['subject_prefix']}'{subject}/ses-post/anat/sub-f'{config['subject_prefix']}'{subject}_ses-post_acq-Electrode3D_run-01_T1w.nii.gz
@@ -73,6 +65,7 @@ subject_elec_t1w: /bids/sub-f'{config['subject_prefix']}'{subject}/ses-post/anat
 #use this if a particular subject has a custom path
 subject_elec_ct_custom: []
     #'047': /bids/sub-P{subject}/ses-post/ct/sub-P{subject}_ses-post_acq-Electrode_run-03_ct.nii.gz
+
 subject_elec_t1w_custom: []
 
 subject_electrodes: /derivatives/seega_coordinates/sub-P{subject}/sub-P{subject}_space-native_SEEGA.fcsv

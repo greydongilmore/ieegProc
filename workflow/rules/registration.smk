@@ -1,9 +1,9 @@
-
 def get_noncontrast_filename(wildcards):
     files=glob(bids(root=join(config['out_dir'], 'bids'), subject=config['subject_prefix']+f'{wildcards.subject}', datatype='anat', session='pre', acq=config['noncontrast_t1']['flag'], run='*', suffix='T1w.nii.gz'))
     if len(files) <=1:
         file=expand(bids(root=join(config['out_dir'], 'bids'), subject=config['subject_prefix']+'{subject}', datatype='anat', session='pre', acq=config['noncontrast_t1']['flag'], run='01', suffix='T1w.nii.gz'),subject=wildcards.subject)
     else:
+        files.sort(key=lambda f: int(re.sub('\D', '', f)))
         file=files[-1]
     return file
 
@@ -12,6 +12,7 @@ def get_pre_t1_filename(wildcards):
     if len(files) <=1:
         file=expand(bids(root=join(config['out_dir'], 'bids'), subject=config['subject_prefix']+'{subject}', datatype='anat', session='pre', run='01', suffix='T1w.nii.gz'),subject=wildcards.subject)
     else:
+        files.sort(key=lambda f: int(re.sub('\D', '', f)))
         file=files[-1]
     return file
 
@@ -20,18 +21,9 @@ def get_postop_filename(wildcards):
     if len(files) <=1:
         file=expand(bids(root=join(config['out_dir'], 'bids'), subject=config['subject_prefix']+'{subject}', datatype='ct', session='post', acq='Electrode', run='01', suffix='ct.nii.gz'),subject=wildcards.subject)
     else:
-        file=files[0]
-    print(file)
+        files.sort(key=lambda f: int(re.sub('\D', '', f)))
+        file=files[-1]
     return file
-
-    post_ct=config['out_dir'] + config['subject_elec_ct_custom'][wildcards.subject] if wildcards.subject in config['subject_elec_ct_custom'] else config['out_dir'] + config['subject_elec_ct']
-    post_t1w=config['out_dir'] + config['subject_elec_t1w_custom'][wildcards.subject] if wildcards.subject in config['subject_elec_t1w_custom'] else config['out_dir'] + config['subject_elec_t1w']
-    print(post_ct)
-    print(post_t1w)
-    if exists(post_ct):
-        return post_ct
-    elif exists(post_t1w):
-        return post_t1w
 
 if config['contrast_t1']['present']:
     rule import_subj_t1:
