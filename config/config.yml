@@ -3,7 +3,8 @@
 #
 
 #bids_dir: /media/stereotaxy/3E7CE0407CDFF11F/data/SEEG
-bids_dir: /home/greydon/Documents/data/SEEG
+#bids_dir: /home/greydon/Documents/data/SEEG
+bids_dir: /media/veracrypt6/projects/iEEG/imaging/clinical
 
 
 #
@@ -41,7 +42,7 @@ post_ct:
     present: True
 
 seega:
-    present: False
+    present: True
 
 subject_t1w: /bids/sub-f'{config['subject_prefix']}'{subject}/ses-pre/anat/sub-f'{config['subject_prefix']}'{subject}_ses-pre_acq-FSPGR_run-01_T1w.nii.gz
 
@@ -94,7 +95,7 @@ atlases:
 n_atlas_dilate: 3
 n_init_mask_dilate: 1 
 
-default_k_tissue_classes: 4 #higher than 3 to capture contrast-enhanced regions too
+default_k_tissue_classes: 3 #higher than 3 to capture contrast-enhanced regions too
 
 #use this to specify custom values for subjects, e.g. here sub-P001 will have k=4 tissue classes for Atropos initialization
 subject_k_tissue_classes:

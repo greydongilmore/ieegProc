@@ -20,13 +20,13 @@ if config['noncontrast_t1']['present']:
     rule qc_reg_noncontrast:
         input:
             ref = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,suffix='T1w.nii.gz'),
-            flo = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,acq='noncontrast',suffix='T1w.nii.gz',from_='atropos3seg',desc='masked')
+            flo = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,acq='contrast',suffix='T1w.nii.gz')
         output:
-            png = report(bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),prefix='sub-'+subject_id+'/qc/sub-'+subject_id,suffix='regqc.png',from_='T1w', to='T1w',acq='noncontrast',desc='masked',include_subject_dir=False),
+            png = report(bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),prefix='sub-'+subject_id+'/qc/sub-'+subject_id,suffix='regqc.png',from_='T1w', to='T1w',acq='contrast',include_subject_dir=False),
                     caption='../reports/regqc.rst',
                     category='Registration QC',
                     subcategory='{desc} T1w'),
-            html = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),prefix='sub-'+subject_id+'/qc/sub-'+subject_id,suffix='regqc.html',from_='T1w', to='T1w', acq='noncontrast',desc='masked',include_subject_dir=False),
+            html = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),prefix='sub-'+subject_id+'/qc/sub-'+subject_id,suffix='regqc.html',from_='T1w', to='T1w', acq='contrast',include_subject_dir=False),
     #        html = report(bids(root='qc',subject=subject_id,suffix='regqc.html',from_='subject', to='{template}', desc='{desc}'),
     #                caption='../reports/regqc.rst',
     #                category='Registration QC',
