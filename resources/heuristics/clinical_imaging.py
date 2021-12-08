@@ -209,20 +209,17 @@ def infotodict(seqinfo):
 		if ct_scan:
 			electrode_list = {'OVER', 'UNDER', 'ELECTRODE', 'ROUTINE', 'F_U_HEAD', 'F/U_HEAD', 'ER_HEAD', 'POST', 'POST OP'}
 			frame_list = {'STEROTACTIC', 'STEREOTACTIC', 'STEALTH', 'CTA_COW'}
-			bone_list = {'BONE', 'BONE+'}
 			
 			if ('SCOUT' not in s.series_description.upper()):
-				boneWindow=False
-				if any(substring in s.protocol_name.upper() for substring in bone_list):
-					boneWindow=True
-				
 				if any(substring in s.protocol_name.upper() for substring in electrode_list):
-					if boneWindow:
+					
+					if ('BONE' in s.series_description.upper()):
 						info[ct_acq_desc].append({'item': s.series_id, 'acq': 'Electrode', 'desc':'BONE'})
 					else:
 						info[ct_acq].append({'item': s.series_id, 'acq': 'Electrode'})
+
 				elif any(substring in s.protocol_name.upper() for substring in frame_list):
-					if boneWindow:
+					if ('BONE' in s.series_description.upper()):
 						info[ct_acq_desc].append({'item': s.series_id, 'acq': 'Frame', 'desc':'BONE'})
 					else:
 						info[ct_acq].append({'item': s.series_id, 'acq': 'Frame'})

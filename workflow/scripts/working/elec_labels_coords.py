@@ -171,7 +171,7 @@ def make_bids_filename(subject_id, space_id, desc_id, suffix, prefix):
 		
 	return filename
 
-debug = False
+debug = True
 
 if debug:
 	class dotdict(dict):
@@ -185,12 +185,13 @@ if debug:
 			self.__dict__.update(kwargs)
 	
 	sub='P076'
-	#config=dotdict({'out_dir':'/home/greydon/Documents/data/SEEG'})
-	config=dotdict({'out_dir':'/media/stereotaxy/3E7CE0407CDFF11F/data/SEEG/imaging/clinical'})
+	config=dotdict({'out_dir':'/home/greydon/Documents/data/SEEG'})
+	#config=dotdict({'out_dir':'/media/stereotaxy/3E7CE0407CDFF11F/data/SEEG/imaging/clinical'})
 	
 
 	params=dotdict({'sub':sub})
-	input=dotdict({'seega_scene':f'/media/stereotaxy/3E7CE0407CDFF11F/data/SEEG/imaging/clinical/derivatives/seega_scenes/sub-{sub}'})
+	#input=dotdict({'seega_scene':f'/media/stereotaxy/3E7CE0407CDFF11F/data/SEEG/imaging/clinical/derivatives/seega_scenes/sub-{sub}'})
+	input=dotdict({'seega_scene':f'/home/greydon/Documents/data/SEEG/derivatives/seega_scenes/sub-{sub}'})
 	
 	snakemake = Namespace(params=params, input=input,config=config)
 	
@@ -208,8 +209,9 @@ for dirpath, subdirs, subfiles in os.walk(snakemake.input.seega_scene):
 			patient_files.append(os.path.join(dirpath, x))
 
 
-acpc_file = [x for x in patient_files if 'acpc' in x]
-patient_files = [x for x in patient_files if 'acpc' not in x]
+acpc_file = [x for x in patient_files if os.path.splitext(x)[0].lower().endswith('acpc')]
+patient_files = [x for x in patient_files if any(os.path.splitext(x)[0].lower().endswith(y) for y in ('seega','planned','actual'))]
+
 if acpc_file:
 	acpc_data = pd.read_csv(acpc_file[0], skiprows=3, header=None)
 	acpc_data.rename(columns={0:'node_id', 1:'x', 2:'y', 3:'z', 4:'ow', 5:'ox',
@@ -235,7 +237,7 @@ for ifile in patient_files:
 	data_table_full['label'] = data_table_full['label'].str.replace('-','')
 	data_table_full['type'] = np.repeat(ifile.split(os.sep)[-1].split('.fcsv')[0], data_table_full.shape[0])
 	
-	if 'seega' in ifile.split(os.sep)[-1].split('.fcsv')[0].lower():
+	if os.path.splitext(ifile.split(os.sep)[-1])[0].lower().endswith('seega'):
 		groups = determine_groups(np.array(data_table_full['label'].values))
 		group_pair = []
 		new_label = []
@@ -285,7 +287,7 @@ for ifile in patient_files:
 	
 	#### Write Native Coords TSV file
 	output_fname = make_bids_filename(isub, 'native', None, ifile.split(os.sep)[-1].split('.fcsv')[0] + '.tsv', patient_output)
-	if 'seega' in ifile.split(os.sep)[-1].split('.fcsv')[0].lower():
+	if os.path.splitext(ifile.split(os.sep)[-1])[0].lower().endswith('seega'):
 		head=['type','label','x','y','z','orig_group','new_label','new_group']
 	else:
 		head=['type','label','x','y','z']

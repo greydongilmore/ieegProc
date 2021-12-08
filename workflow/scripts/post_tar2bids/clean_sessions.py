@@ -32,15 +32,16 @@ def copytree(src, dst, symlinks=False, ignore=None):
 		else:
 			shutil.copy2(s, d)
 			
-def make_bids_filename(subject_id, session_id, task_id, acq_id, run_num, suffix, prefix):
+def make_bids_filename(subject_id, session_id, task, acq, desc, run, suffix, prefix):
 	if isinstance(session_id, str):
 		if 'ses' in session_id:
 			session_id = session_id.split('-')[1]
 			
 	order = OrderedDict([('ses', session_id if session_id is not None else None),
-						 ('task', task_id if task_id is not None else None),
-						 ('acq', acq_id if acq_id is not None else None),
-						 ('run', run_num if run_num is not None else None)])
+						 ('task', task if task is not None else None),
+						 ('acq', acq if acq is not None else None),
+						 ('desc', desc if desc is not None else None),
+						 ('run', run if run is not None else None)])
 
 	filename = []
 	if subject_id is not None:
@@ -164,23 +165,26 @@ def main():
 				files = [x for x in os.listdir(os.path.join(snakemake.params.bids_fold, ises, iscan)) if os.path.isfile(os.path.join(snakemake.params.bids_fold, ises, iscan, x))]
 				
 				for ifile in files:
-					acq_id = ifile.split('acq-')[1].split('_')[0] if 'acq-' in ifile else None
-					task_id = ifile.split('task-')[1].split('_')[0] if 'task-' in ifile else None
-					if acq_id is not None:
-						if task_id is not None:
-							number_files = [x for x in os.listdir(sub_path) if x.endswith(ifile.split('_')[-1]) and 'acq-'+acq_id in x and 'task-'+task_id in x]
-						else:
-							number_files = [x for x in os.listdir(sub_path) if x.endswith(ifile.split('_')[-1]) and 'acq-'+acq_id in x and 'task-' not in x]
-					else:
-						if task_id is not None:
-							number_files = [x for x in os.listdir(sub_path) if x.endswith(ifile.split('_')[-1]) and 'task-'+task_id in x and 'acq-' not in x]
-						else:
-							number_files = [x for x in os.listdir(sub_path) if x.endswith(ifile.split('_')[-1]) and 'acq-' not in x and 'task-' not in x]
-							
-					new_file = make_bids_filename(isub, 'ses-'+ilabel, task_id, acq_id, str(len(number_files)+1).zfill(2), ifile.split('_')[-1], sub_path)
-						
-					shutil.copyfile(os.path.join(snakemake.params.bids_fold, ises, iscan, ifile), new_file)
+
+					key_dict={
+						'task': [],
+						'acq': [],
+						'desc': [],
+						'run':[]
+					}
+
+					key_dict['suffix']=ifile.split('_')[-1]
+
+					for ikey in key_dict.keys():
+						key_dict[ikey]=ifile.split(f'{ikey}-')[1].split('_')[0] if f'{ikey}-' in ifile else None
+
+					key_dict['suffix']=ifile.split('_')[-1]
+					key_dict['prefix']=sub_path
+
+					new_file = make_bids_filename(isub, 'ses-'+ilabel, **key_dict)
 					
+					shutil.copyfile(os.path.join(snakemake.params.bids_fold, ises, iscan, ifile), new_file)
+										
 					if iscan+'/'+ifile in scans_data['filename'].values:
 						name_idx = [i for i,x in enumerate(scans_data['filename'].values) if x == iscan+'/'+ifile][0]
 						data_temp = scans_data.iloc[name_idx,:].to_dict()
@@ -191,12 +195,12 @@ def main():
 			sub_code_path = make_bids_folders(isub.split('-')[1], ilabel, 'info', os.path.join(final_dir,'.heudiconv'), True, False)
 			copytree(os.path.join(os.path.dirname(snakemake.params.bids_fold), '.heudiconv', isub.split('-')[1], ises,'info'), sub_code_path)
 			
-		scans_file = make_bids_filename(isub, 'ses-' + ilabel, None, None, None, 'scans.json', os.path.dirname(sub_path))
+		scans_file = make_bids_filename(isub, 'ses-' + ilabel, None, None, None, None, 'scans.json', os.path.dirname(sub_path))
 		scans_json = [x for x in os.listdir(os.path.join(snakemake.params.bids_fold, ises)) if x.endswith('scans.json')]
 		if scans_json:
-			shutil.copyfile(os.path.join(snakemake.params.bids_fold, ises, scans_json[0]), scans_file)
+			shutil.copyfile2(os.path.join(snakemake.params.bids_fold, ises, scans_json[0]), scans_file)
 		
-		scans_file = make_bids_filename(isub, 'ses-'+ilabel, None, None, None, 'scans.tsv', os.path.dirname(sub_path))
+		scans_file = make_bids_filename(isub, 'ses-'+ilabel, None, None, None, None, 'scans.tsv', os.path.dirname(sub_path))
 		scans_tsv_new = pd.DataFrame(scans_tsv_new)
 		scans_tsv_new.to_csv(scans_file, sep='\t', index=False, na_rep='n/a', line_terminator="")
 	

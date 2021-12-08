@@ -22,7 +22,7 @@ def get_postop_filename(wildcards):
         file=expand(bids(root=join(config['out_dir'], 'bids'), subject=config['subject_prefix']+'{subject}', datatype='ct', session='post', acq='Electrode', run='01', suffix='ct.nii.gz'),subject=wildcards.subject)
     else:
         files.sort(key=lambda f: int(re.sub('\D', '', f)))
-        file=files[-1]
+        file=files[config['post_ct']['position']]
     return file
 
 if config['contrast_t1']['present'] and not config['noncontrast_t1']['present']:

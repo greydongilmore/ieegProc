@@ -35,14 +35,14 @@ def sorted_nicely(data, reverse = False):
 
 #%%
 
-isub="P078"
+isub="P076"
 
 repo_path = r'/home/greydon/Documents/GitHub'
 #repo_path = r'/home/stereotaxy/Documents/GitHub'
 
-#data_path = r'/home/greydon/Documents/data/SEEG'
+data_path = r'/home/greydon/Documents/data/SEEG'
 #data_path = r'/media/stereotaxy/3E7CE0407CDFF11F/data/SEEG/imaging/clinical'
-data_path = r'/media/veracrypt6/projects/iEEG/imaging/clinical'
+#data_path = r'/media/veracrypt6/projects/iEEG/imaging/clinical'
 
 
 atlas_labels = pd.read_table(repo_path + r'/seeg2bids-pipeline/resources/tpl-MNI152NLin2009cSym/tpl-MNI152NLin2009cSym_atlas-CerebrA_dseg.tsv')

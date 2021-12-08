@@ -65,14 +65,14 @@ elif config['contrast_t1']['present'] and config['noncontrast_t1']['present'] an
                 atlas_dilated_vis = expand(bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),prefix='sub-'+subject_id+'/qc/sub-'+subject_id,suffix='dseg.png',atlas='{atlas}', from_='{template}',desc='{desc}',include_subject_dir=False),
                         subject=subjects, atlas=config['atlases'],template=config['template'], desc=['dilated'],),
 
-elif config['contrast_t1']['present'] and config['noncontrast_t1']['present'] and config['post_ct']['present'] and not config['seega']['present']:
+elif config['contrast_t1']['present'] and config['noncontrast_t1']['present'] and config['post_ct']['present'] and not config['post_ct']['seega']:
      rule all:
             input:
                 tar2bids = expand(join(config['out_dir'], 'logs', 'sub-' + subject_id + "_tar2bids.done"), subject=subjects),
                 cleanSessions = expand(join(config['out_dir'], 'logs', 'sub-' + subject_id + "_cleanSessions.done"), subject=subjects),
                 reg_vis = expand(bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),prefix='sub-'+subject_id+'/qc/sub-'+subject_id,suffix='regqc.png',from_='subject', to='{template}',desc='{desc}',include_subject_dir=False),
                         subject=subjects, desc=['affine','SyN'],template=config['template']),
-                reg_vis_noncontrast = expand(bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),prefix='sub-'+subject_id+'/qc/sub-'+subject_id,suffix='regqc.png',from_='T1w', to='T1w',acq='contrast',desc='masked',include_subject_dir=False), 
+                reg_vis_noncontrast = expand(bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),prefix='sub-'+subject_id+'/qc/sub-'+subject_id,suffix='regqc.png',from_='T1w', to='T1w',acq='contrast',include_subject_dir=False), 
                         subject=subjects),
                 reg_vis_ct = expand(bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),prefix='sub-'+subject_id+'/qc/sub-'+subject_id,suffix='regqc.png',from_='ct', to='T1w',desc='masked',include_subject_dir=False), 
                         subject=subjects),
@@ -90,7 +90,7 @@ elif config['contrast_t1']['present'] and config['noncontrast_t1']['present'] an
                 #        subject=subjects, atlas=config['atlases'],template=config['template']),
                 #results = [join(config['out_dir'], 'derivatives', 'atlasreg', 'results.tar'), join(config['out_dir'], 'derivatives', 'atlasreg', 'results_tsv_only.tar')]
 
-elif config['contrast_t1']['present'] and config['noncontrast_t1']['present'] and config['post_ct']['present'] and config['seega']['present']:
+elif config['contrast_t1']['present'] and config['noncontrast_t1']['present'] and config['post_ct']['present'] and config['post_ct']['seega']:
      rule all:
             input:
                 tar2bids = expand(join(config['out_dir'], 'logs', 'sub-' + subject_id + "_tar2bids.done"), subject=subjects),
@@ -116,7 +116,7 @@ elif config['contrast_t1']['present'] and config['noncontrast_t1']['present'] an
                 #touch_fmriprep=expand(bids(root=join(config['out_dir'], 'logs'), subject=subject_id, suffix="fmriprep.done", include_subject_dir=False),subject=subjects),
                 #results = [join(config['out_dir'], 'derivatives', 'atlasreg', 'results.tar'), join(config['out_dir'], 'derivatives', 'atlasreg', 'results_tsv_only.tar')]
 
-elif config['contrast_t1']['present'] and not config['noncontrast_t1']['present'] and config['post_ct']['present'] and not config['seega']['present']:
+elif config['contrast_t1']['present'] and not config['noncontrast_t1']['present'] and config['post_ct']['present'] and not config['post_ct']['seega']:
      rule all:
             input:
                 reg_vis = expand(bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),prefix='sub-'+subject_id+'/qc/sub-'+subject_id,suffix='regqc.png',from_='subject', to='{template}',desc='{desc}',include_subject_dir=False),
@@ -130,7 +130,7 @@ elif config['contrast_t1']['present'] and not config['noncontrast_t1']['present'
                 atlas_dilated_vis = expand(bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),prefix='sub-'+subject_id+'/qc/sub-'+subject_id,suffix='dseg.png',atlas='{atlas}', from_='{template}',desc='{desc}',include_subject_dir=False),
                         subject=subjects, atlas=config['atlases'],template=config['template'], desc=['dilated'],)
 
-elif config['contrast_t1']['present'] and not config['noncontrast_t1']['present'] and config['post_ct']['present'] and config['seega']['present']:
+elif config['contrast_t1']['present'] and not config['noncontrast_t1']['present'] and config['post_ct']['present'] and config['post_ct']['seega']:
      rule all:
             input:
                 reg_vis = expand(bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),prefix='sub-'+subject_id+'/qc/sub-'+subject_id,suffix='regqc.png',from_='subject', to='{template}',desc='{desc}',include_subject_dir=False),
