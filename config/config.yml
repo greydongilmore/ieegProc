@@ -2,8 +2,8 @@
 #--- filepaths
 #
 
-#bids_dir: /media/stereotaxy/3E7CE0407CDFF11F/data/SEEG
-bids_dir: /home/greydon/Documents/data/SEEG
+bids_dir: /media/stereotaxy/3E7CE0407CDFF11F/data/SEEG
+#bids_dir: /home/greydon/Documents/data/SEEG
 #bids_dir: /media/veracrypt6/projects/iEEG/imaging/clinical
 
 
@@ -39,7 +39,7 @@ contrast_t1:
     present: True
 
 post_ct:
-    present: True
+    present: False
     position: -1
     seega: True
 
