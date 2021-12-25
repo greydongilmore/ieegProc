@@ -16,7 +16,7 @@ rule tissue_seg_kmeans_init:
     output:
         seg = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,suffix='dseg.nii.gz',desc='atroposKseg'),
         posteriors = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,suffix='probseg.nii.gz',desc='atroposKseg'),
-    shadow: 'minimal'    
+    shadow: 'minimal'
     #container: config['singularity']['neuroglia']
     group: 'preproc'
     shell:

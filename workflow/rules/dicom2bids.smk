@@ -39,6 +39,7 @@ rule tar2bids:
 	shell:
 		'heudiconv --files {input.tar} -o {params.bids} -f {params.heuristic_file} -c dcm2niix --dcmconfig {params.dcm_config} -b'
 
+
 if not config['post_ct']['present']:
 	if config['noncontrast_t1']['present'] and config['contrast_t1']['present']:
 		rule cleanSessions:
@@ -142,3 +143,6 @@ else:
 			#container: 'docker://greydongilmore/dicom2bids-clinical:latest'
 			script:
 				"../scripts/post_tar2bids/clean_sessions.py"
+
+final_outputs.extend(expand(join(config['out_dir'], 'logs', 'sub-' + subject_id + "_tar2bids.done"), subject=subjects))
+final_outputs.extend(expand(join(config['out_dir'], 'logs', 'sub-' + subject_id + "_cleanSessions.done"), subject=subjects))

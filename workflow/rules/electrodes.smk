@@ -46,7 +46,7 @@ rule contact_landmarks:
 
 rule mask_contacts:
     input: 
-        ct = bids(root=join(config['out_dir'],'derivatives', 'atlasreg'),subject=subject_id,suffix='ct.nii.gz',space='T1w',desc='affine'),
+        ct = bids(root=join(config['out_dir'],'derivatives', 'atlasreg'),subject=subject_id,suffix='ct.nii.gz',space='T1w',desc='rigid'),
         txt = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,suffix='landmarks.txt',space='ct'),
     output:
         mask = bids(root=join(config['out_dir'],'derivatives', 'atlasreg'),subject=subject_id,suffix='contacts.nii.gz',space='ct',desc='mask'),
@@ -54,33 +54,5 @@ rule mask_contacts:
     shell:
         'c3d {input.ct} -scale 0 -landmarks-to-spheres {input.txt} 1 -o {output.mask}'
 
-rule vis_contacts:
-    input:
-        ct = bids(root=join(config['out_dir'],'derivatives', 'atlasreg'),subject=subject_id,suffix='ct.nii.gz',space='T1w',desc='affine'),
-        mask = bids(root=join(config['out_dir'],'derivatives', 'atlasreg'),subject=subject_id,suffix='contacts.nii.gz',space='ct',desc='mask'),
-    output:
-        html = report(bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),prefix='sub-'+subject_id+'/qc/sub-'+subject_id,suffix='contacts.html',desc='mask',space='ct',include_subject_dir=False),
-                caption='../reports/contacts_vis.rst',
-                category='Contacts in CT space',
-                subcategory='landmarks mask'),
-    group: 'preproc'
-    script: '../scripts/vis_contacts.py'
-
-rule vis_electrodes:
-    input: 
-        fcsv = get_electrodes_filename,
-        t1w = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,desc='n4', suffix='T1w.nii.gz'),
-        xfm_ras = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,suffix='xfm.txt',from_='subject',to='{template}',desc='{desc}',type_='ras'),
-    params:
-        contacts= bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),prefix='sub-'+subject_id+'/qc/sub-'+subject_id,suffix='contacts.html',desc='mask',space='ct',include_subject_dir=False)
-    output:
-        html = report(bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),prefix='sub-'+subject_id+'/qc/sub-'+subject_id,suffix='electrodes.html',desc='{desc}',space='{template}'),
-                caption='../reports/electrodes_vis.rst',
-                category='Electrodes in template space',
-                subcategory='{desc} reg to {template}'),
-        png = report(bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),prefix='sub-'+subject_id+'/qc/sub-'+subject_id,suffix='electrodevis.png',desc='{desc}',space='{template}',include_subject_dir=False),
-                caption='../reports/electrodes_vis.rst',
-                category='Electrodes in template space',
-                subcategory='{desc} reg to {template}'),
-    group: 'preproc'
-    script: '../scripts/vis_electrodes.py'
+final_outputs.extend(expand(bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,suffix='electrodes.tsv',atlas='{atlas}',desc='dilated',from_='{template}'),
+                        subject=subjects, atlas=config['atlases'],template=config['template']))

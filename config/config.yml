@@ -2,8 +2,8 @@
 #--- filepaths
 #
 
-bids_dir: /media/stereotaxy/3E7CE0407CDFF11F/data/SEEG
-#bids_dir: /home/greydon/Documents/data/SEEG
+#bids_dir: /media/stereotaxy/3E7CE0407CDFF11F/data/SEEG
+bids_dir: /home/greydon/Documents/data/SEEG
 #bids_dir: /media/veracrypt6/projects/iEEG/imaging/clinical
 
 
@@ -39,9 +39,11 @@ contrast_t1:
     present: True
 
 post_ct:
-    present: False
+    present: True
     position: -1
-    seega: True
+
+seeg_contacts:
+    present: False
 
 pet:
     present: True
@@ -58,11 +60,6 @@ subject_t1w_custom: []
 #
 #--- segmentation
 #
-
-singularity:
-    neuroglia: /project/6050199/akhanf/singularity/bids-apps/khanlab_neuroglia-core_latest.sif
-# use this URI if not on khanlab compute canada:
-#    neuroglia: docker://khanlab/neuroglia-core:latest
 
 subject_elec_ct: /bids/sub-f'{config['subject_prefix']}'{subject}/ses-post/ct/sub-f'{config['subject_prefix']}'{subject}_ses-post_acq-Electrode_run-01_ct.nii.gz
 subject_elec_t1w: /bids/sub-f'{config['subject_prefix']}'{subject}/ses-post/anat/sub-f'{config['subject_prefix']}'{subject}_ses-post_acq-Electrode3D_run-01_T1w.nii.gz
@@ -124,10 +121,24 @@ ants:
         gradient_step: 0.25
 
 fastsurfer:
-    home: "/home/greydon/Documents/GitHub/FastSurfer"
-    py: "python3"
-    sid: 'fastsurfer'
-    batch: 8
-    order: 0    #(0=nearest,1=linear(default),2=quadratic,3=cubic)
-    seg_only: True
-    vol_segstats: True
+  run: True
+  home: "/home/greydon/Documents/GitHub/FastSurfer"
+  py: "python3"
+  sid: 'fastsurfer'
+  batch: 8
+  threads: 4
+  order: 0    #(0=nearest,1=linear(default),2=quadratic,3=cubic)
+  seg_only: True
+  vol_segstats: True
+
+fmriprep:
+  run: False
+  fmriprep_license: resources/license.txt
+  bids_filter: resources/bids_filter.json
+
+singularity:
+  neuroglia-core: "docker://khanlab/neuroglia-core:latest"
+  fastsurfer: "docker://deepmi/fastsurfer:latest"
+  freesurfer: "docker://freesurfer/freesurfer:latest"
+  fmriprep: resources/fmriprep-21.0.0.simg
+  neuroglia: docker://khanlab/neuroglia-core:latest
