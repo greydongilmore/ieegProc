@@ -2,8 +2,8 @@
 #--- filepaths
 #
 
-#bids_dir: /media/stereotaxy/3E7CE0407CDFF11F/data/SEEG
-bids_dir: /home/greydon/Documents/data/SEEG
+bids_dir: /media/greydon/3E7CE0407CDFF11F/data/SEEG
+#bids_dir: /home/greydon/Documents/data/SEEG
 #bids_dir: /media/veracrypt6/projects/iEEG/imaging/clinical
 
 
@@ -20,9 +20,9 @@ subject_prefix: P
 
 # Session determination
 session_calc:
-  peri: 0
-  dur_multi_event: -15
-  override_peri: True
+    peri: 0
+    dur_multi_event: -15
+    override_peri: True
 
 facemask: resources/facemask.nii.gz
 mean_reg2mean: resources/mean_reg2mean.nii.gz
@@ -46,7 +46,7 @@ seeg_contacts:
     present: False
 
 pet:
-    present: True
+    present: False
     position: -1
 
 
@@ -85,12 +85,12 @@ template_atlas_dseg_tsv: resources/tpl-{template}/tpl-{template}_atlas-{atlas}_d
 template_tissue_probseg: resources/tpl-{template}/tpl-{template}_res-1_label-{tissue}_probseg.nii.gz
 
 tissue_labels:
- - GM
- - WM
- - CSF
+    - GM
+    - WM
+    - CSF
 
 atlases:
- - CerebrA
+    - CerebrA
 
 #number of times to dilate  (each time 3x3x3 mode dilation)
 n_atlas_dilate: 3
@@ -121,24 +121,24 @@ ants:
         gradient_step: 0.25
 
 fastsurfer:
-  run: True
-  home: "/home/greydon/Documents/GitHub/FastSurfer"
-  py: "python3"
-  sid: 'fastsurfer'
-  batch: 8
-  threads: 4
-  order: 0    #(0=nearest,1=linear(default),2=quadratic,3=cubic)
-  seg_only: True
-  vol_segstats: True
+    run: True
+    home: "/home/greydon/Documents/GitHub/FastSurfer"
+    py: "python3"
+    sid: 'fastsurfer'
+    batch: 8
+    threads: 4
+    order: 0    #(0=nearest,1=linear(default),2=quadratic,3=cubic)
+    seg_only: True
+    vol_segstats: True
 
 fmriprep:
-  run: False
-  fmriprep_license: resources/license.txt
-  bids_filter: resources/bids_filter.json
+    run: False
+    fmriprep_license: resources/license.txt
+    bids_filter: resources/bids_filter.json
 
 singularity:
-  neuroglia-core: "docker://khanlab/neuroglia-core:latest"
-  fastsurfer: "docker://deepmi/fastsurfer:latest"
-  freesurfer: "docker://freesurfer/freesurfer:latest"
-  fmriprep: resources/fmriprep-21.0.0.simg
-  neuroglia: docker://khanlab/neuroglia-core:latest
+    neuroglia-core: "docker://khanlab/neuroglia-core:latest"
+    fastsurfer: "docker://deepmi/fastsurfer:latest"
+    freesurfer: "docker://freesurfer/freesurfer:latest"
+    fmriprep: resources/fmriprep-21.0.0.simg
+    neuroglia: docker://khanlab/neuroglia-core:latest
