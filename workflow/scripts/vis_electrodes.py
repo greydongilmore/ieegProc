@@ -71,7 +71,7 @@ for i in range(len(coords)):
     tvec = np.linalg.inv(sub2template) @ vec.T
     tcoords[i,:] = tvec[:3]
 
-html_view = plotting.view_markers(tcoords, marker_size=4.0, marker_color=colors, marker_labels=df['label'].tolist(), title="3D Electrode Plot")
+html_view = plotting.view_markers(tcoords, marker_size=4.0, marker_color=colors, marker_labels=df['label'].tolist())
 #html_view.open_in_browser()
 html_view.save_as_html(snakemake.output.html)
 

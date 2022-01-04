@@ -4,7 +4,6 @@ import ants
 from nilearn import plotting,image
 import nibabel as nib
 import numpy as np
-from nilearn.datasets import load_mni152_template
 
 # snakemake.input.
 # snakemake.output.

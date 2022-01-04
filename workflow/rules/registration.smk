@@ -1,10 +1,17 @@
 def get_noncontrast_filename(wildcards):
-    files=glob(bids(root=join(config['out_dir'], 'bids'), subject=config['subject_prefix']+f'{wildcards.subject}', datatype='anat', session='pre', acq=config['noncontrast_t1']['flag'], run='*', suffix='T1w.nii.gz'))
+    files=glob(bids(root=join(config['out_dir'], 'bids'), subject=config['subject_prefix']+f'{wildcards.subject}', datatype='anat', session='pre', acq=config['noncontrast_t1']['acq'], run='*', suffix='T1w.nii.gz'))
     if len(files) <=1:
-        file=expand(bids(root=join(config['out_dir'], 'bids'), subject=config['subject_prefix']+'{subject}', datatype='anat', session='pre', acq=config['noncontrast_t1']['flag'], run='01', suffix='T1w.nii.gz'),subject=wildcards.subject)
+        file=expand(bids(root=join(config['out_dir'], 'bids'), subject=config['subject_prefix']+'{subject}', datatype='anat', session='pre', acq=config['noncontrast_t1']['acq'], run='01', suffix='T1w.nii.gz'),subject=wildcards.subject)
+        if len(file)==0:
+            file=expand(bids(root=join(config['out_dir'], 'bids'), subject=config['subject_prefix']+'{subject}', datatype='anat', session='pre', run='01', suffix='T1w.nii.gz'),subject=wildcards.subject)
     else:
         files.sort(key=lambda f: int(re.sub('\D', '', f)))
         file=files[-1]
+    if file:
+        if not exists(file[0]):
+            file=expand(bids(root=join(config['out_dir'], 'bids'), subject=config['subject_prefix']+'{subject}', datatype='anat', session='pre', run='01', suffix='T1w.nii.gz'),subject=wildcards.subject)
+    if file:
+        print(f'Pre T1w non-contrast file: {basename(file[0])}')
     return file
 
 def get_pre_t1_filename(wildcards):
@@ -14,6 +21,8 @@ def get_pre_t1_filename(wildcards):
     else:
         files.sort(key=lambda f: int(re.sub('\D', '', f)))
         file=files[-1]
+    if file:
+        print(f'Pre T1w contrast file: {basename(file[0])}')
     return file
 
 def get_postop_filename(wildcards):
@@ -23,6 +32,15 @@ def get_postop_filename(wildcards):
     else:
         files.sort(key=lambda f: int(re.sub('\D', '', f)))
         file=files[config['post_ct']['position']]
+    return file
+
+def get_pet_filename(wildcards):
+    files=glob(bids(root=join(config['out_dir'], 'bids'), subject=config['subject_prefix']+f'{wildcards.subject}', datatype='pet', session='pre', task=config['pet']['task'], run='*', suffix='pet.nii.gz'))
+    if len(files) <=1:
+        file=expand(bids(root=join(config['out_dir'], 'bids'), subject=config['subject_prefix']+'{subject}', datatype='pet', session='pre', task=config['pet']['task'], run='01', suffix='pet.nii.gz'),subject=wildcards.subject)
+    else:
+        files.sort(key=lambda f: int(re.sub('\D', '', f)))
+        file=files[config['pet']['position']]
     return file
 
 if config['contrast_t1']['present'] and not config['noncontrast_t1']['present']:
@@ -89,7 +107,7 @@ if config['post_ct']['present']:
         group: 'preproc'
         shell: 'cp {input} {output}'
 
-    rule rigonly_aladin:
+    rule rigonly_aladin_ct:
         input: 
             flo = bids(root=join(config['out_dir'],'derivatives', 'atlasreg'),subject=subject_id,suffix='ct.nii.gz'),
             ref = bids(root=join(config['out_dir'],'derivatives', 'atlasreg'),subject=subject_id,acq='contrast',suffix='T1w.nii.gz'),
@@ -112,6 +130,38 @@ if config['post_ct']['present']:
             '../scripts/convert_xfm_tfm.py'
 
     final_outputs.extend(expand(bids(root=join(config['out_dir'],'derivatives', 'atlasreg'),subject=subject_id,suffix='xfm.tfm',from_='ct',to='T1w',desc='rigid',type_='ras'),
+                        subject=subjects))
+
+if config['pet']['present']:
+    rule import_subj_pet:
+        input: get_pet_filename,
+        output: bids(root=join(config['out_dir'],'derivatives', 'atlasreg'),subject=subject_id,suffix='pet.nii.gz')
+        group: 'preproc'
+        shell: 'cp {input} {output}'
+
+    rule rigonly_aladin_pet:
+        input: 
+            flo = bids(root=join(config['out_dir'],'derivatives', 'atlasreg'),subject=subject_id,suffix='pet.nii.gz'),
+            ref = bids(root=join(config['out_dir'],'derivatives', 'atlasreg'),subject=subject_id,acq='contrast',suffix='T1w.nii.gz'),
+        output: 
+            warped_subj = bids(root=join(config['out_dir'],'derivatives', 'atlasreg'),subject=subject_id,suffix='pet.nii.gz',space='T1w',desc='rigid'),
+            xfm_ras = bids(root=join(config['out_dir'],'derivatives', 'atlasreg'),subject=subject_id,suffix='xfm.txt',from_='pet',to='T1w',desc='rigid',type_='ras'),
+        #container: config['singularity']['neuroglia']
+        group: 'preproc'
+        shell:
+            'reg_aladin -flo {input.flo} -ref {input.ref} -res {output.warped_subj} -aff {output.xfm_ras} -speeeeed'
+            #'flirt -in {input.flo} -ref {input.ref} -out {output.warped_subj} -omat {output.xfm_ras} -dof 6'
+
+    rule convert_pet_xfm_tfm:
+        input:
+            xfm=bids(root=join(config['out_dir'],'derivatives', 'atlasreg'),subject=subject_id,suffix='xfm.txt',from_='pet',to='T1w',desc='rigid',type_='ras'),
+        output:
+            tfm=bids(root=join(config['out_dir'],'derivatives', 'atlasreg'),subject=subject_id,suffix='xfm.tfm',from_='pet',to='T1w',desc='rigid',type_='ras'),
+        group: 'preproc'
+        script: 
+            '../scripts/convert_xfm_tfm.py'
+
+    final_outputs.extend(expand(bids(root=join(config['out_dir'],'derivatives', 'atlasreg'),subject=subject_id,suffix='xfm.tfm',from_='pet',to='T1w',desc='rigid',type_='ras'),
                         subject=subjects))
 
 rule affine_aladin:
@@ -137,7 +187,8 @@ rule convert_affine_xfm_tfm:
 
 final_outputs.extend(expand(bids(root=join(config['out_dir'],'derivatives', 'atlasreg'),subject=subject_id,suffix='xfm.tfm',from_='subject',to='{template}',desc='affine',type_='ras'),
                         subject=subjects, template=config['template']))
-
+final_outputs.extend(expand(bids(root=join(config['out_dir'],'derivatives', 'atlasreg'),subject=subject_id,suffix='xfm.txt',from_='subject',to='{template}',desc='affine',type_='ras'),
+                        subject=subjects, template=config['template']))
 rule convert_xfm_ras2itk:
     input:
         tfm=bids(root=join(config['out_dir'],'derivatives', 'atlasreg'),subject=subject_id,suffix='xfm.txt',from_='subject',to='{template}',desc='affine',type_='ras'),
@@ -189,7 +240,8 @@ rule n4biasfield:
     group: 'preproc'
     shell:
         'ITK_GLOBAL_DEFAULT_NUMBER_OF_THREADS={threads} '
-        'N4BiasFieldCorrection -d 3 -i {input.t1} -x {input.mask} -o {output}'
+        'N4BiasFieldCorrection -d 3 -i {input.t1} -o {output}'
+        #'N4BiasFieldCorrection -d 3 -i {input.t1} -x {input.mask} -o {output}'
 
 rule mask_template_t1w:
     input:
@@ -244,7 +296,6 @@ else:
         group: 'preproc'
         shell:
             'fslmaths {input.t1} -mas {input.mask} {output}'
-
 
 if config['post_ct']['present']:
     rule mask_subject_ct:

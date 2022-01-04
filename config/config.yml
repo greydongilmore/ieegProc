@@ -2,9 +2,9 @@
 #--- filepaths
 #
 
-bids_dir: /media/greydon/3E7CE0407CDFF11F/data/SEEG
+#bids_dir: /media/greydon/3E7CE0407CDFF11F/data/SEEG
 #bids_dir: /home/greydon/Documents/data/SEEG
-#bids_dir: /media/veracrypt6/projects/iEEG/imaging/clinical
+bids_dir: /media/veracrypt6/projects/SEEG
 
 
 #
@@ -33,7 +33,7 @@ mean_reg2mean: resources/mean_reg2mean.nii.gz
 
 noncontrast_t1:
     present: True
-    flag: FSPGR
+    acq: FSPGR
 
 contrast_t1:
     present: True
@@ -43,11 +43,12 @@ post_ct:
     position: -1
 
 seeg_contacts:
-    present: False
+    present: True
 
 pet:
     present: False
     position: -1
+    task: rest
 
 
 subject_t1w: /bids/sub-f'{config['subject_prefix']}'{subject}/ses-pre/anat/sub-f'{config['subject_prefix']}'{subject}_ses-pre_acq-FSPGR_run-01_T1w.nii.gz
@@ -121,7 +122,7 @@ ants:
         gradient_step: 0.25
 
 fastsurfer:
-    run: True
+    run: False
     home: "/home/greydon/Documents/GitHub/FastSurfer"
     py: "python3"
     sid: 'fastsurfer'

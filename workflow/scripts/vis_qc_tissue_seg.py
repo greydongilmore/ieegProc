@@ -1,7 +1,12 @@
+from nilearn import plotting
+import matplotlib.pyplot as plt
+import matplotlib
+from scipy import ndimage
 from nilearn import plotting, image
 import matplotlib.pyplot as plt
 import matplotlib
 import nibabel as nib
+from nibabel.affines import apply_affine
 matplotlib.use('Qt5Agg')
 import numpy as np
 import base64
@@ -16,8 +21,10 @@ from uuid import uuid4
 import re
 import numpy as np
 from matplotlib import gridspec
+from matplotlib.colors import LinearSegmentedColormap
+np.set_printoptions(precision=6,suppress=True)
 
-
+from nilearn.datasets import load_mni152_template
 
 
 def svg2str(display_object, dpi):
@@ -136,10 +143,10 @@ if debug:
 	datap=r'/media/veracrypt6/projects/SEEG/derivatives/atlasreg/'
 	
 	input=dotdict({
-		#'flo':datap+f'sub-P{isub}/sub-P{isub}_acq-noncontrast_space-T1w_desc-rigid_T1w.nii.gz',
-		'flo':datap+f'sub-P{isub}/sub-P{isub}_space-MNI152NLin2009cSym_desc-affine_T1w.nii.gz',
-		#'ref':datap+f'sub-P{isub}/sub-P{isub}_acq-contrast_T1w.nii.gz'
-		'ref':'/home/greydon/Documents/GitHub/seeg2bids-pipeline/resources/tpl-MNI152NLin2009cSym/tpl-MNI152NLin2009cAsym_res-1_T1w.nii.gz'
+		'img':datap+f'sub-P{isub}/sub-P{isub}_desc-masked_from-atropos3seg_T1w.nii.gz',
+		'wm':datap+f'sub-P{isub}/sub-P{isub}_label-WM_desc-atropos3seg_probseg.nii.gz',
+		'gm':datap+f'sub-P{isub}/sub-P{isub}_label-GM_desc-atropos3seg_probseg.nii.gz',
+		'csf':datap+f'sub-P{isub}/sub-P{isub}_label-CSF_desc-atropos3seg_probseg.nii.gz',
 	})
 	
 	output=dotdict({
@@ -156,62 +163,35 @@ if debug:
 
 #%%
 
+ref_img=nib.load(snakemake.input.img)
+ref_resamp = nib.nifti1.Nifti1Image(ref_img.get_fdata(), affine=ref_img.affine,header=ref_img.header)
+ref_resamp = image.resample_img(ref_img, target_affine=np.eye(3), interpolation='continuous')
 
-ref_img=nib.load(snakemake.input.ref)
-if not any(x in os.path.basename(snakemake.output.png) for x in ('from-subject_to-')):
-	ref_img = nib.nifti1.Nifti1Image(ref_img.get_fdata(), affine=ref_img.affine,header=ref_img.header)
-	ref_resamp = image.resample_img(ref_img, target_affine=np.eye(3), interpolation='continuous')
-else:
-	ref_resamp=ref_img
+coords = plotting.find_xyz_cut_coords(ref_resamp)
 
-flo_img=nib.load(snakemake.input.flo)
-flo_img = nib.nifti1.Nifti1Image(flo_img.get_fdata(), affine=flo_img.affine,header=flo_img.header)
-flo_resamp = image.resample_img(flo_img, target_affine=np.eye(3), interpolation='continuous')
+wm_seg=nib.load(snakemake.input.wm)
+wm_seg = nib.nifti1.Nifti1Image(wm_seg.get_fdata(), affine=wm_seg.affine,header=wm_seg.header)
 
+gm_seg=nib.load(snakemake.input.gm)
+gm_seg = nib.nifti1.Nifti1Image(gm_seg.get_fdata(), affine=gm_seg.affine,header=gm_seg.header)
 
-plot_args_ref={'dim':-1}
-if any(x in os.path.basename(snakemake.output.png) for x in ('from-subject_to-')):
-	plot_args_ref={'dim':1}
-
-plot_args_flo={'dim':-1}
-if any(x in os.path.basename(snakemake.output.png) for x in ('from-ct')):
-	plot_args_flo={'dim':0}
+csf_seg=nib.load(snakemake.input.csf)
+csf_seg = nib.nifti1.Nifti1Image(csf_seg.get_fdata(), affine=csf_seg.affine,header=csf_seg.header)
 
 
-display = plotting.plot_anat(ref_resamp, display_mode='ortho', draw_cross=False, cut_coords=[0,0,40],**plot_args_ref)
-fg_svgs = [fromstring(extract_svg(display,450))]
-display.close()
-
-display = plotting.plot_anat(flo_resamp, display_mode='ortho', draw_cross=False, cut_coords=[0,0,40],**plot_args_flo)
-bg_svgs = [fromstring(extract_svg(display,450))]
-display.close()
-
-final_svg="\n".join(clean_svg(fg_svgs, bg_svgs))
-
-#with open(snakemake.output.png.replace(".png",".svg"), "w") as file:
-#	file.write(final_svg)
+fig, axes = plt.subplots(3, 1,figsize=(16,12))
+fig.tight_layout(pad=2)
 
 # make figure of thalamic contours
-display = plotting.plot_anat(ref_resamp, display_mode='ortho',draw_cross=False,cut_coords=[0,0,40],**plot_args_ref)
-display.add_contours(flo_resamp,alpha=0.6,colors='r',linewidths=0.5)
-display.savefig(snakemake.output.png,dpi=300)
+plotting.plot_roi(roi_img=csf_seg, bg_img=ref_resamp, display_mode='ortho', draw_cross=False, cut_coords=coords,cmap=LinearSegmentedColormap.from_list("",['black','red']),axes=axes[0])
+plotting.plot_roi(roi_img=wm_seg, bg_img=ref_resamp, display_mode='ortho', draw_cross=False, cut_coords=coords,cmap=LinearSegmentedColormap.from_list("",['black','yellow']),axes=axes[1])
+plotting.plot_roi(roi_img=gm_seg, bg_img=ref_resamp, display_mode='ortho', draw_cross=False, cut_coords=coords,cmap=LinearSegmentedColormap.from_list("",['black','green']),axes=axes[2])
 
-tmpfile_ref = BytesIO()
-display.savefig(tmpfile_ref,dpi=300)
-display.close()
-tmpfile_ref.seek(0)
-data_uri = base64.b64encode(tmpfile_ref.getvalue()).decode('utf-8')
-img_tag = '<center><img src="data:image/png;base64,{0}"/></center>'.format(data_uri)
+axes[0].set_title('CSF', fontdict={'fontsize': 20, 'fontweight': 'bold'})
+axes[1].set_title('White Matter', fontdict={'fontsize': 20, 'fontweight': 'bold'})
+axes[2].set_title('Gray Matter', fontdict={'fontsize': 20, 'fontweight': 'bold'})
+
+fig.savefig(snakemake.output.png,dpi=300)
+plt.close(fig)
 
 
-htmlbase='<!DOCTYPE html> <html lang="en"> <head> <title>Slice viewer</title>  <meta charset="UTF-8" /> </head> <body>'
-htmlend='</body> </html>'
-
-htmlfull=htmlbase + final_svg + img_tag + htmlend
-
-# Write HTML String to file.html
-with open(snakemake.output.html, "w") as file:
-	file.write(htmlfull)
-	
-
-	
