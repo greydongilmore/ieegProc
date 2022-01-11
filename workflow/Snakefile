@@ -10,9 +10,11 @@ import numpy as np
 configfile: 'config/config.yml'
 validate(config, "schemas/config.schema.yml")
 
+subject_id = config['subject_prefix']+'{subject}'
+
 config['out_dir'] = config['bids_dir']
 config['participants_tsv'] = join(config['bids_dir'], 'participants_run.tsv')
-config['subject_seega_scene'] = join(config['bids_dir'], 'derivatives', 'seega_scenes', 'sub-P{subject}')
+config['subject_seega_scene'] = join(config['bids_dir'], 'derivatives', 'seega_scenes', subject_id)
 
 if config['participants_tsv']:
     df = pd.read_table(config['participants_tsv'], dtype = str, header=0)
@@ -30,8 +32,6 @@ else:
 #this include is for the bids() function, and 
 #and any other global function declarations
 include: 'rules/common.smk'
-
-subject_id = config['subject_prefix']+'{subject}'
 
 final_outputs = []
 

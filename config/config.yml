@@ -46,7 +46,7 @@ seeg_contacts:
     present: True
 
 pet:
-    present: False
+    present: True
     position: -1
     task: rest
 
@@ -101,7 +101,13 @@ default_k_tissue_classes: 3 #higher than 3 to capture contrast-enhanced regions 
 
 #use this to specify custom values for subjects, e.g. here sub-P001 will have k=4 tissue classes for Atropos initialization
 subject_k_tissue_classes:
-    P001: 4
+    001: 4
+    012: 4
+    039: 4
+    047: 4
+    050: 4
+    061: 3
+
 
 #parameters for ants transformation
 ants:
