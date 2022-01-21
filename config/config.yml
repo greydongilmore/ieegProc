@@ -3,9 +3,9 @@
 #
 
 #bids_dir: /media/greydon/3E7CE0407CDFF11F/data/SEEG
-#bids_dir: /home/greydon/Documents/data/SEEG
+bids_dir: /home/greydon/data/data/SEEG_peds
 #bids_dir: /media/veracrypt6/projects/SEEG
-bids_dir: /media/veracrypt6/projects/SEEG/old_database
+#bids_dir: /media/veracrypt6/projects/SEEG/old_database
 
 #
 #--- dicom2bids
@@ -16,7 +16,7 @@ dcm_config: resources/dcm_config.json
 anonymize: False
 deface: False
 sub_group: patient
-subject_prefix: D
+subject_prefix: P
 
 # Session determination
 session_calc:
@@ -39,11 +39,11 @@ contrast_t1:
     present: True
 
 post_ct:
-    present: True
+    present: False
     position: -1
 
 seeg_contacts:
-    present: True
+    present: False
 
 pet:
     present: True
@@ -128,7 +128,7 @@ ants:
         gradient_step: 0.25
 
 fastsurfer:
-    run: False
+    run: True
     home: "/home/greydon/Documents/GitHub/FastSurfer"
     py: "python3"
     sid: 'fastsurfer'
