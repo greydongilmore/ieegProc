@@ -4,8 +4,8 @@
 
 #bids_dir: /media/greydon/3E7CE0407CDFF11F/data/SEEG
 #bids_dir: /home/greydon/Documents/data/SEEG
-bids_dir: /media/veracrypt6/projects/SEEG
-
+#bids_dir: /media/veracrypt6/projects/SEEG
+bids_dir: /media/veracrypt6/projects/SEEG/old_database
 
 #
 #--- dicom2bids
@@ -16,7 +16,7 @@ dcm_config: resources/dcm_config.json
 anonymize: False
 deface: False
 sub_group: patient
-subject_prefix: P
+subject_prefix: D
 
 # Session determination
 session_calc:
