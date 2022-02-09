@@ -3,7 +3,7 @@
 #
 
 #bids_dir: /media/greydon/3E7CE0407CDFF11F/data/SEEG
-bids_dir: /home/greydon/data/data/SEEG_peds
+bids_dir: /home/greydon/data/data/SEEG
 #bids_dir: /media/veracrypt6/projects/SEEG
 #bids_dir: /media/veracrypt6/projects/SEEG/old_database
 
