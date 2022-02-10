@@ -221,13 +221,13 @@ if debug:
 		def __init__(self, **kwargs):
 			self.__dict__.update(kwargs)
 	
-	#sub='P005'
-	config=dotdict({'out_dir':'/media/veracrypt6/projects/SEEG'})
+	sub='P080'
+	config=dotdict({'out_dir':'/home/greydon/data/data/SEEG'})
 	#config=dotdict({'out_dir':'/media/stereotaxy/3E7CE0407CDFF11F/data/SEEG/imaging/clinical'})
 	
 
 	params=dotdict({'sub':sub})
-	input=dotdict({'seega_scene':f'/media/veracrypt6/projects/SEEG/derivatives/seega_scenes/sub-{sub}'})
+	input=dotdict({'seega_scene':f'/home/greydon/data/data/SEEG/derivatives/seega_scenes/sub-{sub}'})
 	#input=dotdict({'seega_scene':f'/home/greydon/Documents/data/SEEG/derivatives/seega_scenes/sub-{sub}'})
 	
 	snakemake = Namespace(params=params, input=input,config=config)
