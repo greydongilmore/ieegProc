@@ -46,7 +46,7 @@ seeg_contacts:
     present: True
 
 pet:
-    present: True
+    present: False
     position: -1
     task: rest
 
