@@ -5,6 +5,37 @@ def get_electrodes_filename(wildcards):
     else:
         return config['out_dir'] + config['subject_electrodes']
 
+def get_fcsv_files(wildcards):
+    file=glob(bids(root=join(config['out_dir'], 'derivatives','seega_coordinates'), subject=config['subject_prefix']+f'{wildcards.subject}', space='native', suffix='*.fcsv'))
+    print(f'fcsv file: {file}')
+    return file
+
+def get_fcsv_files_acpc(wildcards):
+    file=glob(bids(root=join(config['out_dir'], 'derivatives','seega_scenes','sub-'+config['subject_prefix']+f'{wildcards.subject}'), suffix='acpc.fcsv'))
+    print(f'fcsv file: {file}')
+    return file
+
+def get_noncontrast_T1w(wildcards):
+    file=glob(bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=config['subject_prefix']+f'{wildcards.subject}', acq='noncontrast', space='T1w',desc='rigid',suffix='T1w.nii.gz'))
+    print(f'fcsv file: {file}')
+    return file
+
+def get_contrast_T1w(wildcards):
+    file=glob(bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'), subject=config['subject_prefix']+f'{wildcards.subject}', acq='contrast', suffix='T1w.nii.gz'))
+    print(f'fcsv file: {file}')
+    return file
+
+def get_segs(wildcards):
+    file=glob(bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'), subject=config['subject_prefix']+f'{wildcards.subject}', label='*', desc='atropos3seg', suffix='probseg.nii.gz'))
+    print(f'fcsv file: {file}')
+    return file
+
+def get_atlas_segs(wildcards):
+    file=glob(bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=config['subject_prefix']+f'{wildcards.subject}', atlas=config['atlases'][0], 
+        from_=config['template'],reg='SyN',suffix='dseg.nii.gz'))
+    print(f'fcsv file: {file}')
+    return file
+
 rule electrode_coords:
     input:
         seega_scene = config['subject_seega_scene']
@@ -54,5 +85,41 @@ rule mask_contacts:
     shell:
         'c3d {input.ct} -scale 0 -landmarks-to-spheres {input.txt} 1 -o {output.mask}'
 
-final_outputs.extend(expand(bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,suffix='electrodes.tsv',atlas='{atlas}',desc='dilated',from_='{template}'),
-                        subject=subjects, atlas=config['atlases'],template=config['template']))
+rule genrate_slicer_directory:
+    input:
+        fcsv_files=get_fcsv_files,
+        fcsv_acpc=get_fcsv_files_acpc,
+        ct = bids(root=join(config['out_dir'],'derivatives', 'atlasreg'),subject=subject_id,suffix='ct.nii.gz',space='T1w',desc='rigid'),
+        noncontrast_t1w=get_noncontrast_T1w,
+        contrast_t1w=get_contrast_T1w,
+        segs=get_segs,
+        atlas_segs=bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,atlas=config['atlases'][0], from_=config['template'],suffix='dseg.nii.gz',reg='SyN'),
+    output:
+        touch_slicer=touch(bids(root=join(config['out_dir'], 'derivatives', 'slicer_scene'), subject=subject_id, suffix='slicer.done')),
+    script:
+        '../scripts/slicer_dir.py'
+
+final_outputs.extend(
+        expand(
+            bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),
+                subject=subject_id,
+                suffix='electrodes.tsv',
+                atlas='{atlas}',
+                desc='dilated',
+                from_='{template}'
+            ),
+            subject=subjects,
+            atlas=config['atlases'],
+            template=config['template']
+        )
+)
+
+final_outputs.extend(
+        expand(
+            bids(root=join(config['out_dir'], 'derivatives', 'slicer_scene'),
+                subject=subject_id,
+                suffix='slicer.done'
+            ),
+            subject=subjects
+        )
+)

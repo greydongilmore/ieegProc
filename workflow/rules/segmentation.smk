@@ -1,8 +1,9 @@
 def get_k_tissue_classes(wildcards):
     if wildcards.subject in config['subject_k_tissue_classes']:
-        return config['subject_k_tissue_classes'][wildcards.subject]
+        k_classes=config['subject_k_tissue_classes'][wildcards.subject]
     else:
-        return config['default_k_tissue_classes']
+        k_classes=config['default_k_tissue_classes']
+    return k_classes
 
 #this performs Atropos with k-means as initialization
 rule tissue_seg_kmeans_init:

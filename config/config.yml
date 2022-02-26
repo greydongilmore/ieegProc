@@ -3,8 +3,8 @@
 #
 
 #bids_dir: /media/greydon/3E7CE0407CDFF11F/data/SEEG
-bids_dir: /home/greydon/data/data/SEEG
-#bids_dir: /media/veracrypt6/projects/SEEG
+#bids_dir: /home/greydon/data/data/SEEG
+bids_dir: /media/veracrypt6/projects/SEEG
 #bids_dir: /media/veracrypt6/projects/SEEG/old_database
 
 #
@@ -32,7 +32,7 @@ mean_reg2mean: resources/mean_reg2mean.nii.gz
 #
 
 noncontrast_t1:
-    present: True
+    present: False
     acq: FSPGR
 
 contrast_t1:
@@ -46,7 +46,7 @@ seeg_contacts:
     present: True
 
 pet:
-    present: True
+    present: False
     position: -1
     task: rest
 
@@ -106,6 +106,7 @@ subject_k_tissue_classes:
     039: 4
     047: 4
     050: 4
+    058: 4
     061: 3
 
 
