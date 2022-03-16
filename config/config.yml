@@ -3,8 +3,8 @@
 #
 
 #bids_dir: /media/greydon/3E7CE0407CDFF11F/data/SEEG
-bids_dir: /home/greydon/Documents/data/SEEG
-#bids_dir: /media/veracrypt6/projects/SEEG
+#bids_dir: /home/greydon/Documents/data/SEEG
+bids_dir: /media/veracrypt6/projects/SEEG
 #bids_dir: /media/veracrypt6/projects/SEEG/old_database
 
 #
@@ -43,10 +43,10 @@ post_ct:
     position: -1
 
 seeg_contacts:
-    present: False
+    present: True
 
 pet:
-    present: False
+    present: True
     position: -1
     task: rest
 

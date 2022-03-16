@@ -36,6 +36,17 @@ def get_atlas_segs(wildcards):
     print(f'fcsv file: {file}')
     return file
 
+def get_ct_file(wildcards):
+    file=glob(bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=config['subject_prefix']+f'{wildcards.subject}', space='T1w', desc='rigid', suffix='ct.nii.gz'))
+    print(f'ct file: {file}')
+    return file
+
+def get_pet_file(wildcards):
+    file=glob(bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=config['subject_prefix']+f'{wildcards.subject}', space='T1w', desc='rigid', suffix='pet.nii.gz'))
+        from_=config['template'],reg='SyN',suffix='dseg.nii.gz'))
+    print(f'pet file: {file}')
+    return file
+
 rule electrode_coords:
     input:
         seega_scene = config['subject_seega_scene']
@@ -85,7 +96,7 @@ rule mask_contacts:
     shell:
         'c3d {input.ct} -scale 0 -landmarks-to-spheres {input.txt} 1 -o {output.mask}'
 
-rule genrate_slicer_directory:
+rule generate_slicer_directory:
     input:
         fcsv_files=get_fcsv_files,
         fcsv_acpc=get_fcsv_files_acpc,
@@ -94,32 +105,39 @@ rule genrate_slicer_directory:
         contrast_t1w=get_contrast_T1w,
         segs=get_segs,
         atlas_segs=bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,atlas=config['atlases'][0], from_=config['template'],suffix='dseg.nii.gz',reg='SyN'),
+        ct_file=get_ct_file,
+        pet_file=get_pet_file,
     output:
         touch_slicer=touch(bids(root=join(config['out_dir'], 'derivatives', 'slicer_scene'), subject=subject_id, suffix='slicer.done')),
     script:
         '../scripts/slicer_dir.py'
+        
+
+
 
 final_outputs.extend(
-        expand(
-            bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),
-                subject=subject_id,
-                suffix='electrodes.tsv',
-                atlas='{atlas}',
-                desc='dilated',
-                from_='{template}'
-            ),
-            subject=subjects,
-            atlas=config['atlases'],
-            template=config['template']
-        )
+    expand(
+        bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),
+            subject=subject_id,
+            suffix='electrodes.tsv',
+            atlas='{atlas}',
+            desc='dilated',
+            from_='{template}'
+        ),
+        subject=subjects,
+        atlas=config['atlases'],
+        template=config['template']
+    )
 )
 
+
+
 final_outputs.extend(
-        expand(
-            bids(root=join(config['out_dir'], 'derivatives', 'slicer_scene'),
-                subject=subject_id,
-                suffix='slicer.done'
-            ),
-            subject=subjects
-        )
+    expand(
+        bids(root=join(config['out_dir'], 'derivatives', 'slicer_scene'),
+            subject=subject_id,
+            suffix='slicer.done'
+        ),
+        subject=subjects
+    )
 )

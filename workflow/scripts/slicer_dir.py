@@ -179,4 +179,10 @@ if len(snakemake.input.atlas_segs)>0:
 	output_filen=os.path.join(output_dir, '_'.join([subject_id, 'desc-segmentations.nii.gz']))
 	shutil.copy(str(snakemake.input.atlas_segs), output_filen)
 
-if planned and actual:
+if len(snakemake.input.ct_file)>0:
+	output_filen=os.path.join(output_dir, '_'.join([subject_id, '_ct.nii.gz']))
+	shutil.copy(str(snakemake.input.ct_file), output_filen)
+
+if len(snakemake.input.pet_file)>0:
+	output_filen=os.path.join(output_dir, '_'.join([subject_id, '_pet.nii.gz']))
+	shutil.copy(str(snakemake.input.pet_file), output_filen)
