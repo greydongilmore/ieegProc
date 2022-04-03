@@ -43,7 +43,6 @@ def get_ct_file(wildcards):
 
 def get_pet_file(wildcards):
     file=glob(bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=config['subject_prefix']+f'{wildcards.subject}', space='T1w', desc='rigid', suffix='pet.nii.gz'))
-        from_=config['template'],reg='SyN',suffix='dseg.nii.gz'))
     print(f'pet file: {file}')
     return file
 

@@ -208,7 +208,7 @@ def determineFCSVCoordSystem(input_fcsv):
 		print(f"Converted LPS to RAS: {os.path.dirname(input_fcsv)}/{os.path.basename(input_fcsv)}")
 
 
-debug = False
+debug = True
 
 if debug:
 	class dotdict(dict):
@@ -221,7 +221,7 @@ if debug:
 		def __init__(self, **kwargs):
 			self.__dict__.update(kwargs)
 	
-	sub='P021'
+	sub='P082'
 	config=dotdict({'out_dir':'/media/veracrypt6/projects/SEEG'})
 	#config=dotdict({'out_dir':'/media/stereotaxy/3E7CE0407CDFF11F/data/SEEG/imaging/clinical'})
 	
