@@ -88,14 +88,10 @@ chan_label_dic = {
 def determine_groups(iterable):
 	values = []
 	for item in iterable:
-# 		if '_' in item:
-# 			temp = "_".join(item.split('_')[:-1] + ["".join(x for x in item.split('_')[-1] if not x.isdigit())])
-# 		elif len(re.findall(r"([a-zA-Z]+)([0-9]+)", item))>1:
-# 			temp = "".join(list(re.findall(r"([a-zA-Z]+)([0-9]+)([a-zA-Z]+)", item)[0]))
-# 		else:
-# 			temp = "".join(x for x in item if not x.isdigit())
 		if re.findall(r"([a-zA-Z]+)([0-9]+)([a-zA-Z]+)", item):
 			temp = "".join(list(re.findall(r"([a-zA-Z]+)([0-9]+)([a-zA-Z]+)", item)[0]))
+		elif '-' in item:
+			temp=item.split('-')[:-1][0]
 		else:
 			temp="".join(x for x in item if not x.isdigit())
 			
@@ -221,17 +217,17 @@ if debug:
 		def __init__(self, **kwargs):
 			self.__dict__.update(kwargs)
 	
-	sub='P082'
-	config=dotdict({'out_dir':'/media/veracrypt6/projects/SEEG'})
-	#config=dotdict({'out_dir':'/media/stereotaxy/3E7CE0407CDFF11F/data/SEEG/imaging/clinical'})
+	sub='P086'
+	#config=dotdict({'out_dir':'/media/veracrypt6/projects/SEEG/resection/SEEGA'})
+	config=dotdict({'out_dir':'/home/greydon/Documents/data/SEEG'})
 	
 
 	params=dotdict({'sub':sub})
-	input=dotdict({'seega_scene':f'/media/veracrypt6/projects/SEEG/derivatives/seega_scenes/sub-{sub}'})
-	#input=dotdict({'seega_scene':f'/home/greydon/Documents/data/SEEG/derivatives/seega_scenes/sub-{sub}'})
+	#input=dotdict({'seega_scene':f'/media/veracrypt6/projects/SEEG/resection/SEEGA/derivatives/slicer_scenes/sub-{sub}'})
+	input=dotdict({'seega_scene':f'/home/greydon/Documents/data/SEEG/derivatives/seega_scenes/sub-{sub}'})
 	
 	snakemake = Namespace(params=params, input=input,config=config)
-	
+
 #%%
 isub='sub-'+snakemake.params.sub
 
@@ -268,7 +264,7 @@ if acpc_file:
 		fid.write("Transform: AffineTransform_double_3_3\n")
 		fid.write("Parameters: 1 0 0 0 1 0 0 0 1 {} {} {}\n".format(1*(round(mcp_point[0],3)), 1*(round(mcp_point[1],3)), -1*(round(mcp_point[2],3))))
 		fid.write("FixedParameters: 0 0 0\n")
-	
+
 for ifile in patient_files:
 
 	# determine the coordinate system of the FCSV
@@ -279,7 +275,7 @@ for ifile in patient_files:
 					6:'oy', 7:'oz', 8:'vis', 9:'sel', 10:'lock',
 					11:'label', 12:'description', 13:'associatedNodeID'}, inplace=True)
 	
-	data_table_full['label'] = data_table_full['label'].str.replace('-','')
+	#data_table_full['label'] = data_table_full['label'].str.replace('-','')
 	data_table_full['type'] = np.repeat(ifile.split(os.sep)[-1].split('.fcsv')[0], data_table_full.shape[0])
 	
 	if os.path.splitext(ifile.split(os.sep)[-1])[0].lower().endswith('seega'):
@@ -299,7 +295,7 @@ for ifile in patient_files:
 			else:
 				new_group.append("".join(x for x in group_pair[-1]))
 				new_label.append(new_group[-1] + ichan.split(group_pair[-1])[-1])
-				
+		
 		data_table_full.insert(data_table_full.shape[1],'orig_group',group_pair)
 		data_table_full.insert(data_table_full.shape[1],'new_label',new_label)
 		data_table_full.insert(data_table_full.shape[1],'new_group',new_group)

@@ -14,6 +14,7 @@ def get_pre_t1_filename(wildcards):
     
     print(f'Pre T1w non-contrast file: {basename(file[0])}')
     return file
+
 if config['fastsurfer']['seg_only']:
     rule fastsurfer_seg:
         input: 

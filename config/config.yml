@@ -3,8 +3,8 @@
 #
 
 #bids_dir: /media/greydon/3E7CE0407CDFF11F/data/SEEG
-#bids_dir: /home/greydon/Documents/data/SEEG
-bids_dir: /media/veracrypt6/projects/SEEG
+bids_dir: /home/greydon/Documents/data/SEEG_peds
+#bids_dir: /media/veracrypt6/projects/SEEG/resection/SEEGA
 #bids_dir: /media/veracrypt6/projects/SEEG/old_database
 
 #
@@ -39,17 +39,16 @@ contrast_t1:
     present: True
 
 post_ct:
-    present: True
+    present: False
     position: -1
 
 seeg_contacts:
-    present: True
+    present: False
 
 pet:
-    present: True
+    present: False
     position: -1
     task: rest
-
 
 subject_t1w: /bids/sub-f'{config['subject_prefix']}'{subject}/ses-pre/anat/sub-f'{config['subject_prefix']}'{subject}_ses-pre_acq-FSPGR_run-01_T1w.nii.gz
 
@@ -102,12 +101,12 @@ default_k_tissue_classes: 3 #higher than 3 to capture contrast-enhanced regions 
 #use this to specify custom values for subjects, e.g. here sub-P001 will have k=4 tissue classes for Atropos initialization
 subject_k_tissue_classes:
     001: 4
-    012: 4
-    039: 4
-    047: 4
-    050: 4
-    058: 4
-    061: 3
+#    012: 4
+#    039: 4
+#    047: 4
+#    050: 4
+#    058: 4
+#    061: 3
 
 
 #parameters for ants transformation
