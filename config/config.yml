@@ -2,28 +2,18 @@
 #--- filepaths
 #
 
-#bids_dir: /media/greydon/3E7CE0407CDFF11F/data/SEEG
-bids_dir: /home/greydon/Documents/data/SEEG_peds
-#bids_dir: /media/veracrypt6/projects/SEEG/resection/SEEGA
-#bids_dir: /media/veracrypt6/projects/SEEG/old_database
+#laptop
+#bids_dir: /home/greydon/Documents/data/SEEG
 
-#
-#--- dicom2bids
-#
+#work computer
+bids_dir: /home/greydon/data/data/SEEG
 
-heuristic: resources/heuristics/clinical_imaging.py
-dcm_config: resources/dcm_config.json
-anonymize: False
-deface: False
-sub_group: patient
+#external drive
+#bids_dir: /media/veracrypt6/projects/stealthMRI
+
+
 subject_prefix: P
-
-# Session determination
-session_calc:
-    peri: 0
-    dur_multi_event: -15
-    override_peri: True
-
+deface: False
 facemask: resources/facemask.nii.gz
 mean_reg2mean: resources/mean_reg2mean.nii.gz
 
@@ -54,8 +44,6 @@ subject_t1w: /bids/sub-f'{config['subject_prefix']}'{subject}/ses-pre/anat/sub-f
 
 #use this if a particular subject has a custom path
 subject_t1w_custom: []
-    #'007': /bids/sub-P{subject}/ses-pre/anat/sub-P{subject}_ses-pre_run-03_T1w.nii.gz
-    #'017': /bids/sub-P{subject}/ses-pre/anat/sub-P{subject}_ses-pre_run-02_T1w.nii.gz
 
 #
 #--- segmentation
@@ -99,8 +87,8 @@ n_init_mask_dilate: 1
 default_k_tissue_classes: 3 #higher than 3 to capture contrast-enhanced regions too
 
 #use this to specify custom values for subjects, e.g. here sub-P001 will have k=4 tissue classes for Atropos initialization
-subject_k_tissue_classes:
-    001: 4
+subject_k_tissue_classes: []
+#    001: 4
 #    012: 4
 #    039: 4
 #    047: 4
@@ -128,7 +116,7 @@ ants:
         gradient_step: 0.25
 
 fastsurfer:
-    run: True
+    run: False
     home: "/home/greydon/Documents/GitHub/FastSurfer"
     py: "python3"
     sid: 'fastsurfer'

@@ -204,7 +204,7 @@ def determineFCSVCoordSystem(input_fcsv):
 		print(f"Converted LPS to RAS: {os.path.dirname(input_fcsv)}/{os.path.basename(input_fcsv)}")
 
 
-debug = True
+debug = False
 
 if debug:
 	class dotdict(dict):
@@ -218,13 +218,13 @@ if debug:
 			self.__dict__.update(kwargs)
 	
 	sub='P086'
-	#config=dotdict({'out_dir':'/media/veracrypt6/projects/SEEG/resection/SEEGA'})
-	config=dotdict({'out_dir':'/home/greydon/Documents/data/SEEG'})
 	
-
+	config=dotdict({'out_dir':'/home/greydon/data/data/SEEG'})
+	#config=dotdict({'out_dir':'/media/stereotaxy/3E7CE0407CDFF11F/data/SEEG/imaging/clinical'})
+	
 	params=dotdict({'sub':sub})
-	#input=dotdict({'seega_scene':f'/media/veracrypt6/projects/SEEG/resection/SEEGA/derivatives/slicer_scenes/sub-{sub}'})
-	input=dotdict({'seega_scene':f'/home/greydon/Documents/data/SEEG/derivatives/seega_scenes/sub-{sub}'})
+	input=dotdict({'seega_scene':f'/home/greydon/data/data/SEEG/derivatives/seega_scenes/sub-{sub}'})
+	#input=dotdict({'seega_scene':f'/home/greydon/Documents/data/SEEG/derivatives/seega_scenes/sub-{sub}'})
 	
 	snakemake = Namespace(params=params, input=input,config=config)
 

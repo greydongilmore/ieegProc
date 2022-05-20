@@ -14,7 +14,7 @@ subject_id = config['subject_prefix']+'{subject}'
 
 config['out_dir'] = config['bids_dir']
 config['participants_tsv'] = join(config['bids_dir'], 'participants_run.tsv')
-config['subject_seega_scene'] = join(config['bids_dir'], 'derivatives', 'seega_scenes', subject_id)
+config['subject_seega_scene'] = join(config['bids_dir'], 'derivatives', 'seega_scenes', 'sub-'+subject_id)
 
 if config['participants_tsv']:
     df = pd.read_table(config['participants_tsv'], dtype = str, header=0)

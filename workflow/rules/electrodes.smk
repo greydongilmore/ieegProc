@@ -7,43 +7,35 @@ def get_electrodes_filename(wildcards):
 
 def get_fcsv_files(wildcards):
     file=glob(bids(root=join(config['out_dir'], 'derivatives','seega_coordinates'), subject=config['subject_prefix']+f'{wildcards.subject}', space='native', suffix='*.fcsv'))
-    print(f'fcsv file: {file}')
     return file
 
 def get_fcsv_files_acpc(wildcards):
     file=glob(bids(root=join(config['out_dir'], 'derivatives','seega_scenes','sub-'+config['subject_prefix']+f'{wildcards.subject}'), suffix='acpc.fcsv'))
-    print(f'fcsv file: {file}')
     return file
 
 def get_noncontrast_T1w(wildcards):
     file=glob(bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=config['subject_prefix']+f'{wildcards.subject}', acq='noncontrast', space='T1w',desc='rigid',suffix='T1w.nii.gz'))
-    print(f'fcsv file: {file}')
     return file
 
 def get_contrast_T1w(wildcards):
     file=glob(bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'), subject=config['subject_prefix']+f'{wildcards.subject}', acq='contrast', suffix='T1w.nii.gz'))
-    print(f'fcsv file: {file}')
     return file
 
 def get_segs(wildcards):
     file=glob(bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'), subject=config['subject_prefix']+f'{wildcards.subject}', label='*', desc='atropos3seg', suffix='probseg.nii.gz'))
-    print(f'fcsv file: {file}')
     return file
 
 def get_atlas_segs(wildcards):
     file=glob(bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=config['subject_prefix']+f'{wildcards.subject}', atlas=config['atlases'][0], 
         from_=config['template'],reg='SyN',suffix='dseg.nii.gz'))
-    print(f'fcsv file: {file}')
     return file
 
 def get_ct_file(wildcards):
     file=glob(bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=config['subject_prefix']+f'{wildcards.subject}', space='T1w', desc='rigid', suffix='ct.nii.gz'))
-    print(f'ct file: {file}')
     return file
 
 def get_pet_file(wildcards):
     file=glob(bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=config['subject_prefix']+f'{wildcards.subject}', space='T1w', desc='rigid', suffix='pet.nii.gz'))
-    print(f'pet file: {file}')
     return file
 
 rule electrode_coords:
