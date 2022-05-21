@@ -148,7 +148,7 @@ actual=False
 
 if len(snakemake.input.fcsv_files)>0:
 	for ifcsv in snakemake.input.fcsv_files:
-		output_filen=os.path.join(output_dir, '_'.join([subject_id, os.path.basename(str(ifcsv)).split('_')[-1]]))
+		output_filen=os.path.join(output_dir, os.path.basename(str(ifcsv)).split('_')[-1])
 		shutil.copy(str(ifcsv), output_filen)
 		if 'planned' in os.path.basename(output_filen):
 			planned=True
@@ -157,7 +157,7 @@ if len(snakemake.input.fcsv_files)>0:
 
 if len(snakemake.input.fcsv_acpc)>0:
 	if os.path.exists(str(snakemake.input.fcsv_acpc)):
-		output_filen=os.path.join(output_dir, '_'.join([subject_id, 'acpc.fcsv']))
+		output_filen=os.path.join(output_dir, 'acpc.fcsv')
 		shutil.copy(str(snakemake.input.fcsv_acpc), output_filen)
 
 if len(snakemake.input.noncontrast_t1w)>0:

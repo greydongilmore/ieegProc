@@ -194,5 +194,8 @@ if config['seeg_contacts']['present']:
     final_outputs.extend(expand(bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),prefix='sub-'+subject_id+'/qc/sub-'+subject_id,suffix='electrodevis.png',desc='affine',space='{template}',include_subject_dir=False),
                         subject=subjects, desc=['rigid'],template=config['template']))
     
+    final_outputs.extend(expand(bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),prefix='sub-'+subject_id+'/qc/sub-'+subject_id,suffix='electrodes.html',desc='affine',space='{template}',include_subject_dir=False),
+                        subject=subjects, desc=['rigid'],template=config['template']))
+    
     final_outputs.extend(expand(bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),prefix='sub-'+subject_id+'/qc/sub-'+subject_id,suffix='contacts.html',desc='mask',space='ct',include_subject_dir=False),
             subject=subjects))
