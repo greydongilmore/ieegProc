@@ -82,7 +82,7 @@ elif config['contrast_t1']['present'] and config['noncontrast_t1']['present']:
         #container: config['singularity']['neuroglia']
         group: 'preproc'
         shell:
-            'reg_aladin -flo {input.flo} -ref {input.ref} -res {output.warped_subj} -aff {output.xfm_ras} -speeeeed'
+            'reg_aladin -flo {input.flo} -ref {input.ref} -rigOnly -interp 0 -res {output.warped_subj} -aff {output.xfm_ras} -speeeeed'
             #'flirt -in {input.flo} -ref {input.ref} -out {output.warped_subj} -omat {output.xfm_ras} -dof 6'
 
     rule convert_T1w_xfm_tfm:
@@ -120,8 +120,8 @@ if config['post_ct']['present']:
         #container: config['singularity']['neuroglia']
         group: 'preproc'
         shell:
-            #'reg_aladin -flo {input.flo} -ref {input.ref} -res {output.warped_subj} -aff {output.xfm_ras} -speeeeed'
-            'flirt -in {input.flo} -ref {input.ref} -out {output.warped_subj} -omat {output.xfm_ras} -dof 6'
+            'reg_aladin -flo {input.flo} -ref {input.ref} -rigOnly -interp 0 -res {output.warped_subj} -aff {output.xfm_ras} -speeeeed'
+            #'flirt -in {input.flo} -ref {input.ref} -out {output.warped_subj} -omat {output.xfm_ras} -dof 6'
 
     rule convert_ct_xfm_tfm:
         input:
