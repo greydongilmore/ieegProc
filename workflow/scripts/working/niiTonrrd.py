@@ -6,7 +6,6 @@ Created on Tue Aug 24 16:02:30 2021
 @author: greydon
 """
 
-import vtk
 import nrrd
 import re
 import pandas as pd
@@ -37,13 +36,13 @@ def sorted_nicely(data, reverse = False):
 #%%
 
 
-isub="P090"
+isub="P091"
 scene_path="slicer_scene"
 
 repo_path = r'/home/greydon/Documents/GitHub'
 #repo_path = r'/home/stereotaxy/Documents/GitHub'
 
-data_path = r'/home/greydon/data/data/SEEG'
+data_path = r'/home/greydon/Documents/data/SEEG'
 #data_path = r'/media/stereotaxy/3E7CE0407CDFF11F/data/SEEG/imaging/clinical'
 #data_path = r'/media/veracrypt6/projects/iEEG/imaging/clinical'
 
