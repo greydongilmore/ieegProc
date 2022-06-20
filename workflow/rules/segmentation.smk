@@ -12,6 +12,8 @@ rule tissue_seg_kmeans_init:
         mask = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,suffix='mask.nii.gz',from_='{template}'.format(template=config['template']),reg='affine',desc='brain'),
     params:
         k = get_k_tissue_classes,
+        m = config['atropos_smoothing_factor'],
+        c = config['convergence'],
         posterior_fmt = 'posteriors_%d.nii.gz',
         posterior_glob = 'posteriors_*.nii.gz',
     output:
@@ -21,7 +23,7 @@ rule tissue_seg_kmeans_init:
     #container: config['singularity']['neuroglia']
     group: 'preproc'
     shell:
-        'Atropos -d 3 -a {input.t1} -i KMeans[{params.k}] -x {input.mask} -o [{output.seg},{params.posterior_fmt}] && '
+        'Atropos -d 3 -a {input.t1} -i KMeans[{params.k}] -m {params.m} -c {params.c} -x {input.mask} -o [{output.seg},{params.posterior_fmt}] && '
         'fslmerge -t {output.posteriors} {params.posterior_glob} ' #merge posteriors into a 4d file (intermediate files will be removed b/c shadow)
 
 rule map_channels_to_tissue:
