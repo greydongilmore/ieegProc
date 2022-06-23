@@ -13,8 +13,6 @@ from io import BytesIO
 import base64
 import os
 import nibabel as nb
-from nilearn.maskers import NiftiMasker
-import nilearn
 
 
 def svg2str(display_object, dpi):
@@ -144,7 +142,8 @@ def compute_RI(image, bg, mask):
 def qc_mosaic_plot(anat_img, overlay_img, out_filen, dim=0, threshold=0):
 	
 	plt.ioff()
-	
+	fig = plt.figure(figsize=(10, 8),facecolor='k')
+
 	display = plotting.plot_anat(anat_img, 
 								 display_mode='mosaic',
 								 black_bg=True,
@@ -152,19 +151,18 @@ def qc_mosaic_plot(anat_img, overlay_img, out_filen, dim=0, threshold=0):
 								 cut_coords=None, 
 								 threshold=0, 
 								 dim=dim,
-								 draw_cross=False)
+								 draw_cross=False,
+								 figure=fig)
 	fg_svgs = [fromstring(extract_svg(display,400))]
 	
-	mask_dat = overlay_img.get_fdata()[:,:,:]
-	mask_bin = mask_dat > 0
-	regions_masked_dat = anat_img.get_fdata() * mask_bin
-	regions_masked_img = nilearn.image.new_img_like(anat_img, regions_masked_dat, affine=anat_img.affine, copy_header=True)
-	display.add_overlay(regions_masked_img,alpha=0.7,cmap=plt.cm.coolwarm_r)
+	display.add_overlay(overlay_img,alpha=0.7,cmap=plt.cm.coolwarm_r)
 	
 	bg_svgs = [fromstring(extract_svg(display,400))]
+
 	display.savefig(out_filen,dpi=400)
 	display.close()
 	
+	fig = plt.figure(figsize=(10, 8),facecolor='k')
 	display = plotting.plot_anat(anat_img, 
 								 display_mode='mosaic',
 								 black_bg=True,
@@ -172,7 +170,9 @@ def qc_mosaic_plot(anat_img, overlay_img, out_filen, dim=0, threshold=0):
 								 cut_coords=None, 
 								 threshold=0, 
 								 dim=dim,
-								 draw_cross=False)
+								 draw_cross=False,
+								 figure=fig)
+	
 	display.add_overlay(overlay_img,threshold=threshold,alpha=0.7,cmap=plt.cm.coolwarm_r)
 	
 	cleaned_svg,sizes=clean_svg(fg_svgs,bg_svgs)
@@ -204,98 +204,69 @@ def qc_mosaic_plot(anat_img, overlay_img, out_filen, dim=0, threshold=0):
 
 #%%
 
-subs=[
-	"sub-P080",
-	"sub-P079",
-	"sub-P078",
-	"sub-P077",
-	"sub-P076",
-	"sub-P074",
-	"sub-P073",
-	"sub-P072",
-	"sub-P070",
-	"sub-P066",
-	"sub-P065",
-	"sub-P062",
-	"sub-P053",
-	"sub-P052",
-	"sub-P050",
-	"sub-P046",
-	"sub-P036",
-	"sub-P021",  
-  ]
+debug = False
+if debug:
+	class dotdict(dict):
+		"""dot.notation access to dictionary attributes"""
+		__getattr__ = dict.get
+		__setattr__ = dict.__setitem__
+		__delattr__ = dict.__delitem__
+	
+	class Namespace:
+		def __init__(self, **kwargs):
+			self.__dict__.update(kwargs)
+	
+	isub='sub-P091'
+	data_dir=r'/home/greydon/Documents/data/SEEG/derivatives/atlasreg'
+	
+	input=dotdict({'t1':f'{data_dir}/{isub}/{isub}_desc-n4_T1w.nii.gz',
+				'gm':f'{data_dir}/{isub}/{isub}_label-GM_desc-atropos3seg_probseg.nii.gz',
+				'wm':f'{data_dir}/{isub}/{isub}_label-GM_desc-atropos3seg_probseg.nii.gz',
+				'mask':f'{data_dir}/{isub}/{isub}_desc-brain_from-MNI152NLin2009cSym_reg-affine_mask.nii.gz',
+				'seg':f'{data_dir}/{isub}/{isub}_desc-atroposKseg_dseg.nii.gz',
+				})
+	
+	output=dotdict({
+		't1_grad':f'{data_dir}/{isub}/{isub}_desc-magnitude_T1w.nii.gz',
+		't1_intensity':f'{data_dir}/{isub}/{isub}_desc-intensity_T1w.nii.gz',
+		'png_mask':f'{data_dir}/{isub}/qc/{isub}_desc-brain_maskqc.png',
+		'png_seg':f'{data_dir}/{isub}/qc/{isub}_desc-segmentation_segqc.png'
+	})
+	
+	snakemake = Namespace(output=output, input=input)
+	
+
+t1_file=ants.image_read(snakemake.input.t1)
+mask_file=ants.image_read(snakemake.input.mask)
+seg_file=ants.image_read(snakemake.input.seg)
+
+if not os.path.exists(snakemake.output.t1_grad):
+	grad_t1 = ants.iMath(t1_file, "Grad", 1)
+	ants.image_write(grad_t1, snakemake.output.t1_grad)
+else:
+	grad_t1=ants.image_read(snakemake.output.t1_grad)
+
+if not os.path.exists(snakemake.output.t1_intensity):
+	gm_file=ants.image_read(snakemake.input.gm)
+	wm_file=ants.image_read(snakemake.input.wm)
+	t1_n4_gm = t1_file * t1_file.new_image_like(gm_file.numpy())
+	t1_n4_wm = t1_file * t1_file.new_image_like(wm_file.numpy())
+	bg_t1 = peakfinder(t1_n4_gm, t1_n4_wm, 1, 99.5)
+	t1_ri = compute_RI(t1_file.numpy(), bg_t1, mask_file.numpy())
+	tmp = t1_file.new_image_like(t1_ri)
+	ri = ants.smooth_image(tmp, sigma=3, FWHM=True)
+	ants.image_write(ri, snakemake.output.t1_intensity)
+else:
+	ri=ants.image_read(snakemake.output.t1_intensity)
+
+lmin = float(t1_file.numpy().min())
+lmax = float(t1_file.numpy().max())
+norm_img=np.floor((t1_file.numpy()-lmin)/(lmax-lmin) * 255.)
+
+t1_file_nb = ants.to_nibabel(t1_file)
+t1_file_norm = nb.Nifti1Image(norm_img, t1_file_nb.affine, t1_file_nb.header)
 
 
-for isub in subs:
-	debug = True
-	if debug:
-		class dotdict(dict):
-			"""dot.notation access to dictionary attributes"""
-			__getattr__ = dict.get
-			__setattr__ = dict.__setitem__
-			__delattr__ = dict.__delitem__
-		
-		class Namespace:
-			def __init__(self, **kwargs):
-				self.__dict__.update(kwargs)
-		
-		
-		data_dir=r'/media/veracrypt6/projects/SEEG/derivatives/atlasreg'
-		
-		input=dotdict({'t1':f'{data_dir}/{isub}/{isub}_desc-n4_T1w.nii.gz',
-					'gm':f'{data_dir}/{isub}/{isub}_label-GM_desc-atropos3seg_probseg.nii.gz',
-					'wm':f'{data_dir}/{isub}/{isub}_label-GM_desc-atropos3seg_probseg.nii.gz',
-					'mask':f'{data_dir}/{isub}/{isub}_desc-brain_from-MNI152NLin2009cSym_reg-affine_mask.nii.gz',
-					'seg':f'{data_dir}/{isub}/{isub}_desc-atroposKseg_dseg.nii.gz',
-					})
-		
-		output=dotdict({
-			't1_grad':f'{data_dir}/{isub}/{isub}_desc-magnitude_T1w.nii.gz',
-			't1_intensity':f'{data_dir}/{isub}/{isub}_desc-intensity_T1w.nii.gz',
-			'png_mask':f'{data_dir}/{isub}/qc/{isub}_desc-brain_maskqc.png',
-			'png_seg':f'{data_dir}/{isub}/qc/{isub}_desc-segmentation_segqc.png'
-		})
-		
-		snakemake = Namespace(output=output, input=input)
-	
-	
-	t1_file=ants.image_read(snakemake.input.t1)
-	mask_file=ants.image_read(snakemake.input.mask)
-	seg_file=ants.image_read(snakemake.input.seg)
-	
-	if not os.path.exists(snakemake.output.t1_grad):
-		grad_t1 = ants.iMath(t1_file, "Grad", 1)
-		ants.image_write(grad_t1, snakemake.output.t1_grad)
-	else:
-		grad_t1=ants.image_read(snakemake.output.t1_grad)
-	
-	if not os.path.exists(snakemake.output.t1_intensity):
-		gm_file=ants.image_read(snakemake.input.gm)
-		wm_file=ants.image_read(snakemake.input.wm)
-		t1_n4_gm = t1_file * t1_file.new_image_like(gm_file.numpy())
-		t1_n4_wm = t1_file * t1_file.new_image_like(wm_file.numpy())
-		bg_t1 = peakfinder(t1_n4_gm, t1_n4_wm, 1, 99.5)
-		t1_ri = compute_RI(t1_file.numpy(), bg_t1, mask_file.numpy())
-		tmp = t1_file.new_image_like(t1_ri)
-		ri = ants.smooth_image(tmp, sigma=3, FWHM=True)
-		ants.image_write(ri, snakemake.output.t1_intensity)
-	else:
-		ri=ants.image_read(snakemake.output.t1_intensity)
-	
-	lmin = float(t1_file.numpy().min())
-	lmax = float(t1_file.numpy().max())
-	norm_img=np.floor((t1_file.numpy()-lmin)/(lmax-lmin) * 255.)
-	
-	t1_file_nb = ants.to_nibabel(t1_file)
-	t1_file_norm = nb.Nifti1Image(norm_img, t1_file_nb.affine, t1_file_nb.header)
-	
-	print(np.percentile(t1_file_norm.get_fdata(), 99), np.mean(t1_file_norm.get_fdata()))
-	
-	anat_img=t1_file_norm
-	overlay_img= ants.to_nibabel(mask_file)
-	out_file=snakemake.output.png_mask
-	
-	qc_mosaic_plot(t1_file_norm, ants.to_nibabel(mask_file), snakemake.output.png_mask)
-	qc_mosaic_plot(t1_file_norm, ants.to_nibabel(seg_file), snakemake.output.png_seg, threshold=1)
-
+qc_mosaic_plot(t1_file_norm, ants.to_nibabel(mask_file), snakemake.output.png_mask)
+qc_mosaic_plot(t1_file_norm, ants.to_nibabel(seg_file), snakemake.output.png_seg, threshold=1)
 

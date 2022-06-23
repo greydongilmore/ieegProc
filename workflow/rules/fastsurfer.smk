@@ -46,6 +46,8 @@ else:
             py = config['fastsurfer']['py'],
         output:
             fastsurfer_out = directory(join(config['out_dir'], 'derivatives', config['fastsurfer']['sid'], 'sub-' + subject_id)),
+            lh_pial = join(config['out_dir'], 'derivatives', config['fastsurfer']['sid'], 'sub-' + subject_id,config['fastsurfer']['sid'],'surf','lh.pial'),
+            rh_pial = join(config['out_dir'], 'derivatives', config['fastsurfer']['sid'], 'sub-' + subject_id,config['fastsurfer']['sid'],'surf','rh.pial'),
             touch_fastsurfer=touch(join(config['out_dir'], 'logs', 'sub-' + subject_id + "_fastsurfer.done")),
         threads:config['fastsurfer']['threads']
         shell:
