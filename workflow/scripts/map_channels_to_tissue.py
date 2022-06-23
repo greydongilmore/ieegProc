@@ -6,8 +6,6 @@ import json
 tissue_prob_vol = dict()
 
 for label,nii in zip(snakemake.config['tissue_labels'], snakemake.input.tissue_priors):
-    print(label)
-    print(nii)
     tissue_prob_vol[label] = nib.load(nii).get_fdata()
     
 
@@ -26,10 +24,6 @@ for i,label in enumerate(snakemake.config['tissue_labels']):
         s1 = tissue_prob_vol[label] >0.5
         s2 = tissue_k_seg.slicer[:,:,:,k].get_fdata() >0.5
         sim_prior_k[i,k] = np.sum(np.logical_and(s1,s2).flat) / np.sum(np.logical_or(s1,s2).flat) 
-
-
-print('Overlap table:')
-print(sim_prior_k)
 
 label_to_k_dict = dict()
 

@@ -47,8 +47,9 @@ if config['fmriprep']['run']:
        makedirs(join(config['out_dir'], 'derivatives', 'fmriprep'))
 
 include: "rules/registration.smk"
-include: "rules/segmentation.smk"
 include: "rules/visqc.smk"
+include: "rules/segmentation.smk"
+
 
 rule all:
         input:

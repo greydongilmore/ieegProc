@@ -3,10 +3,10 @@
 #
 
 #laptop
-#bids_dir: /home/greydon/Documents/data/SEEG
+bids_dir: /home/greydon/Documents/data/clinical
 
 #work computer
-bids_dir: /media/data/data/clinical
+#bids_dir: /media/data/data/clinical
 
 #external drive
 #bids_dir: /media/veracrypt6/projects/stealthMRI
@@ -23,7 +23,7 @@ mean_reg2mean: resources/mean_reg2mean.nii.gz
 
 noncontrast_t1:
     present: False
-    acq: FSPGR
+    acq: T1map
 
 contrast_t1:
     present: True
@@ -36,7 +36,7 @@ seeg_contacts:
     present: False
 
 pet:
-    present: True
+    present: False
     position: -1
     task: rest
 
