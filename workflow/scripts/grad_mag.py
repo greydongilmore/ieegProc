@@ -142,7 +142,7 @@ def compute_RI(image, bg, mask):
 def qc_mosaic_plot(anat_img, overlay_img, out_filen, dim=0, threshold=0):
 	
 	plt.ioff()
-	fig = plt.figure(figsize=(12, 6),facecolor='k')
+	fig = plt.figure(figsize=(12, 5),facecolor='k')
 
 	display = plotting.plot_anat(anat_img, 
 								 display_mode='mosaic',
@@ -162,7 +162,7 @@ def qc_mosaic_plot(anat_img, overlay_img, out_filen, dim=0, threshold=0):
 	display.savefig(out_filen,dpi=400)
 	display.close()
 	
-	fig = plt.figure(figsize=(12, 6),facecolor='k')
+	fig = plt.figure(figsize=(12, 5),facecolor='k')
 	display = plotting.plot_anat(anat_img, 
 								 display_mode='mosaic',
 								 black_bg=True,
