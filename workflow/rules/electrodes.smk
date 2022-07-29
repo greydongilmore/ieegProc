@@ -87,21 +87,21 @@ rule mask_contacts:
     shell:
         'c3d {input.ct} -scale 0 -landmarks-to-spheres {input.txt} 1 -o {output.mask}'
 
-rule generate_slicer_directory:
-    input:
-        fcsv_files=get_fcsv_files,
-        fcsv_acpc=get_fcsv_files_acpc,
-        ct = bids(root=join(config['out_dir'],'derivatives', 'atlasreg'),subject=subject_id,suffix='ct.nii.gz',space='T1w',desc='rigid'),
-        noncontrast_t1w=get_noncontrast_T1w,
-        contrast_t1w=get_contrast_T1w,
-        segs=get_segs,
-        atlas_segs=bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,atlas=config['atlases'][0], from_=config['template'],suffix='dseg.nii.gz',reg='SyN'),
-        ct_file=get_ct_file,
-        pet_file=get_pet_file,
-    output:
-        touch_slicer=touch(bids(root=join(config['out_dir'], 'derivatives', 'slicer_scene'), subject=subject_id, suffix='slicer.done')),
-    script:
-        '../scripts/slicer_dir.py'
+#rule generate_slicer_directory:
+#    input:
+#        fcsv_files=get_fcsv_files,
+#        fcsv_acpc=get_fcsv_files_acpc,
+#        ct = bids(root=join(config['out_dir'],'derivatives', 'atlasreg'),subject=subject_id,suffix='ct.nii.gz',space='T1w',desc='rigid'),
+#        noncontrast_t1w=get_noncontrast_T1w,
+#        contrast_t1w=get_contrast_T1w,
+#        segs=get_segs,
+#        atlas_segs=bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,atlas=config['atlases'][0], from_=config['template'],suffix='dseg.nii.gz',reg='SyN'),
+#        ct_file=get_ct_file,
+#        pet_file=get_pet_file,
+#    output:
+#        touch_slicer=touch(bids(root=join(config['out_dir'], 'derivatives', 'slicer_scene'), subject=subject_id, suffix='slicer.done')),
+#    script:
+#        '../scripts/slicer_dir.py'
         
 
 
@@ -123,12 +123,12 @@ final_outputs.extend(
 
 
 
-final_outputs.extend(
-    expand(
-        bids(root=join(config['out_dir'], 'derivatives', 'slicer_scene'),
-            subject=subject_id,
-            suffix='slicer.done'
-        ),
-        subject=subjects
-    )
-)
+#final_outputs.extend(
+#    expand(
+#        bids(root=join(config['out_dir'], 'derivatives', 'slicer_scene'),
+#            subject=subject_id,
+#            suffix='slicer.done'
+#        ),
+#        subject=subjects
+#    )
+#)

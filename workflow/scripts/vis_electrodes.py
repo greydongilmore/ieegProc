@@ -38,9 +38,11 @@ def determine_groups(iterable):
 	for item in iterable:
 		if re.findall(r"([a-zA-Z]+)([0-9]+)([a-zA-Z]+)", item):
 			temp = "".join(list(re.findall(r"([a-zA-Z]+)([0-9]+)([a-zA-Z]+)", item)[0]))
+		elif '-' in item:
+			temp=item.split('-')[0]
 		else:
 			temp="".join(x for x in item if not x.isdigit())
-			
+		
 		values.append(temp)
 	
 	vals,indexes,count = np.unique(values, return_index=True, return_counts=True)

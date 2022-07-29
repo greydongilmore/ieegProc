@@ -12,7 +12,11 @@ import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.colors import LinearSegmentedColormap, ListedColormap
 from matplotlib.collections import PolyCollection
-
+from pathlib import Path
+from nipype.interfaces.base import File, traits
+from mpl_toolkits import mplot3d
+from collections import namedtuple
+import matplotlib.colors as mcolors
 
 def normal_vectors(vertices, faces):
 	tris = vertices[faces]
@@ -65,6 +69,80 @@ def yrotate(theta):
 	)
 
 
+def surf_from_cifti(ts_cifti,struct_names=['CIFTI_STRUCTURE_CORTEX_LEFT','CIFTI_STRUCTURE_CORTEX_RIGHT']):
+	"""
+	Gets the time series of cortical surface vertices (Left and Right)
+	Args:
+		ts_cifti (cifti obj) - cifti object of time series
+	Returns:
+		cii (cifti object) - contains the time series for the cortex
+	"""
+	# get brain axis models
+	bmf = ts_cifti.header.get_axis(1)
+	# print(dir(bmf))
+	# get the data array with all the time points, all the structures
+	ts_array = ts_cifti.get_fdata()
+	ts_list = []
+	for idx, (nam,slc,bm) in enumerate(bmf.iter_structures()):
+		# just get the cortical surfaces
+		if nam in struct_names: 
+			values = np.full((ts_array.shape[0],bmf.nvertices[nam]),np.nan)
+			# get the values corresponding to the brain model
+			values[:,bm.vertex] = ts_array[:, slc]
+			ts_list.append(values)
+		else:
+			break
+	return ts_list
+
+
+views = traits.List(
+	[{
+		"view": "lateral",
+		"hemi": "left"
+	}, {
+		"view": "medial",
+		"hemi": "left"
+	}, {
+		"view": "lateral",
+		"hemi": "right"
+	}, {
+		"view": "medial",
+		"hemi": "right"
+	}],
+	usedefault=True,
+	desc="List of dictionaries describing views "
+	" to display per map",
+	inner_traits=traits.Dict(
+		key_trait=traits.Enum(values=["view", "hemi"]),
+		value_trait=traits.Enum(
+			values=["lateral", "medial", "dorsal", "ventral"])))
+
+Hemispheres = namedtuple("Hemispheres", ["left", "right"])
+
+darkness = traits.Float(
+	0.3,
+	usedefault=True,
+	desc="Multiplicative factor of bg_img onto foreground map",
+	mandatory=False)
+
+visualize_all_maps = traits.Bool(False,
+				  usedefault=True,
+				  desc="Visualize all mappings in "
+				  "mapping file, if false will visualize "
+				  "only the first mapping")
+
+zero_nan = traits.Bool(False,
+		      usedefault=True,
+		      desc="Display NaNs as zeros")
+
+colormap = traits.String("magma",
+			 usedefault=True,
+			 desc="Colormap to use to plot mapping",
+			 mandatory=False)
+
+#%%
+
+
 debug = True
 if debug:
     class dotdict(dict):
@@ -77,7 +155,7 @@ if debug:
         def __init__(self, **kwargs):
             self.__dict__.update(kwargs)
 
-    isub = 'sub-P091'
+    isub = 'sub-P093'
     data_dir = r'/home/greydon/Documents/data/SEEG/derivatives'
 
     input = dotdict({'t1': f'{data_dir}/atlasreg/{isub}/{isub}_desc-n4_T1w.nii.gz',
@@ -116,11 +194,93 @@ lh_infl_data = nb.freesurfer.read_geometry(lh_infl_file)
 rh_infl_data = nb.freesurfer.read_geometry(rh_infl_file)
 
 
+
+gii_meshes=[]
+for isurf in [lh_pial_file,rh_pial_file]:
+	surf = Path(isurf)
+	out = surf.with_suffix('.surf.gii')
+	
+	vertices, faces = nb.freesurfer.read_geometry(isurf)
+	vertices = nb.gifti.GiftiDataArray(vertices, 'NIFTI_INTENT_POINTSET',
+										datatype='NIFTI_TYPE_FLOAT32')
+	faces = nb.gifti.GiftiDataArray(faces, 'NIFTI_INTENT_TRIANGLE',
+									 datatype='NIFTI_TYPE_INT32')
+	gii = nb.gifti.GiftiImage(darrays=[vertices, faces])
+	
+	nb.save(gii, out)
+	
+	coords, faces = nb.load(out).get_arrays_from_intent(nb.nifti1.intent_codes['NIFTI_INTENT_POINTSET'])[0].data, \
+		 nb.load(out).get_arrays_from_intent(nb.nifti1.intent_codes['NIFTI_INTENT_TRIANGLE'])[0].data
+	
+	gii_meshes.append([coords, faces, None])
+
+map_hemi = Hemispheres(left=(gii_meshes[0][0],gii_meshes[0][1],None), right=(gii_meshes[1][0],gii_meshes[1][1],None))
+bg_hemi = Hemispheres(left=None, right=None)
+
+
+num_views =[("lateral","left"),("medial","right"),("lateral","left"),("medial","right")]
+num_maps = 1
+vmin, vmax = None, None
+
+
+surf_mesh=[np.array(coords), np.array(faces)]
+
+
+w, h = plt.figaspect(num_maps / (len(num_views)))
+fig, axs = plt.subplots(num_maps,
+						len(num_views),
+						subplot_kw={'projection': '3d'},
+						figsize=(w, h))
+fig.set_facecolor("black")
+fig.tight_layout()
+
+
+for i, a in enumerate(axs.flat):
+	a.set_facecolor("black")
+
+	view_ind = i % len(num_views)
+	map_ind = i // len(num_views)
+
+	view =num_views[view_ind][0]
+	hemi =num_views[view_ind][1]
+
+	display_map = getattr(map_hemi, hemi)
+	display_bg = getattr(bg_hemi, hemi)
+
+	v, t, m = display_map
+	m = v[map_ind]
+	if zero_nan:
+		m[np.isnan(m)] = 0
+
+	# Plot
+	plotting.plot_surf([v, t],
+					surf_map=None,
+					#bg_map=None,
+					cmap=colormap,
+					axes=a,
+					hemi=hemi,
+					bg_on_data=True,
+					vmin=vmin,
+					vmax=vmax)
+
+plt.draw()
+plt.savefig(self._out_report)
+
+
+
+
+plotting.plot_surf(lh_infl_file,surf_mesh,
+							hemi='left',view='medial', colorbar=True, cmap='hot', title='gifti left')
+
+
 all_ver = np.concatenate([lh_data[0], rh_data[0]], axis=0)
 all_face = np.concatenate([lh_data[1], rh_data[1]+lh_data[0].shape[0]], axis=0)
 surf_mesh = [all_ver, all_face]
 bg_map = np.concatenate((lh_sulc_data, rh_sulc_data))
 
+
+fig = plotting.view_surf(surf_mesh, bg_map, symmetric_cmap=False)
+fig.open_in_browser()
 
 #plot PET surface
 surf_over = surface.vol_to_surf(snakemake.input.pet, surf_mesh)
@@ -156,7 +316,7 @@ rh_over = surface.vol_to_surf(snakemake.input.pet, rh_pial_file, radius=1, kind=
 
 plot_surf4(
     [lh_pial_file, rh_pial_file],
-    overlays=[lh_over, rh_over],
+    #overlays=[lh_over, rh_over],
     avg_method="mean",
     colorbar=True,
     output_file="/home/greydon/Downloads/test.png",
@@ -165,7 +325,7 @@ plot_surf4(
 
 plot_surf4(
 	[lh_pial_file, rh_pial_file],
-	overlays=[lh_over, rh_over],
+	#overlays=[lh_over, rh_over],
 	vmin=-1.2,
 	vmax=1.2,
 	threshold=0.3,
@@ -190,6 +350,7 @@ bg_map = np.concatenate((overlays))
 
 overlay_faces_final=[]
 label_colors=None
+
 for m, mesh in enumerate([lh_pial_file,rh_pial_file]):
 	vertices, faces = surface.load_surf_mesh(mesh)
 	vertices = vertices.astype(np.float64)
@@ -247,8 +408,8 @@ for m, mesh in enumerate([lh_pial_file,rh_pial_file]):
 	overlay_faces = overlay_faces - vmin
 	overlay_faces = overlay_faces / (vmax - vmin)
 	face_colors[kept_indices] = cmap(overlay_faces[kept_indices])
-
-# assign label faces to appropriate color
+	
+	# assign label faces to appropriate color
 	for i, L in enumerate(label_mask_faces):
 		L_idx = np.where(L >= 0.5)
 		# blend (multiply) label color with underlying color

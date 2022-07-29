@@ -37,7 +37,7 @@ rule map_channels_to_tissue:
                             tissue=config['tissue_labels'],allow_missing=True),
     group: 'preproc'
     script: '../scripts/map_channels_to_tissue.py'
-       
+
 rule tissue_seg_to_4d:
     input:
         tissue_segs = expand(bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,suffix='probseg.nii.gz',label='{tissue}',desc='atropos3seg'),

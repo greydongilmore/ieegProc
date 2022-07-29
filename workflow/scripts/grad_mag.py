@@ -13,7 +13,9 @@ from io import BytesIO
 import base64
 import os
 import nibabel as nb
-
+from skfuzzy import cmeans
+from scipy.ndimage import gaussian_gradient_magnitude as gradient
+import scipy
 
 def svg2str(display_object, dpi):
 	"""Serialize a nilearn display object to string."""
@@ -216,10 +218,12 @@ if debug:
 		def __init__(self, **kwargs):
 			self.__dict__.update(kwargs)
 	
-	isub='sub-P091'
-	data_dir=r'/home/greydon/Documents/data/SEEG/derivatives/atlasreg'
+	isub='sub-P006'
+	data_dir=r'/home/greydon/Documents/data/SEEG_peds/derivatives/atlasreg'
 	
-	input=dotdict({'t1':f'{data_dir}/{isub}/{isub}_desc-n4_T1w.nii.gz',
+	input=dotdict({
+				#'t1':f'{data_dir}/{isub}/{isub}_desc-n4_T1w.nii.gz',
+				't1': f'{data_dir}/{isub}/{isub}_desc-n4_T1w.nii.gz',
 				'gm':f'{data_dir}/{isub}/{isub}_label-GM_desc-atropos3seg_probseg.nii.gz',
 				'wm':f'{data_dir}/{isub}/{isub}_label-GM_desc-atropos3seg_probseg.nii.gz',
 				'mask':f'{data_dir}/{isub}/{isub}_desc-brain_from-MNI152NLin2009cSym_reg-affine_mask.nii.gz',
@@ -236,6 +240,31 @@ if debug:
 	snakemake = Namespace(output=output, input=input)
 	
 
+data_dir = os.path.dirname(snakemake.output.t1_grad)
+isub = os.path.basename(snakemake.output.t1_grad).split('_')[0]
+
+img = nb.load(snakemake.input.t1)
+img_data = img.get_fdata()
+mask_data = img_data > img_data.mean()
+out_mask = snakemake.input.t1.split('.nii')[0] + '_mask.nii.gz'
+out_grad2 = os.path.join(data_dir, f'{isub}_desc-gradmag_T1w.nii.gz')
+out_gradthresh = os.path.join(data_dir, f'{isub}_desc-gradthreshold_T1w.nii.gz')
+
+if not os.path.exists(out_mask):
+	[t1_cntr, t1_mem, _, _, _, _, _] = cmeans(img_data[mask_data].reshape(-1, len(mask_data[mask_data])),3, 2, 0.005, 50)
+	t1_mem_list = [t1_mem[i] for i, _ in sorted(enumerate(t1_cntr), key=lambda x: x[1])]  # CSF/GM/WM
+	
+	# add 1 dimension for the landmark labels
+	mask = np.zeros(img_data.shape + (3,))
+	for i in range(3):
+		mask[..., i][mask_data] = t1_mem_list[i]
+	
+	nii_mask = nb.Nifti1Image(mask, img.affine, img.header)
+	nb.save(nii_mask, snakemake.input.t1.split('.nii')[0] + '_mask.nii.gz')
+else:
+	nii_mask=ants.image_read(out_mask)
+
+
 t1_file=ants.image_read(snakemake.input.t1)
 mask_file=ants.image_read(snakemake.input.mask)
 seg_file=ants.image_read(snakemake.input.seg)
@@ -243,8 +272,9 @@ seg_file=ants.image_read(snakemake.input.seg)
 if not os.path.exists(snakemake.output.t1_grad):
 	grad_t1 = ants.iMath(t1_file, "Grad", 1)
 	ants.image_write(grad_t1, snakemake.output.t1_grad)
-else:
-	grad_t1=ants.image_read(snakemake.output.t1_grad)
+
+
+
 
 if not os.path.exists(snakemake.output.t1_intensity):
 	gm_file=ants.image_read(snakemake.input.gm)
@@ -270,3 +300,38 @@ t1_file_norm = nb.Nifti1Image(norm_img, t1_file_nb.affine, t1_file_nb.header)
 qc_mosaic_plot(t1_file_norm, ants.to_nibabel(mask_file), snakemake.output.png_mask)
 qc_mosaic_plot(t1_file_norm, ants.to_nibabel(seg_file), snakemake.output.png_seg, threshold=1)
 
+#%%
+
+#imnii = nb.load(snakemake.input.t1)
+#data = imnii.get_fdata().astype(np.float32)
+#datamax = np.percentile(data.reshape(-1), 99.5)
+#data *= 100 / datamax
+#grad = gradient(data, 3.0)
+#gradmax = np.percentile(grad.reshape(-1), 99.5)
+#grad *= 100.
+#grad /= gradmax
+#nb.Nifti1Image(grad, imnii.affine, imnii.header).to_filename(out_grad2)
+#
+#mask = np.zeros_like(grad, dtype=np.uint8)  # pylint: disable=no-member
+#mask[grad > 15.] = 1
+#
+#struc = scipy.ndimage.iterate_structure(scipy.ndimage.generate_binary_structure(3, 2), 2)
+#segdata = nb.load(snakemake.input.seg).get_fdata().astype(np.uint8)
+#segdata[segdata > 0] = 1
+#
+#segdata = scipy.ndimage.binary_dilation(segdata, struc, iterations=2, border_value=1).astype(np.uint8)
+#mask[segdata > 0] = 1
+#mask = scipy.ndimage.binary_closing(mask, struc, iterations=2).astype(np.uint8)
+#
+## Remove small objects
+#label_im, nb_labels = scipy.ndimage.label(mask)
+#artmsk = np.zeros_like(mask)
+#if nb_labels > 2:
+#	sizes = scipy.ndimage.sum(mask, label_im, list(range(nb_labels + 1)))
+#	ordered = list(reversed(sorted(zip(sizes, list(range(nb_labels + 1))))))
+#	for _, label in ordered[2:]:
+#		mask[label_im == label] = 0
+#		artmsk[label_im == label] = 1
+#
+#mask = scipy.ndimage.binary_fill_holes(mask, struc).astype(np.uint8)  # pylint: disable=no-member
+#nb.Nifti1Image(mask, imnii.affine, imnii.header).to_filename(out_gradthresh)

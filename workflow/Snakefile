@@ -35,8 +35,7 @@ include: 'rules/common.smk'
 
 final_outputs = []
 
-if config['fastsurfer']['run']:
-    include: 'rules/fastsurfer.smk'
+
 
 if config['seeg_contacts']['present']:
     include: 'rules/electrodes.smk'
@@ -46,10 +45,12 @@ if config['fmriprep']['run']:
     if not exists(join(config['out_dir'], 'derivatives', 'fmriprep')):
        makedirs(join(config['out_dir'], 'derivatives', 'fmriprep'))
 
+if config['fastsurfer']['run']:
+    include: 'rules/fastsurfer.smk'
+
 include: "rules/registration.smk"
 include: "rules/visqc.smk"
 include: "rules/segmentation.smk"
-
 
 rule all:
         input:
