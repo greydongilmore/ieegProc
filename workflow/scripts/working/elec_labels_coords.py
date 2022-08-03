@@ -85,22 +85,32 @@ chan_label_dic = {
 					'RTHeschl': 'RHs',
 					}
 
-def determine_groups(iterable):
+def determine_groups(iterable, numbered_labels=False):
 	values = []
 	for item in iterable:
+		temp=None
 		if re.findall(r"([a-zA-Z]+)([0-9]+)([a-zA-Z]+)", item):
 			temp = "".join(list(re.findall(r"([a-zA-Z]+)([0-9]+)([a-zA-Z]+)", item)[0]))
 		elif '-' in item:
-			temp=item.split('-')[:-1][0]
+			temp=item.split('-')[0]
 		else:
-			temp="".join(x for x in item if not x.isdigit())
-			
+			if numbered_labels:
+				temp=''.join([x for x in item if not x.isdigit()])
+				for sub in ("T1","T2"):
+					if sub in item:
+						temp=item.split(sub)[0] + sub
+			else:
+				temp=item
+		if temp is None:
+			temp=item
+		
 		values.append(temp)
 	
-	indexes = np.unique(values, return_index=True)[1]
-	values = [values[index] for index in sorted(indexes)]
+	vals,indexes,count = np.unique(values, return_index=True, return_counts=True)
+	values_unique = [values[index] for index in sorted(indexes)]
 	
-	return values
+	return values_unique,count
+
 
 def levenshtein_ratio_and_distance(s, t, ratio_calc = False):
 	""" levenshtein_ratio_and_distance:
@@ -279,7 +289,8 @@ for ifile in patient_files:
 	data_table_full['type'] = np.repeat(ifile.split(os.sep)[-1].split('.fcsv')[0], data_table_full.shape[0])
 	
 	if os.path.splitext(ifile.split(os.sep)[-1])[0].lower().endswith('seega'):
-		groups = determine_groups(np.array(data_table_full['label'].values))
+		groups,n_members = determine_groups(np.array(data_table_full['label'].values), True)
+		
 		group_pair = []
 		new_label = []
 		new_group = []

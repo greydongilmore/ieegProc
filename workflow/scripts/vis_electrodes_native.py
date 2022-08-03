@@ -78,22 +78,32 @@ CAMERAS = {
 
 lighting_effects = dict(ambient=0.4, diffuse=0.5, roughness = 0.9, specular=0.6, fresnel=0.2)
 
-def determine_groups(iterable):
+def determine_groups(iterable, numbered_labels=False):
 	values = []
 	for item in iterable:
+		temp=None
 		if re.findall(r"([a-zA-Z]+)([0-9]+)([a-zA-Z]+)", item):
 			temp = "".join(list(re.findall(r"([a-zA-Z]+)([0-9]+)([a-zA-Z]+)", item)[0]))
 		elif '-' in item:
 			temp=item.split('-')[0]
 		else:
-			temp="".join(x for x in item if not x.isdigit())
+			if numbered_labels:
+				temp=''.join([x for x in item if not x.isdigit()])
+				for sub in ("T1","T2"):
+					if sub in item:
+						temp=item.split(sub)[0] + sub
+			else:
+				temp=item
+		if temp is None:
+			temp=item
 		
 		values.append(temp)
 	
 	vals,indexes,count = np.unique(values, return_index=True, return_counts=True)
-	values = [values[index] for index in sorted(indexes)]
+	values_unique = [values[index] for index in sorted(indexes)]
 	
-	return values,count
+	return values_unique,count
+
 
 hemi = ["lh", "rh"]
 surf_suffix = ["pial", "white", "inflated"]
@@ -117,8 +127,8 @@ if debug:
 		def __init__(self, **kwargs):
 			self.__dict__.update(kwargs)
 	
-	isub="006"
-	datap=r'/home/greydon/Documents/data/SEEG_peds/derivatives'
+	isub="094"
+	datap=r'/home/greydon/Documents/data/SEEG/derivatives'
 	
 	input=dotdict({
 		't1_fname':datap+f'/fastsurfer/sub-P{isub}/mri/orig.mgz',
@@ -131,10 +141,10 @@ if debug:
 	})
 	
 	params=dotdict({
-		'lh_pial':datap+f'/fastsurfer/sub-P{isub}/surf/lh_pial',
-		'rh_pial':datap+f'/fastsurfer/sub-P{isub}/surf/rh_pial',
-		'lh_sulc':datap+f'/fastsurfer/sub-P{isub}/surf/lh_sulc',
-		'rh_sulc':datap+f'/fastsurfer/sub-P{isub}/surf/rh_sulc',
+		'lh_pial':datap+f'/fastsurfer/sub-P{isub}/surf/lh.pial',
+		'rh_pial':datap+f'/fastsurfer/sub-P{isub}/surf/rh.pial',
+		'lh_sulc':datap+f'/fastsurfer/sub-P{isub}/surf/lh.sulc',
+		'rh_sulc':datap+f'/fastsurfer/sub-P{isub}/surf/rh.sulc',
 	})
 
 	snakemake = Namespace(output=output, input=input,params=params)
@@ -162,13 +172,12 @@ rh_sulc_data = nb.freesurfer.read_morph_data(snakemake.params.rh_sulc)
 bg_map = np.concatenate((lh_sulc_data, rh_sulc_data))
 
 
-mesh_3d = go.Mesh3d(x=all_ver_shift[:,0], y=all_ver_shift[:,1], z=all_ver_shift[:,2], i=all_face[:,0], j=all_face[:,1], k=all_face[:,2],opacity=.1,color='grey',alphahull=.1,
-					lighting=lighting_effects)
+mesh_3d = go.Mesh3d(x=all_ver_shift[:,0], y=all_ver_shift[:,1], z=all_ver_shift[:,2], i=all_face[:,0], j=all_face[:,1], k=all_face[:,2],opacity=.1,color='grey',alphahull=-10)
 
-value=np.arange(.1,.6,.05)
+value=[np.round(x,2) for x in np.arange(.1,.6-.05,.05)]
 
 df = pd.read_table(os.path.splitext(snakemake.input.fcsv)[0]+".tsv",sep='\t',header=0)
-groups,n_members=determine_groups(df['label'].tolist())
+groups,n_members=determine_groups(df['label'].tolist(), True)
 df['group']=np.repeat(groups,n_members)
 
 cmap = plt.get_cmap('rainbow')
@@ -186,10 +195,10 @@ for igroup in groups:
 		text=df['label'][idx].tolist(),
 		textfont=dict(
 			family="sans serif",
-			size=14,
+			size=16,
 			color="black"
 		),
-		textposition = "top center",
+		textposition = "middle left",
 		marker=dict(
 			size=5,
 			line=dict(
@@ -203,12 +212,15 @@ fig = go.Figure(data=data)
 fig.update_layout(scene_camera=CAMERAS['left'],
 				  legend_title_text="Electrodes",
 				  **LAYOUT)
+
 steps = []
 for i in range(len(value)):
 	step = dict(
 		label = str(f"{value[i]:.2f}"),
 		method="restyle",
-		args=['opacity', [value[i]]+(len(data)-1)*[1]],
+		args=[{'opacity': [value[i]]+(len(data)-1)*[1],
+			 'alphahull': [-10]+(len(data)-1)*[1]
+		 }]
 	)
 	steps.append(step)
 
@@ -223,5 +235,7 @@ sliders = [dict(
 fig.update_layout(sliders=sliders)
 fig.write_html(snakemake.output.html)
 
+
+fig.show('firefox')
 
 

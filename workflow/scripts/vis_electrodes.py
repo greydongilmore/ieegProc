@@ -21,39 +21,49 @@ if debug:
 		def __init__(self, **kwargs):
 			self.__dict__.update(kwargs)
 	
-	isub="P077"
+	isub="P094"
+	data_dir=r'/home/greydon/Documents/data/SEEG/derivatives'
 	
-	input=dotdict({'fcsv':'/media/stereotaxy/3E7CE0407CDFF11F/data/SEEG/imaging/clinical/derivatives/seega_coordinates/' + f'sub-{isub}/sub-{isub}_space-native_SEEGA.fcsv',
-				'xfm_ras':'/media/stereotaxy/3E7CE0407CDFF11F/data/SEEG/imaging/clinical/derivatives/atlasreg/' + f'sub-{isub}/sub-{isub}_desc-affine_from-subject_to-MNI152NLin2009cSym_type-ras_xfm.txt'
+	input=dotdict({'fcsv':f'{data_dir}/seega_coordinates/' + f'sub-{isub}/sub-{isub}_space-native_SEEGA.fcsv',
+				'xfm_ras':f'{data_dir}/atlasreg/' + f'sub-{isub}/sub-{isub}_desc-affine_from-subject_to-MNI152NLin2009cSym_type-ras_xfm.txt'
 				})
 	
-	output=dotdict({'html':'/home/stereotaxy/Downloads/' + f'sub-{isub}_space-MNI152NLin2009cSym_desc-affine_electrodes.html',
-				'png':'/home/stereotaxy/Downloads/' + f'sub-{isub}_space-MNI152NLin2009cSym_desc-affine_electrodevis.png'
+	output=dotdict({'html':f'{data_dir}/atlasreg/' + f'sub-{isub}/qc/sub-{isub}_space-MNI152NLin2009cSym_desc-affine_electrodes.html',
+				'png':f'{data_dir}/atlasreg/' + f'sub-{isub}/qc/sub-{isub}_space-MNI152NLin2009cSym_desc-affine_electrodevis.png'
 				})
 	
 	snakemake = Namespace(output=output, input=input)
 
-def determine_groups(iterable):
+def determine_groups(iterable, numbered_labels=False):
 	values = []
 	for item in iterable:
+		temp=None
 		if re.findall(r"([a-zA-Z]+)([0-9]+)([a-zA-Z]+)", item):
 			temp = "".join(list(re.findall(r"([a-zA-Z]+)([0-9]+)([a-zA-Z]+)", item)[0]))
 		elif '-' in item:
 			temp=item.split('-')[0]
 		else:
-			temp="".join(x for x in item if not x.isdigit())
+			if numbered_labels:
+				temp=''.join([x for x in item if not x.isdigit()])
+				for sub in ("T1","T2"):
+					if sub in item:
+						temp=item.split(sub)[0] + sub
+			else:
+				temp=item
+		if temp is None:
+			temp=item
 		
 		values.append(temp)
 	
 	vals,indexes,count = np.unique(values, return_index=True, return_counts=True)
-	values = [values[index] for index in sorted(indexes)]
+	values_unique = [values[index] for index in sorted(indexes)]
 	
-	return values,count
+	return values_unique,count
 
 #read fcsv electrodes file
 df = pd.read_table(snakemake.input.fcsv,sep=',',header=2)
 
-groups,n_members=determine_groups(df['label'].tolist())
+groups,n_members=determine_groups(df['label'].tolist(),numbered_labels=True)
 cmap = plt.get_cmap('rainbow')
 colors=np.repeat(cmap(np.linspace(0, 1, len(groups))), n_members, axis=0)
 

@@ -85,22 +85,33 @@ CAMERAS = {
 
 lighting_effects = dict(ambient=0.4, diffuse=0.5, roughness = 0.9, specular=0.6, fresnel=0.2)
 
-def determine_groups(iterable):
+def determine_groups(iterable, numbered_labels=False):
 	values = []
 	for item in iterable:
+		temp=None
 		if re.findall(r"([a-zA-Z]+)([0-9]+)([a-zA-Z]+)", item):
 			temp = "".join(list(re.findall(r"([a-zA-Z]+)([0-9]+)([a-zA-Z]+)", item)[0]))
 		elif '-' in item:
 			temp=item.split('-')[0]
 		else:
-			temp="".join(x for x in item if not x.isdigit())
+			if numbered_labels:
+				temp=''.join([x for x in item if not x.isdigit()])
+				for sub in ("T1","T2"):
+					if sub in item:
+						temp=item.split(sub)[0] + sub
+			else:
+				temp=item
+		if temp is None:
+			temp=item
 		
 		values.append(temp)
 	
 	vals,indexes,count = np.unique(values, return_index=True, return_counts=True)
-	values = [values[index] for index in sorted(indexes)]
+	values_unique = [values[index] for index in sorted(indexes)]
 	
-	return values,count
+	return values_unique,count
+
+
 
 def remove_nan(nifti_in):
 	"""remove_nan is a method needed after a registration performed by spmregister : insted of filling space with 0, nan
@@ -198,7 +209,11 @@ value=np.arange(.1,.6,.05)
 
 if os.path.exists(coords_fcsv):
 	df = pd.read_table(coords_fcsv,sep='\t',header=0)
-	groups,n_members=determine_groups(df['label'].tolist())
+	if coords_fcsv.endswith("SEEGA.fcsv"):
+		groups,n_members = determine_groups(df['label'].tolist(), True)
+	else:
+		groups,n_members = determine_groups(df['label'].tolist())
+	
 	df['group']=np.repeat(groups,n_members)
 	
 	cmap = plt.get_cmap('rainbow')

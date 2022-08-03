@@ -5,6 +5,7 @@ Created on Thu Jul  7 15:26:06 2022
 
 @author: greydon
 """
+
 import os
 import glob
 from pptx import Presentation
@@ -63,7 +64,7 @@ if debug:
 		def __init__(self, **kwargs):
 			self.__dict__.update(kwargs)
 
-	isub = 'sub-P091'
+	isub = 'sub-P094'
 	data_dir = r'/home/greydon/Documents/data/SEEG/derivatives'
 
 	input = dotdict({
