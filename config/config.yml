@@ -3,7 +3,7 @@
 #
 
 #laptop
-bids_dir: /home/greydon/Documents/data/SEEG
+bids_dir: /home/greydon/Documents/data/clinical
 
 #work computer
 #bids_dir: /media/data/data/clinical
@@ -38,7 +38,7 @@ seeg_contacts:
     present: True
 
 pet:
-    present: True
+    present: False
     position: -1
     task: rest
     reg_aladin: -rigOnly # use "-rigOnly" for 6 DOF and "" for 12 DOF

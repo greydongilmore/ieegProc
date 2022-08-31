@@ -64,16 +64,14 @@ if debug:
 		def __init__(self, **kwargs):
 			self.__dict__.update(kwargs)
 
-	isub = 'sub-P094'
+	isub = 'sub-P095'
 	data_dir = r'/home/greydon/Documents/data/SEEG/derivatives'
 
 	input = dotdict({
 			'shopping_list': f'{data_dir}/seega_scenes/{isub}/*shopping_list.xlsx',
 	 })
 	
-	
 	snakemake = Namespace(input=input)
-
 
 
 out_dir="/home/greydon/Downloads"
@@ -107,7 +105,6 @@ if name_idx:
 	
 	firstname=firstname.strip()
 	lastname=lastname.strip()
-
 
 
 prs=Presentation()
@@ -196,7 +193,7 @@ for _, row in df_elec.iterrows():
 	line.width = Inches(0.04)
 
 out_fname = f"{lastname.replace(' ','')}_{firstname}_{sx_date}_maps.pptx"
-prs.save(os.path.join(out_dir,out_fname))
+prs.save(f'{data_dir}/seega_scenes/{isub}/{out_fname}')
 
 
 
