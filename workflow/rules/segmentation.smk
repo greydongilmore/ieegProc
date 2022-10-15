@@ -71,6 +71,7 @@ rule gradient_magnitude:
         seg = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,suffix='dseg.nii.gz',desc='atroposKseg'),
     output:
         t1_grad = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id, desc='magnitude', suffix='T1w.nii.gz'),
+        t1_grad_color = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id, desc='magnitude', label='hot', suffix='T1w.nii.gz'),
         t1_intensity = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id, desc='intensity', suffix='T1w.nii.gz'),
         png_mask = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),prefix='sub-'+subject_id+'/qc/sub-'+subject_id,suffix='maskqc.png',desc='brain',include_subject_dir=False),
         png_seg = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),prefix='sub-'+subject_id+'/qc/sub-'+subject_id,suffix='segqc.png',desc='segmentation',include_subject_dir=False),

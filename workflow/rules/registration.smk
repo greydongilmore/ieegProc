@@ -173,70 +173,145 @@ if config['pet']['present']:
     final_outputs.extend(expand(bids(root=join(config['out_dir'],'derivatives', 'atlasreg'),subject=subject_id,suffix='xfm.tfm',from_='pet',to='T1w',desc='rigid',type_='ras'),
                         subject=subjects))
 
-rule affine_aladin:
-    input: 
-        flo = bids(root=join(config['out_dir'],'derivatives', 'atlasreg'),subject=subject_id,suffix='T1w.nii.gz'),
-        ref = config['template_t1w'],
-    output: 
-        warped_subj = bids(root=join(config['out_dir'],'derivatives', 'atlasreg'),subject=subject_id,suffix='T1w.nii.gz',space='{template}',desc='affine'),
-        xfm_ras = bids(root=join(config['out_dir'],'derivatives', 'atlasreg'),subject=subject_id,suffix='xfm.txt',from_='subject',to='{template}',desc='affine',type_='ras'),
-    #container: config['singularity']['neuroglia']
-    group: 'preproc'
-    shell:
-        'reg_aladin -flo {input.flo} -ref {input.ref} -res {output.warped_subj} -aff {output.xfm_ras} -speeeeed'
 
-rule convert_affine_xfm_tfm:
-    input:
-        xfm=bids(root=join(config['out_dir'],'derivatives', 'atlasreg'),subject=subject_id,suffix='xfm.txt',from_='subject',to='{template}',desc='affine',type_='ras'),
-    output:
-        tfm=bids(root=join(config['out_dir'],'derivatives', 'atlasreg'),subject=subject_id,suffix='xfm.tfm',from_='subject',to='{template}',desc='affine',type_='ras'),
-    group: 'preproc'
-    script: 
-        '../scripts/convert_xfm_tfm.py'
+if config['atlas_reg']['reg_aladin']['active']:
+    rule affine_template:
+        input: 
+            flo = bids(root=join(config['out_dir'],'derivatives', 'atlasreg'),subject=subject_id,suffix='T1w.nii.gz'),
+            ref = config['template_t1w'],
+        output: 
+            warped_subj = bids(root=join(config['out_dir'],'derivatives', 'atlasreg'),subject=subject_id,suffix='T1w.nii.gz',space='{template}',desc='affine'),
+            xfm_ras = bids(root=join(config['out_dir'],'derivatives', 'atlasreg'),subject=subject_id,suffix='xfm.txt',from_='subject',to='{template}',desc='affine',type_='ras'),
+            xfm_affine=bids(root=join(config['out_dir'],'derivatives', 'atlasreg'),subject=subject_id,suffix='xfm.txt',from_='subject',to='{template}',desc='affine',type_='itk'),
+        #container: config['singularity']['neuroglia']
+        group: 'preproc'
+        shell:
+            'reg_aladin -flo {input.flo} -ref {input.ref} -res {output.warped_subj} -aff {output.xfm_ras} -speeeeed'
+    
+    rule convert_affine_xfm:
+        input:
+            xfm=bids(root=join(config['out_dir'],'derivatives', 'atlasreg'),subject=subject_id,suffix='xfm.txt',from_='subject',to='{template}',desc='affine',type_='ras'),
+        output:
+            tfm=bids(root=join(config['out_dir'],'derivatives', 'atlasreg'),subject=subject_id,suffix='xfm.tfm',from_='subject',to='{template}',desc='affine',type_='ras'),
+        group: 'preproc'
+        script: 
+            '../scripts/convert_xfm_tfm.py'
 
-final_outputs.extend(expand(bids(root=join(config['out_dir'],'derivatives', 'atlasreg'),subject=subject_id,suffix='xfm.tfm',from_='subject',to='{template}',desc='affine',type_='ras'),
+    rule convert_xfm:
+        input:
+            xfm=bids(root=join(config['out_dir'],'derivatives', 'atlasreg'),subject=subject_id,suffix='xfm.txt',from_='subject',to='{template}',desc='affine',type_='ras'),
+        output:
+            xfm_deform=bids(root=join(config['out_dir'],'derivatives', 'atlasreg'),subject=subject_id,suffix='xfm.txt',from_='subject',to='{template}',desc='affine',type_='itk'),
+        #container: config['singularity']['neuroglia']
+        group: 'preproc'
+        shell:
+            'c3d_affine_tool {input.xfm}  -oitk {output.xfm_deform_itk}'
+
+    final_outputs.extend(expand(bids(root=join(config['out_dir'],'derivatives', 'atlasreg'),subject=subject_id,suffix='xfm.txt',from_='subject',to='{template}',desc='affine',type_='itk'),
+                            subject=subjects, template=config['template']))
+    final_outputs.extend(expand(bids(root=join(config['out_dir'],'derivatives', 'atlasreg'),subject=subject_id,suffix='xfm.tfm',from_='subject',to='{template}',desc='affine',type_='ras'),
+                            subject=subjects, template=config['template']))
+elif config['atlas_reg']['greedy']['active']:
+    rule affine_template:
+        input: 
+            flo = bids(root=join(config['out_dir'],'derivatives', 'atlasreg'),subject=subject_id,suffix='T1w.nii.gz'),
+            ref = config['template_t1w'],
+        output: 
+            xfm_affine = bids(root=join(config['out_dir'],'derivatives', 'atlasreg'),subject=subject_id,suffix='xfm.txt',from_='subject',to='{template}',desc='rigid',type_='ras'),
+            xfm_deform = bids(root=join(config['out_dir'],'derivatives', 'atlasreg'),subject=subject_id,suffix='coreg1Warp.nii.gz',from_='subject',to='{template}',desc='affine',type_='ras'),
+            xfm_deform_inv = bids(root=join(config['out_dir'],'derivatives', 'atlasreg'),subject=subject_id,suffix='coreg1InverseWarp.nii.gz',from_='subject',to='{template}',desc='affine',type_='ras'),
+        params:
+            n_iterations=config['atlas_reg']['greedy']['n_iterations']
+        #container: config['singularity']['neuroglia']
+        group: 'preproc'
+        shell:
+            'greedy -d 3 -threads 4 -a -ia-image-centers -m MI -i {input.ref} {input.flo} -o {output.xfm_affine} -n {params.n_iterations}&&'
+            'greedy -d 3 -threads 4 -m MI -i {input.ref} {input.flo} -it {output.xfm_affine}  -o {output.xfm_deform} -oinv {output.xfm_deform_inv} -n {params.n_iterations}'
+    
+    #rule convert_xfm_ras2itk:
+    #    input:
+    #        xfm=rules.affine_template.output.xfm_affine,
+    #    output:
+    #        xfm_itk_rigid = bids(root=join(config['out_dir'],'derivatives', 'atlasreg'),subject=subject_id,suffix='xfm.txt',from_='subject',to='{template}',desc='rigid',type_='itk'),
+    #    #container: config['singularity']['neuroglia']
+    #    group: 'preproc'
+    #    shell:
+    #        'c3d_affine_tool {input.xfm} -oitk {output.xfm_itk_rigid}'
+
+    rule convert_affine_xfm:
+        input: 
+            flo = bids(root=join(config['out_dir'],'derivatives', 'atlasreg'),subject=subject_id,suffix='T1w.nii.gz'),
+            ref = config['template_t1w'],
+            xfm_affine = rules.affine_template.output.xfm_affine,
+            xfm_deform = rules.affine_template.output.xfm_deform,
+        output: 
+            warped_subj = bids(root=join(config['out_dir'],'derivatives', 'atlasreg'),subject=subject_id,suffix='T1w.nii.gz',space='{template}',desc='affine'),
+        params:
+            n_iterations=config['atlas_reg']['greedy']['n_iterations']
+        #container: config['singularity']['neuroglia']
+        group: 'preproc'
+        shell:
+            'greedy -d 3 -threads 4 -rf {input.ref} -rm {input.flo} {output.warped_subj} -r {input.xfm_deform} {input.xfm_affine}'
+
+    rule convert_xfm_inv:
+        input:
+            ref = config['template_t1w'],
+            xfm_affine = rules.affine_template.output.xfm_affine,
+            xfm_deform = rules.affine_template.output.xfm_deform,
+            xfm_deform_inv=rules.affine_template.output.xfm_deform_inv
+        output:
+            xfm_deform=bids(root=join(config['out_dir'],'derivatives', 'atlasreg'),subject=subject_id,suffix='xfm.nii.gz',from_='subject',to='{template}',desc='composite',),
+            xfm_deform_inv=bids(root=join(config['out_dir'],'derivatives', 'atlasreg'),subject=subject_id,suffix='xfm.nii.gz',from_='subject',to='{template}',desc='compositeInverse'),
+        group: 'preproc'
+        shell: 
+            'greedy -d 3 -threads 4 -rf {input.ref} -r {input.xfm_deform} {input.xfm_affine} -rc {output.xfm_deform}&&'
+            'greedy -d 3 -threads 4 -rf {input.ref} -r {input.xfm_affine},-1 {input.xfm_deform_inv} -rc {output.xfm_deform_inv}'
+
+    rule convert_xfm:
+        input:
+            xfm=rules.affine_template.output.xfm_affine,
+        output:
+            xfm_deform=bids(root=join(config['out_dir'],'derivatives', 'atlasreg'),subject=subject_id,suffix='xfm.txt',from_='subject',to='{template}',desc='affine',type_='itk'),
+        #container: config['singularity']['neuroglia']
+        group: 'preproc'
+        shell:
+            'c3d_affine_tool {input.xfm}  -oitk {output.xfm_deform}'
+
+    final_outputs.extend(expand(bids(root=join(config['out_dir'],'derivatives', 'atlasreg'),subject=subject_id,suffix='xfm.nii.gz',from_='subject',to='{template}',desc='composite'),
+                            subject=subjects, template=config['template']))
+    final_outputs.extend(expand(bids(root=join(config['out_dir'],'derivatives', 'atlasreg'),subject=subject_id,suffix='coreg1Warp.nii.gz',from_='subject',to='{template}',desc='affine',type_='ras'),
+                            subject=subjects, template=config['template']))
+    final_outputs.extend(expand(bids(root=join(config['out_dir'],'derivatives', 'atlasreg'),subject=subject_id,suffix='xfm.txt',from_='subject',to='{template}',desc='rigid',type_='ras'),
                         subject=subjects, template=config['template']))
-final_outputs.extend(expand(bids(root=join(config['out_dir'],'derivatives', 'atlasreg'),subject=subject_id,suffix='xfm.txt',from_='subject',to='{template}',desc='affine',type_='ras'),
-                        subject=subjects, template=config['template']))
-rule convert_xfm_ras2itk:
-    input:
-        tfm=bids(root=join(config['out_dir'],'derivatives', 'atlasreg'),subject=subject_id,suffix='xfm.txt',from_='subject',to='{template}',desc='affine',type_='ras'),
-        xfm=bids(root=join(config['out_dir'],'derivatives', 'atlasreg'),subject=subject_id,suffix='xfm.txt',from_='subject',to='{template}',desc='{desc}',type_='ras'),
-    output:
-        bids(root=join(config['out_dir'],'derivatives', 'atlasreg'),subject=subject_id,suffix='xfm.txt',from_='subject',to='{template}',desc='{desc}',type_='itk'),
-    #container: config['singularity']['neuroglia']
-    group: 'preproc'
-    shell:
-        'c3d_affine_tool {input.xfm}  -oitk {output}'
 
-rule warp_brainmask_from_template_affine:
-    input: 
-        mask = config['template_mask'],
-        ref = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,suffix='T1w.nii.gz'),
-        xfm = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,suffix='xfm.txt',from_='subject',to='{template}',desc='{desc}',type_='itk'),
-    output:
-        mask = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,suffix='mask.nii.gz',from_='{template}',reg='{desc}',desc='brain'),
-    #container: config['singularity']['neuroglia']
-    group: 'preproc'
-    shell: 'antsApplyTransforms -d 3 --interpolation NearestNeighbor -i {input.mask} -o {output.mask} -r {input.ref} '
-            ' -t [{input.xfm},1] ' #use inverse xfm (going from template to subject)
+    rule warp_brainmask_from_template_affine:
+        input: 
+            mask = config['template_mask'],
+            ref = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,suffix='T1w.nii.gz'),
+            xfm = rules.convert_xfm_inv.output.xfm_deform_inv
+        output:
+            mask = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,suffix='mask.nii.gz',from_='{template}',reg='{desc}',desc='brain'),
+        #container: config['singularity']['neuroglia']
+        group: 'preproc'
+        shell: 'antsApplyTransforms -d 3 --interpolation NearestNeighbor -i {input.mask} -o {output.mask} -r {input.ref} '
+                ' -t [{input.xfm},0] ' #use inverse xfm (going from template to subject)
 
-rule warp_tissue_probseg_from_template_affine:
-    input: 
-        probseg = config['template_tissue_probseg'],
-        ref = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,suffix='T1w.nii.gz'),
-        xfm = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,suffix='xfm.txt',from_='subject',to='{template}',desc='{desc}',type_='itk'),
-    output:
-        probseg = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,suffix='probseg.nii.gz',label='{tissue}',from_='{template}',reg='{desc}'),
-    #container: config['singularity']['neuroglia']
-    group: 'preproc'
-    threads: 1
-    resources:
-        mem_mb = 16000
-    shell: 
-        'ITK_GLOBAL_DEFAULT_NUMBER_OF_THREADS={threads} '
-        'antsApplyTransforms -d 3 --interpolation Linear -i {input.probseg} -o {output.probseg} -r {input.ref} '
-            ' -t [{input.xfm},1]' #use inverse xfm (going from template to subject)
+    rule warp_tissue_probseg_from_template_affine:
+        input: 
+            probseg = config['template_tissue_probseg'],
+            ref = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,suffix='T1w.nii.gz'),
+            xfm = rules.convert_xfm_inv.output.xfm_deform_inv
+        output:
+            probseg = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,suffix='probseg.nii.gz',label='{tissue}',from_='{template}',reg='{desc}'),
+        #container: config['singularity']['neuroglia']
+        group: 'preproc'
+        threads: 1
+        resources:
+            mem_mb = 16000
+        shell: 
+            'ITK_GLOBAL_DEFAULT_NUMBER_OF_THREADS={threads} '
+            'antsApplyTransforms -d 3 --interpolation Linear -i {input.probseg} -o {output.probseg} -r {input.ref} '
+                ' -t [{input.xfm},0]' #use inverse xfm (going from template to subject)
 
 rule n4biasfield:
     input: 
@@ -322,7 +397,7 @@ rule ants_syn_affine_init:
     input: 
         flo = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,suffix='T1w.nii.gz',from_='atropos3seg',desc='masked'),
         ref = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),prefix='tpl-{template}/tpl-{template}',desc='masked',suffix='T1w.nii.gz'),
-        init_xfm = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,suffix='xfm.txt',from_='subject',to='{template}',desc='affine',type_='itk'),
+        init_xfm = rules.convert_xfm.output.xfm_deform
     params:
         out_prefix = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,suffix='',from_='subject',to='{template}'),
         base_opts = '--write-composite-transform -d {dim} --float 1 '.format(dim=config['ants']['dim']),

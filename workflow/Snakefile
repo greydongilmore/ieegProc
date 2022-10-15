@@ -37,9 +37,6 @@ final_outputs = []
 
 
 
-if config['seeg_contacts']['present']:
-    include: 'rules/electrodes.smk'
-
 if config['fmriprep']['run']:
     include: 'rules/fmriprep.smk'
     if not exists(join(config['out_dir'], 'derivatives', 'fmriprep')):
@@ -51,6 +48,9 @@ if config['fastsurfer']['run']:
 include: "rules/registration.smk"
 include: "rules/visqc.smk"
 include: "rules/segmentation.smk"
+
+if config['seeg_contacts']['present']:
+    include: 'rules/electrodes.smk'
 
 rule all:
         input:

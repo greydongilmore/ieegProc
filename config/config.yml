@@ -3,7 +3,7 @@
 #
 
 #laptop
-bids_dir: /home/greydon/Documents/data/clinical
+bids_dir: /home/greydon/Documents/data/SEEG
 
 #work computer
 #bids_dir: /media/data/data/clinical
@@ -22,8 +22,8 @@ mean_reg2mean: resources/mean_reg2mean.nii.gz
 #
 
 noncontrast_t1:
-    present: False
-    acq: FSPGR
+    present: True
+    acq: TFE
     reg_aladin: -rigOnly # use "-rigOnly" for 6 DOF and "" for 12 DOF
 
 contrast_t1:
@@ -38,7 +38,7 @@ seeg_contacts:
     present: True
 
 pet:
-    present: False
+    present: True
     position: -1
     task: rest
     reg_aladin: -rigOnly # use "-rigOnly" for 6 DOF and "" for 12 DOF
@@ -48,7 +48,12 @@ subject_t1w: /bids/sub-f'{config['subject_prefix']}'{subject}/ses-pre/anat/sub-f
 #use this if a particular subject has a custom path
 subject_t1w_custom: []
 
-
+atlas_reg:
+    reg_aladin:
+        active: False
+    greedy:
+        active: True
+        n_iterations: 100x50x25
 
 #
 #--- segmentation
@@ -124,6 +129,7 @@ ants:
 
 fastsurfer:
     run: True
+    acq: FSPGR
     home: "/home/greydon/Documents/GitHub/FastSurfer"
     py: "python"
     sid: 'fastsurfer'

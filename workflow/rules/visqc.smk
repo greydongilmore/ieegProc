@@ -1,3 +1,8 @@
+def get_electrodes_filename(wildcards): 
+    if wildcards.subject in config['subject_electrodes_custom']:
+        return config['out_dir'] + config['subject_electrodes_custom'][wildcards.subject]
+    else:
+        return config['out_dir'] + config['subject_electrodes']
 
 rule qc_reg:
     input:
@@ -192,7 +197,7 @@ if config['seeg_contacts']['present']:
         input: 
             fcsv = get_electrodes_filename,
             t1w = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,desc='n4', suffix='T1w.nii.gz'),
-            xfm_ras = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,suffix='xfm.txt',from_='subject',to='{template}',desc='affine',type_='ras'),
+            xfm_ras = bids(root=join(config['out_dir'],'derivatives', 'atlasreg'),subject=subject_id,suffix='xfm.txt',from_='subject',to='{template}',desc='rigid',type_='ras'),
         params:
             contacts= bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),prefix='sub-'+subject_id+'/qc/sub-'+subject_id,suffix='contacts.html',desc='mask',space='ct',include_subject_dir=False)
         output:

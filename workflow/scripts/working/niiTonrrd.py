@@ -36,7 +36,7 @@ def sorted_nicely(data, reverse = False):
 #%%
 
 
-isub="P066"
+isub="P096"
 scene_path="seega_scenes"
 
 repo_path = r'/home/greydon/Documents/GitHub'
