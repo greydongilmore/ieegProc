@@ -23,7 +23,7 @@ mean_reg2mean: resources/mean_reg2mean.nii.gz
 
 noncontrast_t1:
     present: True
-    acq: TFE
+    acq: FSPGR
     reg_aladin: -rigOnly # use "-rigOnly" for 6 DOF and "" for 12 DOF
 
 contrast_t1:
@@ -38,7 +38,7 @@ seeg_contacts:
     present: True
 
 pet:
-    present: True
+    present: False
     position: -1
     task: rest
     reg_aladin: -rigOnly # use "-rigOnly" for 6 DOF and "" for 12 DOF
@@ -53,11 +53,29 @@ atlas_reg:
         active: False
     greedy:
         active: True
-        n_iterations: 100x50x25
+        n_iterations: 100x50x10
 
 #
 #--- segmentation
 #
+
+fastsurfer:
+    run: True
+    acq: ""
+    home: "/home/greydon/Documents/GitHub/FastSurfer"
+    py: "python"
+    sid: 'fastsurfer'
+    batch: 8
+    threads: 4
+    order: 0    #(0=nearest,1=linear(default),2=quadratic,3=cubic)
+    seg_only: True
+    vol_segstats: True
+
+fmriprep:
+    run: False
+    fmriprep_license: resources/license.txt
+    bids_filter: resources/bids_filter.json
+
 
 subject_elec_ct: /bids/sub-f'{config['subject_prefix']}'{subject}/ses-post/ct/sub-f'{config['subject_prefix']}'{subject}_ses-post_acq-Electrode_run-01_ct.nii.gz
 subject_elec_t1w: /bids/sub-f'{config['subject_prefix']}'{subject}/ses-post/anat/sub-f'{config['subject_prefix']}'{subject}_ses-post_acq-Electrode3D_run-01_T1w.nii.gz
@@ -127,22 +145,7 @@ ants:
     shape_update:
         gradient_step: 0.25
 
-fastsurfer:
-    run: True
-    acq: FSPGR
-    home: "/home/greydon/Documents/GitHub/FastSurfer"
-    py: "python"
-    sid: 'fastsurfer'
-    batch: 8
-    threads: 4
-    order: 0    #(0=nearest,1=linear(default),2=quadratic,3=cubic)
-    seg_only: True
-    vol_segstats: True
 
-fmriprep:
-    run: False
-    fmriprep_license: resources/license.txt
-    bids_filter: resources/bids_filter.json
 
 singularity:
     neuroglia-core: "docker://khanlab/neuroglia-core:latest"

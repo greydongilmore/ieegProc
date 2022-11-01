@@ -72,12 +72,23 @@ rule gradient_magnitude:
     output:
         t1_grad = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id, desc='magnitude', suffix='T1w.nii.gz'),
         t1_grad_color = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id, desc='magnitude', label='hot', suffix='T1w.nii.gz'),
-        t1_intensity = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id, desc='intensity', suffix='T1w.nii.gz'),
+        t1_intensity = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id, desc='relintensity', suffix='T1w.nii.gz'),
+        t1_intensity_color = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id, desc='relintensity', label='hot', suffix='T1w.nii.gz'),
         png_mask = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),prefix='sub-'+subject_id+'/qc/sub-'+subject_id,suffix='maskqc.png',desc='brain',include_subject_dir=False),
         png_seg = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),prefix='sub-'+subject_id+'/qc/sub-'+subject_id,suffix='segqc.png',desc='segmentation',include_subject_dir=False),
+        png_ri = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),prefix='sub-'+subject_id+'/qc/sub-'+subject_id,suffix='qc.png',desc='relintensity',include_subject_dir=False),
+        png_grad = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),prefix='sub-'+subject_id+'/qc/sub-'+subject_id,suffix='qc.png',desc='gradient',include_subject_dir=False),
     script:
         '../scripts/grad_mag.py'
 
+final_outputs.extend(expand(bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),prefix='sub-'+subject_id+'/qc/sub-'+subject_id,suffix='maskqc.png',desc='brain', include_subject_dir=False),
+                            subject=subjects))
+final_outputs.extend(expand(bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),prefix='sub-'+subject_id+'/qc/sub-'+subject_id,suffix='segqc.png',desc='segmentation', include_subject_dir=False),
+                            subject=subjects))
+final_outputs.extend(expand(bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),prefix='sub-'+subject_id+'/qc/sub-'+subject_id,suffix='qc.png',desc='relintensity', include_subject_dir=False),
+                            subject=subjects))
+final_outputs.extend(expand(bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),prefix='sub-'+subject_id+'/qc/sub-'+subject_id,suffix='qc.png',desc='gradient', include_subject_dir=False),
+                            subject=subjects))
 final_outputs.extend(expand(bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id, desc='magnitude', suffix='T1w.nii.gz'), 
                         subject=subjects))
 final_outputs.extend(expand(bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id, desc='intensity', suffix='T1w.nii.gz'), 

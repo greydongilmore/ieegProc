@@ -21,7 +21,11 @@ rule qc_reg:
     group: 'preproc'
     script: '../scripts/vis_regqc.py'
 
-final_outputs.extend(expand(bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),prefix='sub-'+subject_id+'/qc/sub-'+subject_id,suffix='regqc.png',from_='subject', to='{template}',desc='{desc}',include_subject_dir=False),
+if config['atlas_reg']['greedy']['active']:
+    final_outputs.extend(expand(bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),prefix='sub-'+subject_id+'/qc/sub-'+subject_id,suffix='regqc.png',from_='subject', to='{template}',desc='{desc}',include_subject_dir=False),
+                            subject=subjects, desc=['affine','greedydeform','SyN'],template=config['template']))
+else:
+    final_outputs.extend(expand(bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),prefix='sub-'+subject_id+'/qc/sub-'+subject_id,suffix='regqc.png',from_='subject', to='{template}',desc='{desc}',include_subject_dir=False),
                         subject=subjects, desc=['affine','SyN'],template=config['template']))
 
 if config['noncontrast_t1']['present']:
@@ -180,7 +184,6 @@ final_outputs.extend(expand(bids(root=join(config['out_dir'], 'derivatives', 'at
 
 
 if config['seeg_contacts']['present']:
-
     rule vis_contacts:
         input:
             ct = bids(root=join(config['out_dir'],'derivatives', 'atlasreg'),subject=subject_id,suffix='ct.nii.gz',space='T1w',desc='rigid'),
@@ -197,7 +200,7 @@ if config['seeg_contacts']['present']:
         input: 
             fcsv = get_electrodes_filename,
             t1w = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,desc='n4', suffix='T1w.nii.gz'),
-            xfm_ras = bids(root=join(config['out_dir'],'derivatives', 'atlasreg'),subject=subject_id,suffix='xfm.txt',from_='subject',to='{template}',desc='rigid',type_='ras'),
+            xfm_ras = bids(root=join(config['out_dir'],'derivatives', 'atlasreg'),subject=subject_id,suffix='xfm.txt',from_='subject',to='{template}',desc='affine',type_='ras'),
         params:
             contacts= bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),prefix='sub-'+subject_id+'/qc/sub-'+subject_id,suffix='contacts.html',desc='mask',space='ct',include_subject_dir=False)
         output:

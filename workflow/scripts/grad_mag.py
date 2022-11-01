@@ -9,6 +9,7 @@ from pathlib import Path
 from uuid import uuid4
 import re
 import matplotlib.pyplot as plt
+import matplotlib as mpl
 from io import BytesIO
 import base64
 import os
@@ -22,11 +23,16 @@ import SimpleITK as sitk
 def svg2str(display_object, dpi):
 	"""Serialize a nilearn display object to string."""
 	from io import StringIO
-
+	
 	image_buf = StringIO()
-	display_object.frame_axes.figure.savefig(
-		image_buf, dpi=dpi, format="svg", facecolor="k", edgecolor="k"
-	)
+	if isinstance(display_object,mpl.figure.Figure):
+		display_object.savefig(
+			image_buf, dpi=dpi, format="svg", facecolor="k", edgecolor="k"
+		)
+	else:
+		display_object.frame_axes.figure.savefig(
+			image_buf, dpi=dpi, format="svg", facecolor="k", edgecolor="k"
+		)
 	return image_buf.getvalue()
 
 def extract_svg(display_object, dpi=300):
@@ -143,26 +149,82 @@ def compute_RI(image, bg, mask):
 	ri[bgp_ind] = 100 * (1 + (bg - image[bgp_ind]) / bg )
 	return ri
 
-def qc_mosaic_plot(anat_img, overlay_img, out_filen, dim=0, threshold=0):
+def qc_axial_plot(anat_img, out_filen=None,cmap=plt.cm.hot):
+	
+	plt.ioff()
+	
+	n_rows, n_cols = 4, 8
+	all_coords = plotting.find_cut_slices(
+		anat_img, direction="z", n_cuts=(n_rows * n_cols)+4
+	)
+	
+	ax_size = 2.0
+	fig, all_axes = plt.subplots(
+		n_rows,
+		n_cols,
+		figsize=(n_cols * ax_size,n_rows * ax_size),
+		layout="constrained",
+	)
+	
+	vmin=anat_img.get_fdata().min()
+	vmax=anat_img.get_fdata().max()
+	for coord, ax in zip(all_coords[2:-2], all_axes.ravel()):
+		img_data = np.fliplr(np.rot90(anat_img.get_fdata()[:,:,int(coord)],3))
+		ax.imshow(img_data,cmap=cmap, origin='lower',vmin=0,vmax=vmax)
+		ax.axis('off')
+	
+	display=plt.gcf()
+	display.savefig(out_filen,dpi=400)
+	
+	fg_svgs = [fromstring(extract_svg(display,400))]
+	cleaned_svg,sizes=clean_svg(fg_svgs,[])
+	
+	width = sizes[0, 0]
+	scales = width / sizes[:, 0]
+	heights = sizes[:, 1] * scales
+	
+	fig = SVGFigure(Unit(f"{width}px"), Unit(f"{heights[:1].sum()}px"))
+	fig.append(GroupElement([fromstring(extract_svg(display,400)).getroot()], {"class": "background-svg"}))
+	fig.root.attrib.pop("width", None)
+	fig.root.attrib.pop("height", None)
+	fig.root.set("preserveAspectRatio", "xMidYMid meet")
+	
+	with TemporaryDirectory() as tmpdirname:
+		out_file = Path(tmpdirname) / "tmp.svg"
+		fig.save(str(out_file))
+		svg_final = out_file.read_text().splitlines()
+	
+	htmlbase='<!DOCTYPE html> <html lang="en"> <head> <title>Slice viewer</title>  <meta charset="UTF-8" /> </head> <body>'
+	htmlend='</body> </html>'
+	htmlfull=htmlbase  + "\n".join(cleaned_svg + svg_final) + htmlend
+	
+	# Write HTML String to file.html
+	with open(out_filen.replace('png','html'), "w") as file:
+		file.write(htmlfull)
+	
+	plt.ion()
+
+def qc_mosaic_plot(anat_img, overlay_img=None, out_filen=None, dim=0, threshold1=0, threshold2=0, cmap1=plt.cm.Greys_r,cmap2=plt.cm.coolwarm_r):
 	
 	plt.ioff()
 	fig = plt.figure(figsize=(12, 5),facecolor='k')
-
+	
 	display = plotting.plot_anat(anat_img, 
 								 display_mode='mosaic',
 								 black_bg=True,
-								 cmap=plt.cm.Greys_r,
+								 cmap=cmap1,
 								 cut_coords=None, 
-								 threshold=0, 
+								 threshold=threshold1, 
 								 dim=dim,
 								 draw_cross=False,
 								 figure=fig)
 	fg_svgs = [fromstring(extract_svg(display,400))]
 	
-	display.add_overlay(overlay_img,alpha=0.7,cmap=plt.cm.coolwarm_r)
+	bg_svgs = []
+	if overlay_img is not None:
+		display.add_overlay(overlay_img,alpha=0.7,cmap=cmap2)
+		bg_svgs = [fromstring(extract_svg(display,400))]
 	
-	bg_svgs = [fromstring(extract_svg(display,400))]
-
 	display.savefig(out_filen,dpi=400)
 	display.close()
 	
@@ -170,16 +232,19 @@ def qc_mosaic_plot(anat_img, overlay_img, out_filen, dim=0, threshold=0):
 	display = plotting.plot_anat(anat_img, 
 								 display_mode='mosaic',
 								 black_bg=True,
-								 cmap=plt.cm.Greys_r,
+								 cmap=cmap1,
 								 cut_coords=None, 
-								 threshold=0, 
+								 threshold=threshold1, 
 								 dim=dim,
 								 draw_cross=False,
 								 figure=fig)
 	
-	display.add_overlay(overlay_img,threshold=threshold,alpha=0.7,cmap=plt.cm.coolwarm_r)
+	if overlay_img is not None:
+		display.add_overlay(overlay_img,threshold=threshold2,alpha=0.7,cmap=cmap2)
+		cleaned_svg,sizes=clean_svg(fg_svgs,bg_svgs)
+	else:
+		cleaned_svg,sizes=clean_svg(fg_svgs,bg_svgs)
 	
-	cleaned_svg,sizes=clean_svg(fg_svgs,bg_svgs)
 	width = sizes[0, 0]
 	scales = width / sizes[:, 0]
 	heights = sizes[:, 1] * scales
@@ -220,6 +285,22 @@ def window_img(image, outMin=0.0, outMax=255.0):
 											 outputMinimum=outMin, outputMaximum=outMax), sitk.sitkUInt8)
 	return windowed
 
+def make_affine(simpleITKImage):
+	c = [simpleITKImage.TransformContinuousIndexToPhysicalPoint(p)
+		 for p in ((1, 0, 0),
+				   (0, 1, 0),
+				   (0, 0, 1),
+				   (0, 0, 0))]
+	c = np.array(c)
+	affine = np.concatenate([
+		np.concatenate([c[0:3] - c[3:], c[3:]], axis=0),
+		[[0.], [0.], [0.], [1.]]
+	], axis=1)
+	affine = np.transpose(affine)
+	# convert to RAS to match nibabel
+	affine = np.matmul(np.diag([-1., -1., 1., 1.]), affine)
+	return affine
+
 #%%
 
 debug = False
@@ -234,7 +315,7 @@ if debug:
 		def __init__(self, **kwargs):
 			self.__dict__.update(kwargs)
 	
-	isub='sub-P096'
+	isub='sub-P020'
 	data_dir=r'/home/greydon/Documents/data/SEEG/derivatives/atlasreg'
 	
 	input=dotdict({
@@ -248,10 +329,13 @@ if debug:
 	
 	output=dotdict({
 		't1_grad':f'{data_dir}/{isub}/{isub}_desc-magnitude_T1w.nii.gz',
-		't1_grad_color':f'{data_dir}/{isub}/{isub}_desc-magnitude_T1w_lut.nii.gz',
-		't1_intensity':f'{data_dir}/{isub}/{isub}_desc-intensity_T1w.nii.gz',
+		't1_grad_color':f'{data_dir}/{isub}/{isub}_label-hot_desc-magnitude_T1w.nii.gz',
+		't1_intensity':f'{data_dir}/{isub}/{isub}_desc-relintensity_T1w.nii.gz',
+		't1_intensity_color':f'{data_dir}/{isub}/{isub}_label-hot_desc-relintensity_T1w.nii.gz',
 		'png_mask':f'{data_dir}/{isub}/qc/{isub}_desc-brain_maskqc.png',
-		'png_seg':f'{data_dir}/{isub}/qc/{isub}_desc-segmentation_segqc.png'
+		'png_seg':f'{data_dir}/{isub}/qc/{isub}_desc-segmentation_segqc.png',
+		'png_grad':f'{data_dir}/{isub}/qc/{isub}_desc-gradient_qc.png',
+		'png_ri':f'{data_dir}/{isub}/qc/{isub}_desc-relintensity_qc.png'
 	})
 	
 	snakemake = Namespace(output=output, input=input)
@@ -265,33 +349,45 @@ img_data = img.get_fdata()
 
 
 t1_file=ants.image_read(snakemake.input.t1)
-mask_file=ants.image_read(snakemake.input.mask)
-seg_file=ants.image_read(snakemake.input.seg)
+
+mask_file=nb.load(snakemake.input.mask)
+mask_file_data=mask_file.get_fdata()
+
+seg_file=nb.load(snakemake.input.seg)
+seg_file_data=seg_file.get_fdata()
 
 if not os.path.exists(snakemake.output.t1_grad):
 	grad_t1 = ants.iMath(t1_file, "Grad", 1)
-	grad_t1=ants.to_nibabel(grad_t1)
-	grad_t1.to_filename(snakemake.output.t1_grad)
+	ants.image_write(grad_t1, snakemake.output.t1_grad)
+	grad_sitk = sitk.ReadImage(snakemake.output.t1_grad, sitk.sitkUInt16)
+	grad_sitk = sitk.ScalarToRGBColormap(grad_sitk, sitk.ScalarToRGBColormapImageFilter.Hot)
+	sitk.WriteImage(grad_sitk, snakemake.output.t1_grad_color)
 	
-	grad_t1 = sitk.ReadImage(snakemake.output.t1_grad, sitk.sitkUInt16)
-	grad_t1 = sitk.ScalarToRGBColormap(grad_t1, sitk.ScalarToRGBColormapImageFilter.Hot)
-	
+	grad_nibabel = ants.to_nibabel(grad_t1)
+else:
+	grad_nibabel=nb.load(snakemake.output.t1_grad)
+
 # 	viewer = sitk.ImageViewer()
 # 	viewer.SetCommand('/opt/Slicer-4.11.20210226/Slicer')
 # 	viewer.Execute(grad_t1)
 
 if not os.path.exists(snakemake.output.t1_intensity):
-	gm_file=np.where((seg_file.numpy() == 1), 1, 0).astype('float32')
-	wm_file=np.where((seg_file.numpy() == 2), 1, 0).astype('float32')
+	gm_file=np.where((seg_file_data == 1), 1, 0).astype('float32')
+	wm_file=np.where((seg_file_data == 2), 1, 0).astype('float32')
 	t1_n4_gm = t1_file * t1_file.new_image_like(gm_file)
 	t1_n4_wm = t1_file * t1_file.new_image_like(wm_file)
 	bg_t1 = peakfinder(t1_n4_gm, t1_n4_wm, 1, 99.5)
-	t1_ri = compute_RI(t1_file.numpy(), bg_t1, mask_file.numpy())
+	t1_ri = compute_RI(t1_file.numpy(), bg_t1, mask_file_data)
 	tmp = t1_file.new_image_like(t1_ri)
 	ri = ants.smooth_image(tmp, sigma=3, FWHM=True)
 	ants.image_write(ri, snakemake.output.t1_intensity)
+	ri_nibabel = ants.to_nibabel(ri)
+
+	ri_sitk = sitk.ReadImage(snakemake.output.t1_intensity, sitk.sitkUInt16)
+	ri_lut = sitk.ScalarToRGBColormap(ri_sitk, sitk.ScalarToRGBColormapImageFilter.Hot)
+	sitk.WriteImage(ri_lut, snakemake.output.t1_intensity_color)
 else:
-	ri=ants.image_read(snakemake.output.t1_intensity)
+	ri_nibabel=nb.load(snakemake.output.t1_intensity)
 
 lmin = float(t1_file.numpy().min())
 lmax = float(t1_file.numpy().max())
@@ -301,8 +397,15 @@ t1_file_nb = ants.to_nibabel(t1_file)
 t1_file_norm = nb.Nifti1Image(norm_img, t1_file_nb.affine, t1_file_nb.header)
 
 
-qc_mosaic_plot(t1_file_norm, ants.to_nibabel(mask_file), snakemake.output.png_mask)
-qc_mosaic_plot(t1_file_norm, ants.to_nibabel(seg_file), snakemake.output.png_seg, threshold=1)
+if not os.path.exists(snakemake.output.png_mask):
+	qc_mosaic_plot(t1_file_norm, mask_file, snakemake.output.png_mask)
+
+if not os.path.exists(snakemake.output.png_seg):
+	qc_mosaic_plot(t1_file_norm, seg_file, snakemake.output.png_seg)
+
+
+qc_axial_plot(ri_nibabel,snakemake.output.png_ri,cmap=plt.cm.hot)
+qc_axial_plot(grad_nibabel,snakemake.output.png_grad)
 
 #%%
 

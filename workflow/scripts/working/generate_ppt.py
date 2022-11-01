@@ -16,6 +16,7 @@ from pptx.oxml.xmlchemy import OxmlElement
 from pptx.enum.text import PP_ALIGN
 import pandas as pd
 from pptx.enum.text import MSO_AUTO_SIZE
+import datetime
 
 
 
@@ -47,6 +48,7 @@ color_map={
 	"yellow": (255,255,0),
 	"brown": (43,34,2),
 	"green": (0,169,51),
+	"white": (255,255,255),
 }
 
 #%%
@@ -64,7 +66,7 @@ if debug:
 		def __init__(self, **kwargs):
 			self.__dict__.update(kwargs)
 
-	isub = 'sub-P096'
+	isub = 'sub-P097'
 	data_dir = r'/home/greydon/Documents/data/SEEG/derivatives'
 
 	input = dotdict({
@@ -158,39 +160,40 @@ error_slide.name="errors"
 
 
 for _, row in df_elec.iterrows():
-	title_dict={
-		row['Target']:{
-			"font_size": 48,
-			"color": RGBColor(255,255,255),
-			"position": (Inches(3), Inches(.5), Inches(10), Inches(1))
+	if not row['Electrode label'].lower() =='aborted':
+		title_dict={
+			row['Target']:{
+				"font_size": 48,
+				"color": RGBColor(255,255,255),
+				"position": (Inches(3), Inches(.5), Inches(10), Inches(1))
+				}
 			}
-		}
-	
-	elec_slide=add_slide(prs, blank_slide_layout, title_dict)
-	elec_slide.name=row['Target']
-	
-	elec_color = ''.join([x for x in row['Electrode label'] if x.isalpha()]).lower()
-	
-	textbox = elec_slide.shapes.add_textbox(Inches(13.5), Inches(4.5), Inches(2), Inches(.5))
-	textbox.fill.solid()
-	if elec_color in ("yellow","green"):
-		textbox.fill.fore_color.rgb = RGBColor(0, 0, 0)
-	else:
-		textbox.fill.fore_color.rgb = RGBColor(255, 255, 255)
-	tf=textbox.text_frame
-	tf.auto_size = MSO_AUTO_SIZE.NONE
-	tf.word_wrap=False
-	
-	p = tf.paragraphs[0]
-	p.alignment= PP_ALIGN.CENTER
-	p.text = row['Electrode label']
-	p.font.size = Pt(24)
-	p.font.bold=True
-	p.font.color.rgb = RGBColor(color_map[elec_color][0],color_map[elec_color][1],color_map[elec_color][2])
-	
-	line = textbox.line
-	line.color.rgb = RGBColor(255, 0, 0)
-	line.width = Inches(0.04)
+		
+		elec_slide=add_slide(prs, blank_slide_layout, title_dict)
+		elec_slide.name=row['Target']
+		
+		elec_color = ''.join([x for x in row['Electrode label'] if x.isalpha()]).lower()
+		
+		textbox = elec_slide.shapes.add_textbox(Inches(13.5), Inches(4.5), Inches(2), Inches(.5))
+		textbox.fill.solid()
+		if elec_color in ("yellow","green","white"):
+			textbox.fill.fore_color.rgb = RGBColor(0, 0, 0)
+		else:
+			textbox.fill.fore_color.rgb = RGBColor(255, 255, 255)
+		tf=textbox.text_frame
+		tf.auto_size = MSO_AUTO_SIZE.NONE
+		tf.word_wrap=False
+		
+		p = tf.paragraphs[0]
+		p.alignment= PP_ALIGN.CENTER
+		p.text = row['Electrode label']
+		p.font.size = Pt(24)
+		p.font.bold=True
+		p.font.color.rgb = RGBColor(color_map[elec_color][0],color_map[elec_color][1],color_map[elec_color][2])
+		
+		line = textbox.line
+		line.color.rgb = RGBColor(255, 0, 0)
+		line.width = Inches(0.04)
 
 out_fname = f"{lastname.replace(' ','')}_{firstname}_{sx_date}_maps.pptx"
 prs.save(f'{data_dir}/seega_scenes/{isub}/{out_fname}')

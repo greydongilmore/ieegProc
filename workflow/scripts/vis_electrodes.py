@@ -21,11 +21,11 @@ if debug:
 		def __init__(self, **kwargs):
 			self.__dict__.update(kwargs)
 	
-	isub="P094"
+	isub="P097"
 	data_dir=r'/home/greydon/Documents/data/SEEG/derivatives'
 	
 	input=dotdict({'fcsv':f'{data_dir}/seega_coordinates/' + f'sub-{isub}/sub-{isub}_space-native_SEEGA.fcsv',
-				'xfm_ras':f'{data_dir}/atlasreg/' + f'sub-{isub}/sub-{isub}_desc-affine_from-subject_to-MNI152NLin2009cSym_type-ras_xfm.txt'
+				'xfm_ras':f'{data_dir}/atlasreg/' + f'sub-{isub}/sub-{isub}_desc-rigid_from-subject_to-MNI152NLin2009cSym_type-ras_xfm.txt'
 				})
 	
 	output=dotdict({'html':f'{data_dir}/atlasreg/' + f'sub-{isub}/qc/sub-{isub}_space-MNI152NLin2009cSym_desc-affine_electrodes.html',
@@ -56,16 +56,25 @@ def determine_groups(iterable, numbered_labels=False):
 		values.append(temp)
 	
 	vals,indexes,count = np.unique(values, return_index=True, return_counts=True)
-	values_unique = [values[index] for index in sorted(indexes)]
-	
-	return values_unique,count
+	vals=vals[indexes.argsort()]
+	count=count[indexes.argsort()]
+	return vals,count
 
 #read fcsv electrodes file
 df = pd.read_table(snakemake.input.fcsv,sep=',',header=2)
 
 groups,n_members=determine_groups(df['label'].tolist(),numbered_labels=True)
+df['group']=np.repeat(groups,n_members)
+
 cmap = plt.get_cmap('rainbow')
-colors=np.repeat(cmap(np.linspace(0, 1, len(groups))), n_members, axis=0)
+color_maps=cmap(np.linspace(0, 1, len(groups))).tolist()
+res = dict(zip(groups, color_maps))
+
+colors=[]
+for igroup in df['group']:
+	colors.append(res[igroup])
+
+colors=np.vstack(colors)
 
 labels=[str(x) for x in  range(colors.shape[0])]
 

@@ -100,9 +100,9 @@ def determine_groups(iterable, numbered_labels=False):
 		values.append(temp)
 	
 	vals,indexes,count = np.unique(values, return_index=True, return_counts=True)
-	values_unique = [values[index] for index in sorted(indexes)]
-	
-	return values_unique,count
+	vals=vals[indexes.argsort()]
+	count=count[indexes.argsort()]
+	return vals,count
 
 
 hemi = ["lh", "rh"]
@@ -127,7 +127,7 @@ if debug:
 		def __init__(self, **kwargs):
 			self.__dict__.update(kwargs)
 	
-	isub="094"
+	isub="097"
 	datap=r'/home/greydon/Documents/data/SEEG/derivatives'
 	
 	input=dotdict({
@@ -181,7 +181,7 @@ groups,n_members=determine_groups(df['label'].tolist(), True)
 df['group']=np.repeat(groups,n_members)
 
 cmap = plt.get_cmap('rainbow')
-colors=np.repeat(cmap(np.linspace(0, 1, len(groups))), n_members, axis=0)
+colors=np.vstack([np.repeat(cmap(np.linspace(0, 1, x)), x, axis=0) for x in n_members])
 
 data=[mesh_3d]
 for igroup in groups:
@@ -236,6 +236,6 @@ fig.update_layout(sliders=sliders)
 fig.write_html(snakemake.output.html)
 
 
-fig.show('firefox')
+#fig.show('firefox')
 
 

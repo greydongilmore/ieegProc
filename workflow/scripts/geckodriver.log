@@ -1,0 +1,15 @@
+1666690127783	geckodriver	INFO	Listening on 127.0.0.1:39063
+1666690128278	mozrunner::runner	INFO	Running command: "/usr/bin/firefox" "--marionette" "-headless" "--remote-debugging-port" "53023" "--remote-allow-hosts" "localhost" "-no-remote" "-profile" "/tmp/rust_mozprofilecdahtU"
+*** You are running in headless mode.
+[GFX1-]: glxtest: VA-API test failed: failed to initialise VAAPI connection.
+1666690128514	Marionette	INFO	Marionette enabled
+1666690128517	Marionette	INFO	Listening on port 45055
+WebDriver BiDi listening on ws://127.0.0.1:53023
+Read port: 45055
+1666690128716	RemoteAgent	WARN	TLS certificate errors will be ignored for this session
+[GFX1-]: RenderCompositorSWGL failed mapping default framebuffer, no dt
+console.warn: SearchSettings: "get: No settings file exists, new profile?" (new NotFoundError("Could not open the file at /tmp/rust_mozprofilecdahtU/search.json.mozlz4", (void 0)))
+DevTools listening on ws://127.0.0.1:53023/devtools/browser/4686e109-f152-43e0-990f-ca3f75f30f4d
+Exiting due to channel error.
+Exiting due to channel error.
+Exiting due to channel error.

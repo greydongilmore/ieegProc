@@ -1,18 +1,19 @@
 def get_pre_t1_filename(wildcards):
-    if config['noncontrast_t1']['present']:
-        files=glob(bids(root=join(config['out_dir'], 'bids'), subject=config['subject_prefix']+f'{wildcards.subject}', datatype='anat', session='pre', acq=config['fastsurfer']['acq'], run='*', suffix='T1w.nii.gz'))
-
-        if len(files) <=1:
-            file=expand(bids(root=join(config['out_dir'], 'bids'), subject=config['subject_prefix']+'{subject}', datatype='anat', session='pre', acq=config['fastsurfer']['acq'], run='01', suffix='T1w.nii.gz'),subject=wildcards.subject)
-            if len(file)==0:
+    files=glob(bids(root=join(config['out_dir'], 'bids'), subject=config['subject_prefix']+f'{wildcards.subject}', datatype='anat', session='pre', acq=config['noncontrast_t1']['acq'], run='*', suffix='T1w.nii.gz'))
+    if len(files) <=1:
+        file=expand(bids(root=join(config['out_dir'], 'bids'), subject=config['subject_prefix']+'{subject}', datatype='anat', session='pre', acq=config['noncontrast_t1']['acq'], run='01', suffix='T1w.nii.gz'),subject=wildcards.subject)
+        if not exists(file[0]):
+            file=expand(bids(root=join(config['out_dir'], 'bids'), subject=config['subject_prefix']+'{subject}', datatype='anat', session='pre', acq=config['noncontrast_t1']['acq'], run='02', suffix='T1w.nii.gz'),subject=wildcards.subject)
+            if not exists(file[0]):
                 file=expand(bids(root=join(config['out_dir'], 'bids'), subject=config['subject_prefix']+'{subject}', datatype='anat', session='pre', run='01', suffix='T1w.nii.gz'),subject=wildcards.subject)
-        else:
-            files.sort(key=lambda f: int(re.sub('\D', '', f)))
-            file=files[-1]
     else:
-        file=expand(bids(root=join(config['out_dir'], 'bids'), subject=config['subject_prefix']+'{subject}', datatype='anat', session='pre', run='01', suffix='T1w.nii.gz'),subject=wildcards.subject)
-    
-    print(f'Pre T1w non-contrast file: {basename(file[0])}')
+        files.sort(key=lambda f: int(re.sub('\D', '', f)))
+        file=files[-1]
+    if file:
+        if not exists(file[0]):
+            file=expand(bids(root=join(config['out_dir'], 'bids'), subject=config['subject_prefix']+'{subject}', datatype='anat', session='pre', run='01', suffix='T1w.nii.gz'),subject=wildcards.subject)
+    if file:
+        print(f'Pre T1w non-contrast file: {basename(file[0])}')
     return file
 
 def get_electrodes_filename(wildcards): 
@@ -24,7 +25,7 @@ def get_electrodes_filename(wildcards):
 def get_transform_filename(wildcards):
     file=[]
     if config['contrast_t1']['present'] and config['noncontrast_t1']['present']:
-        file=expand(bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=config['subject_prefix']+'{subject}',suffix='xfm.txt',from_='noncontrast',to='contrast',acq='noncontrast',desc='rigid',type_='ras'),subject=wildcards.subject),
+        file=expand(bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=config['subject_prefix']+'{subject}',suffix='xfm.txt',from_='noncontrast',to='contrast',desc='rigid',type_='ras'),subject=wildcards.subject),
     if len(file) >0:
         file=file[0][0]
     print(file)
