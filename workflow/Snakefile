@@ -45,12 +45,12 @@ if config['fmriprep']['run']:
 if config['fastsurfer']['run']:
     include: 'rules/fastsurfer.smk'
 
-#include: "rules/registration.smk"
-#include: "rules/visqc.smk"
-#include: "rules/segmentation.smk"
+include: "rules/registration.smk"
+include: "rules/visqc.smk"
+include: "rules/segmentation.smk"
 
-#if config['seeg_contacts']['present']:
-#    include: 'rules/electrodes.smk'
+if config['seeg_contacts']['present']:
+    include: 'rules/electrodes.smk'
 
 rule all:
         input:

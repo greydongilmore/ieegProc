@@ -198,12 +198,15 @@ elif config['atlas_reg']['greedy']['active']:
             warped_subj_affine = bids(root=join(config['out_dir'],'derivatives', 'atlasreg'),subject=subject_id,suffix='T1w.nii.gz',space='{template}',desc='affine'),
             warped_subj_greedy = bids(root=join(config['out_dir'],'derivatives', 'atlasreg'),subject=subject_id,suffix='T1w.nii.gz',space='{template}',desc='greedydeform'),
         params:
-            n_iterations=config['atlas_reg']['greedy']['n_iterations']
+            n_iterations_affine=config['atlas_reg']['greedy']['n_iterations_affine'],
+            n_iterations_deform=config['atlas_reg']['greedy']['n_iterations_deform'],
+            grad_sigma=config['atlas_reg']['greedy']['grad_sigma'],
+            warp_sigma=config['atlas_reg']['greedy']['warp_sigma'],
         #container: config['singularity']['neuroglia']
         group: 'preproc'
         shell:
-            'greedy -d 3 -threads 4 -a -ia-image-centers -m MI -i {input.ref} {input.flo} -o {output.affine_xfm_ras} -n {params.n_iterations}&&'
-            'greedy -d 3 -threads 4 -m MI -i {input.ref} {input.flo} -it {output.affine_xfm_ras}  -o {output.xfm_deform} -oinv {output.xfm_deform_inv} -n {params.n_iterations}&&'
+            'greedy -d 3 -threads 4 -a -ia-image-centers -m MI -i {input.ref} {input.flo} -o {output.affine_xfm_ras} -n {params.n_iterations_affine}&&'
+            'greedy -d 3 -threads 4 -m MI -i {input.ref} {input.flo} -it {output.affine_xfm_ras}  -o {output.xfm_deform} -oinv {output.xfm_deform_inv} -n {params.n_iterations_deform} -s {params.grad_sigma} {params.warp_sigma} &&'
             'greedy -d 3 -threads 4 -rf {input.ref} -rm {input.flo} {output.warped_subj_affine} -r {output.affine_xfm_ras}&&'
             'greedy -d 3 -threads 4 -rf {input.ref} -rm {input.flo} {output.warped_subj_greedy} -r {output.xfm_deform} {output.affine_xfm_ras}'
 

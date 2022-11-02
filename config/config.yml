@@ -3,7 +3,7 @@
 #
 
 #laptop
-bids_dir: /home/greydon/Documents/data/SEEG
+bids_dir: /home/greydon/Documents/data/SEEG_peds
 
 #work computer
 #bids_dir: /media/data/data/clinical
@@ -30,15 +30,15 @@ contrast_t1:
     present: True
 
 post_ct:
-    present: True
+    present: False
     position: -1
-    reg_aladin: -rigOnly # use "-rigOnly" for 6 DOF and "" for 12 DOF
+    reg_aladin: "" # use "-rigOnly" for 6 DOF and "" for 12 DOF
 
 seeg_contacts:
-    present: True
+    present: False
 
 pet:
-    present: False
+    present: True
     position: -1
     task: rest
     reg_aladin: -rigOnly # use "-rigOnly" for 6 DOF and "" for 12 DOF
@@ -53,15 +53,17 @@ atlas_reg:
         active: False
     greedy:
         active: True
-        n_iterations: 100x50x10
+        n_iterations_affine: 100x50x0
+        n_iterations_deform: 100x40x20
+        grad_sigma: 6.0vox
+        warp_sigma: 2.1vox
 
 #
 #--- segmentation
 #
 
 fastsurfer:
-    run: True
-    acq: ""
+    run: False
     home: "/home/greydon/Documents/GitHub/FastSurfer"
     py: "python"
     sid: 'fastsurfer'

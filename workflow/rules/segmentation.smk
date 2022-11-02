@@ -62,35 +62,35 @@ rule brainmask_from_tissue:
         #max over tissue probs, threshold, binarize, fill holes
        'fslmaths {input} -Tmax -thr {params.threshold} -bin -fillh {output}'     
 
-rule gradient_magnitude:
-    input:
-        t1 = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'), subject=subject_id,desc='n4', suffix='T1w.nii.gz'),
-        gm = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,suffix='probseg.nii.gz',label='GM',desc='atropos3seg'),
-        wm = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,suffix='probseg.nii.gz',label='WM',desc='atropos3seg'),
-        mask = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,suffix='mask.nii.gz',from_='{template}'.format(template=config['template']),reg='affine',desc='brain'),
-        seg = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,suffix='dseg.nii.gz',desc='atroposKseg'),
-    output:
-        t1_grad = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id, desc='magnitude', suffix='T1w.nii.gz'),
-        t1_grad_color = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id, desc='magnitude', label='hot', suffix='T1w.nii.gz'),
-        t1_intensity = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id, desc='relintensity', suffix='T1w.nii.gz'),
-        t1_intensity_color = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id, desc='relintensity', label='hot', suffix='T1w.nii.gz'),
-        png_mask = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),prefix='sub-'+subject_id+'/qc/sub-'+subject_id,suffix='maskqc.png',desc='brain',include_subject_dir=False),
-        png_seg = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),prefix='sub-'+subject_id+'/qc/sub-'+subject_id,suffix='segqc.png',desc='segmentation',include_subject_dir=False),
-        png_ri = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),prefix='sub-'+subject_id+'/qc/sub-'+subject_id,suffix='qc.png',desc='relintensity',include_subject_dir=False),
-        png_grad = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),prefix='sub-'+subject_id+'/qc/sub-'+subject_id,suffix='qc.png',desc='gradient',include_subject_dir=False),
-    script:
-        '../scripts/grad_mag.py'
+#rule gradient_magnitude:
+#    input:
+#        t1 = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'), subject=subject_id,desc='n4', suffix='T1w.nii.gz'),
+#        gm = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,suffix='probseg.nii.gz',label='GM',desc='atropos3seg'),
+#        wm = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,suffix='probseg.nii.gz',label='WM',desc='atropos3seg'),
+#        mask = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,suffix='mask.nii.gz',from_='{template}'.format(template=config['template']),reg='affine',desc='brain'),
+#        seg = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,suffix='dseg.nii.gz',desc='atroposKseg'),
+#    output:
+#        t1_grad = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id, desc='magnitude', suffix='T1w.nii.gz'),
+#        t1_grad_color = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id, desc='magnitude', label='hot', suffix='T1w.nii.gz'),
+#        t1_intensity = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id, desc='relintensity', suffix='T1w.nii.gz'),
+#        t1_intensity_color = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id, desc='relintensity', label='hot', suffix='T1w.nii.gz'),
+#        png_mask = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),prefix='sub-'+subject_id+'/qc/sub-'+subject_id,suffix='maskqc.png',desc='brain',include_subject_dir=False),
+#        png_seg = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),prefix='sub-'+subject_id+'/qc/sub-'+subject_id,suffix='segqc.png',desc='segmentation',include_subject_dir=False),
+#        png_ri = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),prefix='sub-'+subject_id+'/qc/sub-'+subject_id,suffix='qc.png',desc='relintensity',include_subject_dir=False),
+#        png_grad = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),prefix='sub-'+subject_id+'/qc/sub-'+subject_id,suffix='qc.png',desc='gradient',include_subject_dir=False),
+#    script:
+#        '../scripts/grad_mag.py'
 
-final_outputs.extend(expand(bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),prefix='sub-'+subject_id+'/qc/sub-'+subject_id,suffix='maskqc.png',desc='brain', include_subject_dir=False),
-                            subject=subjects))
-final_outputs.extend(expand(bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),prefix='sub-'+subject_id+'/qc/sub-'+subject_id,suffix='segqc.png',desc='segmentation', include_subject_dir=False),
-                            subject=subjects))
-final_outputs.extend(expand(bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),prefix='sub-'+subject_id+'/qc/sub-'+subject_id,suffix='qc.png',desc='relintensity', include_subject_dir=False),
-                            subject=subjects))
-final_outputs.extend(expand(bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),prefix='sub-'+subject_id+'/qc/sub-'+subject_id,suffix='qc.png',desc='gradient', include_subject_dir=False),
-                            subject=subjects))
-final_outputs.extend(expand(bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id, desc='magnitude', suffix='T1w.nii.gz'), 
-                        subject=subjects))
-final_outputs.extend(expand(bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id, desc='intensity', suffix='T1w.nii.gz'), 
-                        subject=subjects))
+#final_outputs.extend(expand(bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),prefix='sub-'+subject_id+'/qc/sub-'+subject_id,suffix='maskqc.png',desc='brain', include_subject_dir=False),
+#                            subject=subjects))
+#final_outputs.extend(expand(bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),prefix='sub-'+subject_id+'/qc/sub-'+subject_id,suffix='segqc.png',desc='segmentation', include_subject_dir=False),
+#                            subject=subjects))
+#final_outputs.extend(expand(bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),prefix='sub-'+subject_id+'/qc/sub-'+subject_id,suffix='qc.png',desc='relintensity', include_subject_dir=False),
+#                            subject=subjects))
+#final_outputs.extend(expand(bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),prefix='sub-'+subject_id+'/qc/sub-'+subject_id,suffix='qc.png',desc='gradient', include_subject_dir=False),
+#                            subject=subjects))
+#final_outputs.extend(expand(bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id, desc='magnitude', suffix='T1w.nii.gz'), 
+#                        subject=subjects))
+#final_outputs.extend(expand(bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id, desc='intensity', suffix='T1w.nii.gz'), 
+#                        subject=subjects))
 #TODO: make lesion mask from the holes in the brainmask (instead of just filling them..) -- could be a nice way to exclude contrast enhanced vessels
