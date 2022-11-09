@@ -8,6 +8,32 @@ from scipy.io import loadmat
 # filen=r'/home/greydon/Documents/data/SEEG/derivatives/atlasreg/sub-P097/sub-P097_desc-rigid_from-ct_to-T1w_type-ras_xfm.txt'
 
 
+debug = False
+if debug:
+	class dotdict(dict):
+		"""dot.notation access to dictionary attributes"""
+		__getattr__ = dict.get
+		__setattr__ = dict.__setitem__
+		__delattr__ = dict.__delitem__
+	
+	class Namespace:
+		def __init__(self, **kwargs):
+			self.__dict__.update(kwargs)
+	
+	isub='sub-P009'
+	data_dir=r'/home/greydon/Documents/data/SEEG_peds/derivatives/atlasreg'
+	
+	input=dotdict({
+				'xfm': f'{data_dir}/{isub}/{isub}_desc-rigid_from-noncontrast_to-contrast_type-ras_xfm.txt',
+				})
+	
+	output=dotdict({
+		'xfm_inv':f'{data_dir}/{isub}/{isub}_desc-rigid_from-noncontrast_to-contrast_type-ras_xfm.txt',
+	})
+	
+	snakemake = Namespace(output=output, input=input)
+
+
 sub2template= np.loadtxt(snakemake.input.xfm)
 lps2ras=np.diag([-1, -1, 1, 1])
 ras2lps=np.diag([-1, -1, 1, 1])

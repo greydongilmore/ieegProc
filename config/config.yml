@@ -22,7 +22,7 @@ mean_reg2mean: resources/mean_reg2mean.nii.gz
 #
 
 noncontrast_t1:
-    present: True
+    present: False
     acq: FSPGR
     reg_aladin: -rigOnly # use "-rigOnly" for 6 DOF and "" for 12 DOF
 
@@ -30,12 +30,12 @@ contrast_t1:
     present: True
 
 post_ct:
-    present: False
+    present: True
     position: -1
     reg_aladin: "" # use "-rigOnly" for 6 DOF and "" for 12 DOF
 
 seeg_contacts:
-    present: False
+    present: True
 
 pet:
     present: True
@@ -55,15 +55,15 @@ atlas_reg:
         active: True
         n_iterations_affine: 100x50x0
         n_iterations_deform: 100x40x20
-        grad_sigma: 6.0vox
-        warp_sigma: 2.1vox
+        grad_sigma: 4.0vox
+        warp_sigma: 1.4vox
 
 #
 #--- segmentation
 #
 
 fastsurfer:
-    run: False
+    run: True
     home: "/home/greydon/Documents/GitHub/FastSurfer"
     py: "python"
     sid: 'fastsurfer'

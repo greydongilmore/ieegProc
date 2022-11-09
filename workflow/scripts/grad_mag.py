@@ -315,8 +315,8 @@ if debug:
 		def __init__(self, **kwargs):
 			self.__dict__.update(kwargs)
 	
-	isub='sub-P020'
-	data_dir=r'/home/greydon/Documents/data/SEEG/derivatives/atlasreg'
+	isub='sub-P009'
+	data_dir=r'/home/greydon/Documents/data/SEEG_peds/derivatives/atlasreg'
 	
 	input=dotdict({
 				#'t1':f'{data_dir}/{isub}/{isub}_desc-n4_T1w.nii.gz',
