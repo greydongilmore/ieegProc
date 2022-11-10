@@ -164,7 +164,7 @@ all_ver_shift=(apply_trans(fs_transform, all_ver))
 
 if snakemake.input.xfm_noncontrast:
 	t1_transform=readRegMatrix(snakemake.input.xfm_noncontrast)
-	all_ver_shift=(apply_trans(t1_transform, all_ver_shift))
+	all_ver_shift=(apply_trans(np.linalg.inv(t1_transform), all_ver_shift))
 
 
 lh_sulc_data = nb.freesurfer.read_morph_data(snakemake.params.lh_sulc)

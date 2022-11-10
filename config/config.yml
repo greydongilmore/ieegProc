@@ -3,7 +3,7 @@
 #
 
 #laptop
-bids_dir: /home/greydon/Documents/data/SEEG_peds
+bids_dir: /home/greydon/Documents/data/SEEG
 
 #work computer
 #bids_dir: /media/data/data/clinical
@@ -22,7 +22,7 @@ mean_reg2mean: resources/mean_reg2mean.nii.gz
 #
 
 noncontrast_t1:
-    present: False
+    present: True
     acq: FSPGR
     reg_aladin: -rigOnly # use "-rigOnly" for 6 DOF and "" for 12 DOF
 
@@ -30,15 +30,15 @@ contrast_t1:
     present: True
 
 post_ct:
-    present: True
+    present: False
     position: -1
     reg_aladin: "" # use "-rigOnly" for 6 DOF and "" for 12 DOF
 
 seeg_contacts:
-    present: True
+    present: False
 
 pet:
-    present: True
+    present: False
     position: -1
     task: rest
     reg_aladin: -rigOnly # use "-rigOnly" for 6 DOF and "" for 12 DOF
@@ -50,9 +50,9 @@ subject_t1w_custom: []
 
 atlas_reg:
     reg_aladin:
-        active: False
-    greedy:
         active: True
+    greedy:
+        active: False
         n_iterations_affine: 100x50x0
         n_iterations_deform: 100x40x20
         grad_sigma: 4.0vox
@@ -63,7 +63,7 @@ atlas_reg:
 #
 
 fastsurfer:
-    run: True
+    run: False
     home: "/home/greydon/Documents/GitHub/FastSurfer"
     py: "python"
     sid: 'fastsurfer'
@@ -146,8 +146,6 @@ ants:
         sim_metric: CC
     shape_update:
         gradient_step: 0.25
-
-
 
 singularity:
     neuroglia-core: "docker://khanlab/neuroglia-core:latest"
