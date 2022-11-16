@@ -24,8 +24,8 @@ def get_electrodes_filename(wildcards):
 
 def get_transform_filename(wildcards):
     file=[]
-    #if config['contrast_t1']['present'] and config['noncontrast_t1']['present']:
-    file=expand(bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=config['subject_prefix']+'{subject}',suffix='xfm.txt',from_='noncontrast',to='contrast',desc='rigid',type_='ras'),subject=wildcards.subject),
+    if config['contrast_t1']['present'] and config['noncontrast_t1']['present']:
+        file=expand(bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=config['subject_prefix']+'{subject}',suffix='xfm.txt',from_='noncontrast',to='contrast',desc='rigid',type_='ras'),subject=wildcards.subject),
     if len(file) >0:
         file=file[0][0]
     print(file)

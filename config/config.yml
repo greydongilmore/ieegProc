@@ -3,7 +3,7 @@
 #
 
 #laptop
-bids_dir: /home/greydon/Documents/data/SEEG
+bids_dir: /home/greydon/Documents/data/SEEG_peds
 
 #work computer
 #bids_dir: /media/data/data/clinical
@@ -23,7 +23,7 @@ mean_reg2mean: resources/mean_reg2mean.nii.gz
 
 noncontrast_t1:
     present: True
-    acq: FSPGR
+    acq: False
     reg_aladin: -rigOnly # use "-rigOnly" for 6 DOF and "" for 12 DOF
 
 contrast_t1:
@@ -38,7 +38,7 @@ seeg_contacts:
     present: False
 
 pet:
-    present: False
+    present: True
     position: -1
     task: rest
     reg_aladin: -rigOnly # use "-rigOnly" for 6 DOF and "" for 12 DOF

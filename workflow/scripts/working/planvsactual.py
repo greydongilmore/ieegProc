@@ -252,6 +252,8 @@ controlpoints_dict={
 #%%
 
 debug = False
+write_lines = True
+
 if debug:
 	class dotdict(dict):
 		"""dot.notation access to dictionary attributes"""
@@ -263,23 +265,28 @@ if debug:
 		def __init__(self, **kwargs):
 			self.__dict__.update(kwargs)
 	
-	isub='sub-P097'
+	isub='sub-P098'
 	data_dir=r'/home/greydon/Documents/data/SEEG/derivatives/seega_scenes'
 	
 	input=dotdict({
 				'isub': isub,
 				'data_dir':data_dir,
 				})
-	
+	params=dotdict({
+				'sample_line': r'/home/greydon/Documents/GitHub/seeg2bids-pipeline/resources/sample_line.mrk.json',
+				})
 	output=dotdict({
 		'out_svg':f'{data_dir}/{isub}/{isub}_errors.svg',
 		'out_excel':f'{data_dir}/{isub}/{isub}_error_metrics.xlsx',
 	})
 	
-	snakemake = Namespace(output=output, input=input)
+	snakemake = Namespace(output=output, params=params,input=input)
+
+if write_lines:
+	with open(snakemake.params.sample_line) as (file):
+		sample_line = json.load(file)
 
 
-elec_data=[]
 
 isub = snakemake.input.isub
 data_dir = snakemake.input.data_dir
@@ -302,8 +309,12 @@ for ifile in [x for x in patient_files if not x.endswith('empty.csv')]:
 	elif ifile.lower().endswith('acpc.fcsv'):
 		file_data['acpc']=fcsv_data
 
-groupsActual, actual_all = determine_groups(np.array(file_data['actual']['label'].values))
 groupsPlanned, planned_all = determine_groups(np.array(file_data['planned']['label'].values))
+label_set=set(groupsPlanned)
+
+if 'actual' in list(file_data):
+	groupsActual, actual_all = determine_groups(np.array(file_data['actual']['label'].values))
+	label_set=set(groupsActual).intersection(groupsPlanned)
 
 if 'seega' in list(file_data):
 	groupsSeega, seega_all = determine_groups(np.array(file_data['seega']['label'].values), True)
@@ -315,8 +326,9 @@ if 'acpc' in list(file_data):
 	pc_point = file_data['acpc'][file_data['acpc']['label'].str.lower() == 'pc'][['x','y','z']].values
 	mcp_point = ((ac_point+pc_point)/2)[0]
 
+elec_data=[]
 vtk_cnt=1
-for igroup in set(groupsActual).intersection(groupsPlanned):
+for igroup in label_set:
 	elec_temp={}
 	elec_temp['subject']=isub
 	elec_temp['electrode']=igroup
@@ -331,64 +343,94 @@ for igroup in set(groupsActual).intersection(groupsPlanned):
 		elec_temp['electrodeType']=chan_label_dic[val_ielec]
 		elec_temp['numContacts']=file_data['seega'].loc[seeg_idx].shape[0]
 	
-	planned_idx=[i for i,x in enumerate(file_data['planned']['label'].values) if x.startswith(igroup)]
-	actual_idx=[i for i,x in enumerate(file_data['actual']['label'].values) if x.startswith(igroup)]
+	if 'planned' in list(file_data):
+		planned_idx=[i for i,x in enumerate(file_data['planned']['label'].values) if x.startswith(igroup)]
+		elec_temp['plannedTipX']=file_data['planned'].loc[planned_idx,'x'].values[0]
+		elec_temp['plannedTipY']=file_data['planned'].loc[planned_idx,'y'].values[0]
+		elec_temp['plannedTipZ']=file_data['planned'].loc[planned_idx,'z'].values[0]
+		elec_temp['plannedEntryX']=file_data['planned'].loc[planned_idx,'x'].values[1]
+		elec_temp['plannedEntryY']=file_data['planned'].loc[planned_idx,'y'].values[1]
+		elec_temp['plannedEntryZ']=file_data['planned'].loc[planned_idx,'z'].values[1]
 	
-	elec_temp['actualTipX']=file_data['actual'].loc[actual_idx,'x'].values[0]
-	elec_temp['actualTipY']=file_data['actual'].loc[actual_idx,'y'].values[0]
-	elec_temp['actualTipZ']=file_data['actual'].loc[actual_idx,'z'].values[0]
-	elec_temp['actualEntryX']=file_data['actual'].loc[actual_idx,'x'].values[1]
-	elec_temp['actualEntryY']=file_data['actual'].loc[actual_idx,'y'].values[1]
-	elec_temp['actualEntryZ']=file_data['actual'].loc[actual_idx,'z'].values[1]
-	elec_temp['plannedTipX']=file_data['planned'].loc[planned_idx,'x'].values[0]
-	elec_temp['plannedTipY']=file_data['planned'].loc[planned_idx,'y'].values[0]
-	elec_temp['plannedTipZ']=file_data['planned'].loc[planned_idx,'z'].values[0]
-	elec_temp['plannedEntryX']=file_data['planned'].loc[planned_idx,'x'].values[1]
-	elec_temp['plannedEntryY']=file_data['planned'].loc[planned_idx,'y'].values[1]
-	elec_temp['plannedEntryZ']=file_data['planned'].loc[planned_idx,'z'].values[1]
-	
-	#need to account for Ad-Tech electrodes encapsulation at the tip. Planned target is electrode tip but
-	#actual tip is the edge of the first contact
-	mag = mag_vec(file_data['planned'].loc[planned_idx,['x','y','z']].values[0],
-	  file_data['planned'].loc[planned_idx,['x','y','z']].values[1])
-	norm = norm_vec(file_data['planned'].loc[planned_idx,['x','y','z']].values[0],
-	  file_data['planned'].loc[planned_idx,['x','y','z']].values[1])
-	plannedTipOffset=file_data['planned'].loc[planned_idx,['x','y','z']].values[1]-(norm*(mag-1))
-	
-	elec_temp['plannedOffsetX']=elec_temp['plannedTipX']
-	elec_temp['plannedOffsetY']=elec_temp['plannedTipY']
-	elec_temp['plannedOffsetZ']=elec_temp['plannedTipZ']
-	
-	xyz_planned_entry = np.array([elec_temp['plannedEntryX'], elec_temp['plannedEntryY'], elec_temp['plannedEntryZ']])
-	xyz_actual_entry = np.array([elec_temp['actualEntryX'], elec_temp['actualEntryY'], elec_temp['actualEntryZ']]).T
-	xyz_planned_target = np.array([elec_temp['plannedOffsetX'], elec_temp['plannedOffsetY'], elec_temp['plannedOffsetZ']]).T
-	xyz_actual_target = np.array([elec_temp['actualTipX'], elec_temp['actualTipY'], elec_temp['actualTipZ']]).T
-	
-	elec_temp['euclid_dist_target'] = euclidianDistanceCalc(xyz_planned_target, xyz_actual_target)
-	elec_temp['euclid_dist_entry'] = euclidianDistanceCalc(xyz_planned_entry, xyz_actual_entry)
-	elec_temp['radial_dist_target'] = radialDistanceCalc(xyz_actual_target, xyz_planned_entry, xyz_planned_target)
-	elec_temp['radial_dist_entry'] = radialDistanceCalc(xyz_actual_entry, xyz_planned_entry, xyz_planned_target)
-	
-	if not np.array_equal(np.round(xyz_actual_target,2), np.round(xyz_planned_target,2)):
-		try:
-			elec_temp['radial_angle'] = ptLineAngleCalc(xyz_actual_target, xyz_planned_entry, xyz_planned_target)
-			elec_temp['line_angle'] = lineLineAngleCalc(xyz_actual_entry, xyz_actual_target, xyz_planned_entry, xyz_planned_target)
-		except:
-			pass
+	if 'actual' in list(file_data):
+		actual_idx=[i for i,x in enumerate(file_data['actual']['label'].values) if x.startswith(igroup)]
+		elec_temp['actualTipX']=file_data['actual'].loc[actual_idx,'x'].values[0]
+		elec_temp['actualTipY']=file_data['actual'].loc[actual_idx,'y'].values[0]
+		elec_temp['actualTipZ']=file_data['actual'].loc[actual_idx,'z'].values[0]
+		elec_temp['actualEntryX']=file_data['actual'].loc[actual_idx,'x'].values[1]
+		elec_temp['actualEntryY']=file_data['actual'].loc[actual_idx,'y'].values[1]
+		elec_temp['actualEntryZ']=file_data['actual'].loc[actual_idx,'z'].values[1]
+		
+		#need to account for Ad-Tech electrodes encapsulation at the tip. Planned target is electrode tip but
+		#actual tip is the edge of the first contact
+		mag = mag_vec(file_data['planned'].loc[planned_idx,['x','y','z']].values[0],
+		  file_data['planned'].loc[planned_idx,['x','y','z']].values[1])
+		norm = norm_vec(file_data['planned'].loc[planned_idx,['x','y','z']].values[0],
+		  file_data['planned'].loc[planned_idx,['x','y','z']].values[1])
+		plannedTipOffset=file_data['planned'].loc[planned_idx,['x','y','z']].values[1]-(norm*(mag-1))
+		
+		elec_temp['plannedOffsetX']=elec_temp['plannedTipX']
+		elec_temp['plannedOffsetY']=elec_temp['plannedTipY']
+		elec_temp['plannedOffsetZ']=elec_temp['plannedTipZ']
+		
+		xyz_planned_entry = np.array([elec_temp['plannedEntryX'], elec_temp['plannedEntryY'], elec_temp['plannedEntryZ']])
+		xyz_actual_entry = np.array([elec_temp['actualEntryX'], elec_temp['actualEntryY'], elec_temp['actualEntryZ']]).T
+		xyz_planned_target = np.array([elec_temp['plannedOffsetX'], elec_temp['plannedOffsetY'], elec_temp['plannedOffsetZ']]).T
+		xyz_actual_target = np.array([elec_temp['actualTipX'], elec_temp['actualTipY'], elec_temp['actualTipZ']]).T
+		
+		elec_temp['euclid_dist_target'] = euclidianDistanceCalc(xyz_planned_target, xyz_actual_target)
+		elec_temp['euclid_dist_entry'] = euclidianDistanceCalc(xyz_planned_entry, xyz_actual_entry)
+		elec_temp['radial_dist_target'] = radialDistanceCalc(xyz_actual_target, xyz_planned_entry, xyz_planned_target)
+		elec_temp['radial_dist_entry'] = radialDistanceCalc(xyz_actual_entry, xyz_planned_entry, xyz_planned_target)
+		
+		if not np.array_equal(np.round(xyz_actual_target,2), np.round(xyz_planned_target,2)):
+			try:
+				elec_temp['radial_angle'] = ptLineAngleCalc(xyz_actual_target, xyz_planned_entry, xyz_planned_target)
+				elec_temp['line_angle'] = lineLineAngleCalc(xyz_actual_entry, xyz_actual_target, xyz_planned_entry, xyz_planned_target)
+			except:
+				pass
 	
 	if mcp_point is not None:
-		elec_temp['actualTipX_mcp'] = elec_temp['actualTipX']-mcp_point[0]
-		elec_temp['actualTipY_mcp']= elec_temp['actualTipY']-mcp_point[1]
-		elec_temp['actualTipZ_mcp']= elec_temp['actualTipZ']-mcp_point[2]
-		elec_temp['actualEntryX_mcp']= elec_temp['actualEntryX']-mcp_point[0]
-		elec_temp['actualEntryY_mcp']= elec_temp['actualEntryY']-mcp_point[1]
-		elec_temp['actualEntryZ_mcp']= elec_temp['actualEntryZ']-mcp_point[2]
-		elec_temp['plannedTipX_mcp']= elec_temp['plannedOffsetX']-mcp_point[0]
-		elec_temp['plannedTipY_mcp']= elec_temp['plannedOffsetY']-mcp_point[1]
-		elec_temp['plannedTipZ_mcp']= elec_temp['plannedOffsetZ']-mcp_point[2]
-		elec_temp['plannedEntryX_mcp']= elec_temp['plannedEntryX']-mcp_point[0]
-		elec_temp['plannedEntryY_mcp']= elec_temp['plannedEntryY']-mcp_point[1]
-		elec_temp['plannedEntryZ_mcp']= elec_temp['plannedEntryZ']-mcp_point[2]
+		if 'actual' in list(file_data):
+			elec_temp['actualTipX_mcp'] = elec_temp['actualTipX']-mcp_point[0]
+			elec_temp['actualTipY_mcp']= elec_temp['actualTipY']-mcp_point[1]
+			elec_temp['actualTipZ_mcp']= elec_temp['actualTipZ']-mcp_point[2]
+			elec_temp['actualEntryX_mcp']= elec_temp['actualEntryX']-mcp_point[0]
+			elec_temp['actualEntryY_mcp']= elec_temp['actualEntryY']-mcp_point[1]
+			elec_temp['actualEntryZ_mcp']= elec_temp['actualEntryZ']-mcp_point[2]
+		if 'planned' in list(file_data):
+			elec_temp['plannedTipX_mcp']= elec_temp['plannedOffsetX']-mcp_point[0]
+			elec_temp['plannedTipY_mcp']= elec_temp['plannedOffsetY']-mcp_point[1]
+			elec_temp['plannedTipZ_mcp']= elec_temp['plannedOffsetZ']-mcp_point[2]
+			elec_temp['plannedEntryX_mcp']= elec_temp['plannedEntryX']-mcp_point[0]
+			elec_temp['plannedEntryY_mcp']= elec_temp['plannedEntryY']-mcp_point[1]
+			elec_temp['plannedEntryZ_mcp']= elec_temp['plannedEntryZ']-mcp_point[2]
+	
+	if write_lines:
+		for itype in ['actual','planned']:
+			if itype in list(file_data):
+				line_out=sample_line.copy()
+				entryp=controlpoints_dict.copy()
+				targetp=controlpoints_dict.copy()
+				
+				entryp["id"]= f"vtkMRMLMarkupsFiducialNode{vtk_cnt}"
+				entryp["associatedNodeID"]= f"vtkMRMLScalarVolumeNode{vtk_cnt}"
+				entryp["label"]=igroup
+				entryp["position"]=[elec_temp[f'{itype}EntryX'],elec_temp[f'{itype}EntryY'],elec_temp[f'{itype}EntryZ']]
+				
+				targetp["id"]= f"vtkMRMLMarkupsFiducialNode{vtk_cnt+1}"
+				targetp["associatedNodeID"]= f"vtkMRMLScalarVolumeNode{vtk_cnt+1}"
+				targetp["label"]=igroup
+				targetp["position"]=[elec_temp[f'{itype}TipX'],elec_temp[f'{itype}TipY'],elec_temp[f'{itype}TipZ']]
+				
+				line_out['markups'][0]["controlPoints"]=[targetp,entryp]
+				
+				json_output = json.dumps(line_out, indent=4)
+				with open(os.path.join(data_dir, isub,f'{igroup}_{itype}.mrk.json'), 'w') as (fid):
+					fid.write(json_output)
+					fid.write('\n')
+				
+				vtk_cnt+=2
 	
 	elec_data.append(elec_temp)
 

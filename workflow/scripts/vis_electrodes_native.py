@@ -133,7 +133,7 @@ if debug:
 	input=dotdict({
 		't1_fname':datap+f'/fastsurfer/sub-P{isub}/mri/orig.mgz',
 		'fcsv':datap+ f'/seega_coordinates/sub-P{isub}/sub-P{isub}_space-native_SEEGA.tsv',
-		'xfm_noncontrast':datap+f'/atlasreg/sub-P{isub}/sub-P{isub}_acq-noncontrast_desc-rigid_from-noncontrast_to-contrast_type-ras_xfm.txt',
+		'xfm_noncontrast':datap+f'/atlasreg/sub-P{isub}/sub-P{isub}_desc-rigid_from-noncontrast_to-contrast_type-ras_xfm.txt',
 	})
 	
 	output=dotdict({
@@ -151,7 +151,8 @@ if debug:
 
 t1_obj = nb.load(snakemake.input.t1_fname)
 Torig = t1_obj.header.get_vox2ras_tkr()
-fs_transform=(t1_obj.affine-Torig)+np.eye(4)
+#fs_transform=(t1_obj.affine-Torig)+np.eye(4)
+fs_transform=np.dot(t1_obj.affine, np.linalg.inv(Torig))
 
 verl,facel=nb.freesurfer.read_geometry(snakemake.params.lh_pial)
 verr,facer=nb.freesurfer.read_geometry(snakemake.params.rh_pial)
@@ -162,7 +163,7 @@ surf_mesh = [all_ver, all_face]
 
 all_ver_shift=(apply_trans(fs_transform, all_ver))
 
-if snakemake.input.xfm_noncontrast:
+if os.path.exists(snakemake.input.xfm_noncontrast):
 	t1_transform=readRegMatrix(snakemake.input.xfm_noncontrast)
 	all_ver_shift=(apply_trans(np.linalg.inv(t1_transform), all_ver_shift))
 
