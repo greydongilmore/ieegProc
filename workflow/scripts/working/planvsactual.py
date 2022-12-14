@@ -252,7 +252,7 @@ controlpoints_dict={
 #%%
 
 debug = False
-write_lines = True
+write_lines = False
 
 if debug:
 	class dotdict(dict):
@@ -265,7 +265,7 @@ if debug:
 		def __init__(self, **kwargs):
 			self.__dict__.update(kwargs)
 	
-	isub='sub-P098'
+	isub='sub-P101'
 	data_dir=r'/home/greydon/Documents/data/SEEG/derivatives/seega_scenes'
 	
 	input=dotdict({

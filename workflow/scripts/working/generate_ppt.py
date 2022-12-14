@@ -19,7 +19,6 @@ from pptx.enum.text import MSO_AUTO_SIZE
 import datetime
 
 
-
 def add_slide(presentation, layout, title_dict):
 	slide = presentation.slides.add_slide(layout) # adding a slide
 	for ititle in list(title_dict):
@@ -66,7 +65,7 @@ if debug:
 		def __init__(self, **kwargs):
 			self.__dict__.update(kwargs)
 
-	isub = 'sub-P097'
+	isub = 'sub-P101'
 	data_dir = r'/home/greydon/Documents/data/SEEG/derivatives'
 
 	input = dotdict({
@@ -75,8 +74,6 @@ if debug:
 	
 	snakemake = Namespace(input=input)
 
-
-out_dir="/home/greydon/Downloads"
 
 df_elec_raw = pd.read_excel(glob.glob(snakemake.input.shopping_list)[0],header=None)
 df_elec=df_elec_raw.iloc[4:,:].reset_index(drop=True)
@@ -160,7 +157,7 @@ error_slide.name="errors"
 
 
 for _, row in df_elec.iterrows():
-	if not row['Electrode label'].lower() =='aborted':
+	if not row['Electrode label'] =='aborted':
 		title_dict={
 			row['Target']:{
 				"font_size": 48,
@@ -172,7 +169,12 @@ for _, row in df_elec.iterrows():
 		elec_slide=add_slide(prs, blank_slide_layout, title_dict)
 		elec_slide.name=row['Target']
 		
-		elec_color = ''.join([x for x in row['Electrode label'] if x.isalpha()]).lower()
+		if isinstance(row['Electrode label'],int):
+			elec_color = 'black'
+			elec_text = f"{row['Electrode label']}".zfill(3)
+		else:
+			elec_color = ''.join([x for x in row['Electrode label'] if x.isalpha()]).lower()
+			elec_text = row['Electrode label']
 		
 		textbox = elec_slide.shapes.add_textbox(Inches(13.5), Inches(4.5), Inches(2), Inches(.5))
 		textbox.fill.solid()
@@ -186,7 +188,7 @@ for _, row in df_elec.iterrows():
 		
 		p = tf.paragraphs[0]
 		p.alignment= PP_ALIGN.CENTER
-		p.text = row['Electrode label']
+		p.text = elec_text
 		p.font.size = Pt(24)
 		p.font.bold=True
 		p.font.color.rgb = RGBColor(color_map[elec_color][0],color_map[elec_color][1],color_map[elec_color][2])

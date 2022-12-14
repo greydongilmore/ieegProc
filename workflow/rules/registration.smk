@@ -46,32 +46,42 @@ def get_pet_filename(wildcards):
         file=files[config['pet']['position']]
     return file
 
-if config['contrast_t1']['present'] and not config['noncontrast_t1']['present']:
+def get_reference_t1(wildcards):
+    if config['contrast_t1']['present']:
+        ref_file=expand(bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'), subject=config['subject_prefix']+'{subject}', acq='contrast', suffix='T1w.nii.gz'),subject=wildcards.subject)
+    elif not config['contrast_t1']['present'] and config['noncontrast_t1']['present']:
+        ref_file=expand(bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'), subject=config['subject_prefix']+'{subject}', acq='noncontrast', suffix='T1w.nii.gz'),subject=wildcards.subject)
+    return ref_file
+
+if config['contrast_t1']['present']:
     rule import_subj_t1:
         input: get_pre_t1_filename,
         output: bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,acq='contrast',suffix='T1w.nii.gz'),
         group: 'preproc'
         shell: "echo {input} &&cp {input} {output}"
 
+if config['noncontrast_t1']['present']:
+    rule import_subj_t1_noncontrast:
+        input: get_noncontrast_filename,
+        output: bids(root=join(config['out_dir'],'derivatives', 'atlasreg'),subject=subject_id,acq='noncontrast',suffix='T1w.nii.gz'),
+        group: 'preproc'
+        shell: "echo {input} &&cp {input} {output}"
+
+if config['contrast_t1']['present'] and not config['noncontrast_t1']['present']:
     rule cp_contrast_to_T1w:
         input: bids(root=join(config['out_dir'],'derivatives', 'atlasreg'),subject=subject_id,acq='contrast',suffix='T1w.nii.gz'),
         output: bids(root=join(config['out_dir'],'derivatives', 'atlasreg'),subject=subject_id,suffix='T1w.nii.gz'),
         shell:
             'cp {input} {output}'
 
+elif not config['contrast_t1']['present'] and config['noncontrast_t1']['present']:
+    rule cp_contrast_to_T1w:
+        input: bids(root=join(config['out_dir'],'derivatives', 'atlasreg'),subject=subject_id,acq='noncontrast',suffix='T1w.nii.gz'),
+        output: bids(root=join(config['out_dir'],'derivatives', 'atlasreg'),subject=subject_id,suffix='T1w.nii.gz'),
+        shell:
+            'cp {input} {output}'
+
 elif config['contrast_t1']['present'] and config['noncontrast_t1']['present']:
-    rule import_subj_t1:
-        input: get_pre_t1_filename,
-        output: bids(root=join(config['out_dir'],'derivatives', 'atlasreg'),subject=subject_id,acq='contrast',suffix='T1w.nii.gz'),
-        group: 'preproc'
-        shell: "echo {input} &&cp {input} {output}"
-
-    rule import_subj_nocontrast:
-        input: get_noncontrast_filename,
-        output: bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,acq='noncontrast',suffix='T1w.nii.gz'),
-        group: 'preproc'
-        shell: 'cp {input} {output}'
-
     rule rigonly_aladin_contrast:
         input: 
             flo = bids(root=join(config['out_dir'],'derivatives', 'atlasreg'),subject=subject_id,acq='noncontrast',suffix='T1w.nii.gz'),
@@ -115,7 +125,7 @@ if config['post_ct']['present']:
     rule rigonly_aladin_ct:
         input: 
             flo = bids(root=join(config['out_dir'],'derivatives', 'atlasreg'),subject=subject_id,suffix='ct.nii.gz'),
-            ref = bids(root=join(config['out_dir'],'derivatives', 'atlasreg'),subject=subject_id,acq='contrast',suffix='T1w.nii.gz'),
+            ref = get_reference_t1,
         params:
             dof=config['post_ct']['reg_aladin']
         output: 
@@ -124,7 +134,7 @@ if config['post_ct']['present']:
         #container: config['singularity']['neuroglia']
         group: 'preproc'
         shell:
-            'reg_aladin -flo {input.flo} -ref {input.ref} {params.dof} -interp 0 -nac -res {output.warped_subj} -aff {output.xfm_ras} -speeeeed'
+            'reg_aladin -flo {input.flo} -ref {input.ref} {params.dof} -interp 0 -res {output.warped_subj} -aff {output.xfm_ras} -speeeeed'
             #'flirt -in {input.flo} -ref {input.ref} -out {output.warped_subj} -omat {output.xfm_ras} -dof 6'
 
     rule convert_ct_xfm_tfm:
@@ -149,7 +159,7 @@ if config['pet']['present']:
     rule rigonly_aladin_pet:
         input: 
             flo = bids(root=join(config['out_dir'],'derivatives', 'atlasreg'),subject=subject_id,suffix='pet.nii.gz'),
-            ref = bids(root=join(config['out_dir'],'derivatives', 'atlasreg'),subject=subject_id,acq='contrast',suffix='T1w.nii.gz'),
+            ref = get_reference_t1,
         params:
             dof=config['pet']['reg_aladin']
         output: 

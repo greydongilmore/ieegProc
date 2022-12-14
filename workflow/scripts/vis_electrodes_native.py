@@ -127,7 +127,7 @@ if debug:
 		def __init__(self, **kwargs):
 			self.__dict__.update(kwargs)
 	
-	isub="097"
+	isub="098"
 	datap=r'/home/greydon/Documents/data/SEEG/derivatives'
 	
 	input=dotdict({
@@ -163,9 +163,10 @@ surf_mesh = [all_ver, all_face]
 
 all_ver_shift=(apply_trans(fs_transform, all_ver))
 
-if os.path.exists(snakemake.input.xfm_noncontrast):
-	t1_transform=readRegMatrix(snakemake.input.xfm_noncontrast)
-	all_ver_shift=(apply_trans(np.linalg.inv(t1_transform), all_ver_shift))
+if len(snakemake.input.xfm_noncontrast)>0:
+	if os.path.exists(snakemake.input.xfm_noncontrast):
+		t1_transform=readRegMatrix(snakemake.input.xfm_noncontrast)
+		all_ver_shift=(apply_trans(np.linalg.inv(t1_transform), all_ver_shift))
 
 
 lh_sulc_data = nb.freesurfer.read_morph_data(snakemake.params.lh_sulc)
@@ -182,7 +183,14 @@ groups,n_members=determine_groups(df['label'].tolist(), True)
 df['group']=np.repeat(groups,n_members)
 
 cmap = plt.get_cmap('rainbow')
-colors=np.vstack([np.repeat(cmap(np.linspace(0, 1, x)), x, axis=0) for x in n_members])
+color_maps=cmap(np.linspace(0, 1, len(groups))).tolist()
+res = dict(zip(groups, color_maps))
+
+colors=[]
+for igroup in df['group']:
+	colors.append(res[igroup])
+
+colors=np.vstack(colors)
 
 data=[mesh_3d]
 for igroup in groups:

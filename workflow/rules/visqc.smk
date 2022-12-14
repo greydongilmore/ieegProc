@@ -4,6 +4,13 @@ def get_electrodes_filename(wildcards):
     else:
         return config['out_dir'] + config['subject_electrodes']
 
+def get_reference_t1(wildcards):
+    if config['contrast_t1']['present']:
+        ref_file=expand(bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'), subject=config['subject_prefix']+'{subject}', acq='contrast', suffix='T1w.nii.gz'),subject=wildcards.subject)
+    elif not config['contrast_t1']['present'] and config['noncontrast_t1']['present']:
+        ref_file=expand(bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'), subject=config['subject_prefix']+'{subject}', acq='noncontrast', suffix='T1w.nii.gz'),subject=wildcards.subject)
+    return ref_file[0]
+
 rule qc_reg:
     input:
         ref = config['template_t1w'],
@@ -28,7 +35,7 @@ else:
     final_outputs.extend(expand(bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),prefix='sub-'+subject_id+'/qc/sub-'+subject_id,suffix='regqc.png',from_='subject', to='{template}',desc='{desc}',include_subject_dir=False),
                         subject=subjects, desc=['affine','SyN'],template=config['template']))
 
-if config['noncontrast_t1']['present']:
+if config['contrast_t1']['present'] and config['noncontrast_t1']['present']:
     rule qc_reg_noncontrast:
         input:
             flo = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,acq='contrast',suffix='T1w.nii.gz'),
@@ -52,8 +59,8 @@ if config['noncontrast_t1']['present']:
 if config['post_ct']['present']:
     rule qc_reg_ct:
         input:
-            ref = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,suffix='T1w.nii.gz'),
-            flo = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,suffix='ct.nii.gz',space='T1w',desc='rigid')
+            ref = get_reference_t1,
+            flo = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,suffix='ct.nii.gz',space='T1w',desc='rigid'),
         output:
             png = report(bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),prefix='sub-'+subject_id+'/qc/sub-'+subject_id,suffix='regqc.png',from_='ct', to='T1w',desc='rigid',include_subject_dir=False),
                     caption='../reports/regqc.rst',
@@ -73,8 +80,8 @@ if config['post_ct']['present']:
 if config['pet']['present']:
     rule qc_reg_pet:
         input:
-            ref = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,suffix='T1w.nii.gz'),
-            flo = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,suffix='pet.nii.gz',space='T1w', desc='rigid')
+            ref = get_reference_t1,
+            flo = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,suffix='pet.nii.gz',space='T1w', desc='rigid'),
         output:
             png = report(bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),prefix='sub-'+subject_id+'/qc/sub-'+subject_id,suffix='regqc.png',from_='pet', to='T1w',desc='rigid',include_subject_dir=False),
                     caption='../reports/regqc.rst',
