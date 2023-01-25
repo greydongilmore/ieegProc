@@ -265,8 +265,8 @@ if debug:
 		def __init__(self, **kwargs):
 			self.__dict__.update(kwargs)
 	
-	isub='sub-P101'
-	data_dir=r'/home/greydon/Documents/data/SEEG/derivatives/seega_scenes'
+	isub='sub-P103'
+	data_dir=r'/media/data/data/SEEG/derivatives/seega_scenes'
 	
 	input=dotdict({
 				'isub': isub,

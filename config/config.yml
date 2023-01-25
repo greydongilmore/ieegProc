@@ -3,10 +3,10 @@
 #
 
 #laptop
-bids_dir: /home/greydon/Documents/data/ecog
+#bids_dir: /home/greydon/Documents/data/clinical
 
 #work computer
-#bids_dir: /media/data/data/clinical
+bids_dir: /media/data/data/SEEG
 
 #external drive
 #bids_dir: /media/veracrypt6/projects/stealthMRI
@@ -26,7 +26,7 @@ noncontrast_t1:
     reg_aladin: "" # use "-rigOnly" for 6 DOF and "" for 12 DOF
 
 contrast_t1:
-    present: False
+    present: True
 
 post_ct:
     present: True
@@ -34,10 +34,10 @@ post_ct:
     reg_aladin: "" # use "-rigOnly" for 6 DOF and "" for 12 DOF
 
 seeg_contacts:
-    present: True
+    present: False
 
 pet:
-    present: False
+    present: True
     position: -1
     task: rest
     reg_aladin: -rigOnly # use "-rigOnly" for 6 DOF and "" for 12 DOF
@@ -62,7 +62,7 @@ atlas_reg:
 #
 
 fastsurfer:
-    run: True
+    run: False
     home: "/home/greydon/Documents/GitHub/FastSurfer"
     py: "python"
     sid: 'fastsurfer'
