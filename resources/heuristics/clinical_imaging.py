@@ -89,7 +89,15 @@ def infotodict(seqinfo):
 			if 'SAR' in s.series_description.upper() or any(x in s.protocol_name.upper() for x in {'SAFE', 'STIMULATOR', 'STIM SAFE', 'POST', 'POST OP','POST-OP'}):
 				if not any(x in s.protocol_name.upper() for x in {'POST STROKE'}):
 					postop = True
-				
+			
+			orientation=''
+			if ('AX' in s.series_description.upper()):
+				orientation = 'Tra'
+			elif ('COR' in s.series_description.upper()):
+				orientation = 'Cor'
+			elif ('SAG' in s.series_description.upper()):
+				orientation = 'Sag'
+
 			if any(substring in s.series_description.upper() for substring in {'STEALTH','3D','STEREO','STEREO-INCLUDE','1.5 MM ANATOMY'}) and not any(substring in s.series_description.upper() for substring in {'IR_FSPGR', 'FSPGR'}):
 				if any(substring in s.series_description.upper() for substring in {'IR_FSPGR', 'FSPGR', 'IR-FSPGR'}):
 					if postop:
@@ -103,6 +111,13 @@ def infotodict(seqinfo):
 						info[t1w_acq].append({'item': s.series_id, 'acq': 'MPGR2D'})
 					else:
 						info[t1w_acq].append({'item': s.series_id, 'acq': 'MPGR3D'})
+				elif 'FLAIR' in s.series_description.upper():
+					if postop:
+						info[t1w_flair].append({'item': s.series_id, 'acq': 'Electrode'})
+					elif orientation != '':
+						info[t1w_flair].append({'item': s.series_id, 'acq': orientation})
+					else:
+						info[t1w_flair].append({'item': s.series_id})
 				else:
 					if postop:
 						if 'T2' in s.series_description.upper():
@@ -129,8 +144,8 @@ def infotodict(seqinfo):
 			elif 'RAGE' in s.series_description.upper():
 				if postop:
 					info[t1w_acq].append({'item': s.series_id, 'acq': 'ElectrodeMPRAGE'})
-				elif 'AX' in s.series_description.upper():
-					info[t1w_acq].append({'item': s.series_id, 'acq': 'MPRAGE2D'})
+				elif 'AX MPRAGE' in s.series_description.upper():
+					info[t1w].append({'item': s.series_id})
 				else:
 					info[t1w_acq].append({'item': s.series_id, 'acq': 'MPRAGE'})
 
@@ -141,13 +156,6 @@ def infotodict(seqinfo):
 					info[t1w_acq].append({'item': s.series_id, 'acq': 'FSPGR'})
 			
 			elif any(substring in s.series_description.upper() for substring in {'AX', 'COR','SAG'}) and ('3D' not in s.series_description.upper()):
-				if ('AX' in s.series_description.upper()):
-					orientation = 'Tra'
-				elif ('COR' in s.series_description.upper()):
-					orientation = 'Cor'
-				elif ('SAG' in s.series_description.upper()):
-					orientation = 'Sag'
-				
 				if postop:
 					if any(substring in s.series_description.upper() for substring in {'T2', '2D'}):
 						info[t2w].append({'item': s.series_id, 'acq': 'Electrode' + orientation})
