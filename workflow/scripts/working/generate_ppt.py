@@ -65,8 +65,8 @@ if debug:
 		def __init__(self, **kwargs):
 			self.__dict__.update(kwargs)
 
-	isub = 'sub-P103'
-	data_dir = r'/media/data/data/SEEG/derivatives'
+	isub = 'sub-P104'
+	data_dir = r'/home/greydon/Documents/data/SEEG/derivatives'
 
 	input = dotdict({
 			'shopping_list': f'{data_dir}/seega_scenes/{isub}/*shopping_list.xlsx',
@@ -172,6 +172,10 @@ for _, row in df_elec.iterrows():
 		if isinstance(row['Electrode label'],int):
 			elec_color = 'black'
 			elec_text = f"{row['Electrode label']}".zfill(3)
+		elif '-' in row['Electrode label']:
+			if row['Electrode label'].split('-')[0].isdigit():
+				elec_color = 'black'
+				elec_text = f"{row['Electrode label']}".zfill(3)
 		else:
 			elec_color = ''.join([x for x in row['Electrode label'] if x.isalpha()]).lower()
 			elec_text = row['Electrode label']

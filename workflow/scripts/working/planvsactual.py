@@ -265,8 +265,9 @@ if debug:
 		def __init__(self, **kwargs):
 			self.__dict__.update(kwargs)
 	
-	isub='sub-P103'
-	data_dir=r'/media/data/data/SEEG/derivatives/seega_scenes'
+	isub='sub-P104'
+	#data_dir=r'/media/data/data/SEEG/derivatives/seega_scenes'
+	data_dir=r'/home/greydon/Documents/data/SEEG/derivatives/seega_scenes'
 	
 	input=dotdict({
 				'isub': isub,
@@ -292,6 +293,7 @@ isub = snakemake.input.isub
 data_dir = snakemake.input.data_dir
 
 patient_files = glob.glob(f"{os.path.join(data_dir,isub)}/*csv")
+
 
 file_data={}
 for ifile in [x for x in patient_files if not x.endswith('empty.csv')]:
@@ -325,6 +327,7 @@ if 'acpc' in list(file_data):
 	ac_point = file_data['acpc'][file_data['acpc']['label'].str.lower() == 'ac'][['x','y','z']].values
 	pc_point = file_data['acpc'][file_data['acpc']['label'].str.lower() == 'pc'][['x','y','z']].values
 	mcp_point = ((ac_point+pc_point)/2)[0]
+
 
 elec_data=[]
 vtk_cnt=1
