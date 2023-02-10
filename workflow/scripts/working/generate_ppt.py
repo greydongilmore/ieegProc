@@ -17,7 +17,9 @@ from pptx.enum.text import PP_ALIGN
 import pandas as pd
 from pptx.enum.text import MSO_AUTO_SIZE
 import datetime
-
+import aspose.slides as slides
+from pptx.dml.color import RGBColor
+from pptx.enum.text import PP_ALIGN,MSO_ANCHOR
 
 def add_slide(presentation, layout, title_dict):
 	slide = presentation.slides.add_slide(layout) # adding a slide
@@ -36,6 +38,9 @@ def add_slide(presentation, layout, title_dict):
 	
 	return slide
 
+def write_cell(table, row, col, value):
+	table.cell(row, col).text = "%s" % value
+	
 color_map={
 	"gray": (102,102,102),
 	"grey": (102,102,102),
@@ -151,10 +156,74 @@ title_dict={
 		}
 	}
 
+errors_data=pd.read_excel(r'/home/greydon/Documents/data/SEEG/derivatives/seega_scenes/sub-P104/sub-P104_error_metrics.xlsx',header=0)
 
-error_slide=add_slide(prs, blank_slide_layout, title_dict)
+error_slide=add_slide(prs, prs.slide_layouts[6],title_dict)
 error_slide.name="errors"
+error_slide.background.fill.solid()
+error_slide.background.fill.fore_color.rgb=RGBColor(0,0,0)
 
+width = Inches(13.0);height = Inches(5.0)
+left = (prs.slide_width -  width) / 2
+top = (prs.slide_height -  height) / 2
+
+tbl = error_slide.shapes.add_table(df_elec.shape[0]+2, 7, left,top,width, height)
+
+header_vals=[
+	 [(0, 0),(1, 0),'Electrode'],
+	 [(0, 1),(0, 2),'Target Error'],
+	 [(0, 3),(0, 4),'Entry Error'],
+	 [(0, 5),(1, 5),'Radial Angle'],
+	 [(0, 6),(1, 6),'Line Angle'],
+	 [(1, 1),'Euclidean'],
+	 [(1, 2),'Radial'],
+	 [(1, 3),'Euclidean'],
+	 [(1, 4),'Radial'],
+]
+
+for ihead in header_vals:
+	if len(ihead)>2:
+		cell = tbl.table.cell(ihead[0][0],ihead[0][1])
+		cell.merge(tbl.table.cell(ihead[1][0],ihead[1][1]))
+		cell.text = ihead[2]
+	else:
+		cell = tbl.table.cell(ihead[0][0],ihead[0][1])
+		cell.text = ihead[1]
+	
+	cell.vertical_anchor = MSO_ANCHOR.BOTTOM
+	cell.text_frame.paragraphs[0].alignment = PP_ALIGN.CENTER
+	cell.text_frame.paragraphs[0].font.bold = True
+	cell.text_frame.paragraphs[0].font.color.rgb = RGBColor(255,255,255)
+	cell.fill.solid()
+	cell.fill.fore_color.rgb = RGBColor(51,51,51)
+
+for row in range(2,len(tbl.table.rows)):
+	for cell in range(len(tbl.table.rows[row].cells)):
+		if isinstance(errors_data.iloc[row-2,cell],str):
+			tbl.table.rows[row].cells[cell].text_frame.text = errors_data.iloc[row-2,cell]
+			tbl.table.rows[row].cells[cell].vertical_anchor = MSO_ANCHOR.BOTTOM
+			tbl.table.rows[row].cells[cell].text_frame.paragraphs[0].font.bold = True
+			tbl.table.rows[row].cells[cell].text_frame.paragraphs[0].font.color.rgb = RGBColor(255,255,255)
+			tbl.table.rows[row].cells[cell].fill.solid()
+			tbl.table.rows[row].cells[cell].fill.fore_color.rgb = RGBColor(51,51,51)
+		elif isinstance(errors_data.iloc[row-2,cell],float):
+			tbl.table.rows[row].cells[cell].text_frame.text = f"{errors_data.iloc[row-2,cell]:1.2f}"
+			
+			if errors_data.iloc[row-2,cell]<=2:
+				col=RGBColor(99,248,99)
+			elif errors_data.iloc[row-2,cell]>2 and errors_data.iloc[row-2,cell] <3:
+				col=RGBColor(255,255,0)
+			else:
+				col=RGBColor(255,95,54)
+			
+			tbl.table.rows[row].cells[cell].fill.solid()
+			tbl.table.rows[row].cells[cell].fill.fore_color.rgb = col
+			tbl.table.rows[row].cells[cell].fill.fore_color.brightness = 0.4
+			tbl.table.rows[row].cells[cell].text_frame.paragraphs[0].alignment = PP_ALIGN.CENTER
+			tbl.table.rows[row].cells[cell].vertical_anchor = MSO_ANCHOR.BOTTOM
+
+tbl.left = int((prs.slide_width / 2) - (tbl.width / 2))
+tbl.top = int((prs.slide_height / 2) - (tbl.height / 2))
 
 for _, row in df_elec.iterrows():
 	if not row['Electrode label'] =='aborted':
