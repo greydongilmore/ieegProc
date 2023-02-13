@@ -17,7 +17,6 @@ from pptx.enum.text import PP_ALIGN
 import pandas as pd
 from pptx.enum.text import MSO_AUTO_SIZE
 import datetime
-import aspose.slides as slides
 from pptx.dml.color import RGBColor
 from pptx.enum.text import PP_ALIGN,MSO_ANCHOR
 
@@ -58,7 +57,7 @@ color_map={
 #%%
 
 
-debug = True
+debug = False
 if debug:
 	class dotdict(dict):
 		"""dot.notation access to dictionary attributes"""
@@ -70,11 +69,13 @@ if debug:
 		def __init__(self, **kwargs):
 			self.__dict__.update(kwargs)
 
-	isub = 'sub-P104'
-	data_dir = r'/home/greydon/Documents/data/SEEG/derivatives'
+	isub = 'sub-P103'
+	data_dir = r'/media/data/data/SEEG/derivatives'
+	#data_dir = r'/home/greydon/Documents/data/SEEG/derivatives'
 
 	input = dotdict({
 			'shopping_list': f'{data_dir}/seega_scenes/{isub}/*shopping_list.xlsx',
+			'error_metrics': f'{data_dir}/seega_scenes/{isub}/{isub}_error_metrics.xlsx',
 	 })
 	
 	snakemake = Namespace(input=input)
@@ -156,7 +157,7 @@ title_dict={
 		}
 	}
 
-errors_data=pd.read_excel(r'/home/greydon/Documents/data/SEEG/derivatives/seega_scenes/sub-P104/sub-P104_error_metrics.xlsx',header=0)
+errors_data=pd.read_excel(snakemake.input.error_metrics,header=0)
 
 error_slide=add_slide(prs, prs.slide_layouts[6],title_dict)
 error_slide.name="errors"
