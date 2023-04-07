@@ -3,13 +3,13 @@
 #
 
 #laptop
-#bids_dir: /home/greydon/Documents/data/clinical
+bids_dir: /home/greydon/Documents/data/SEEG_peds
 
 #work computer
-bids_dir: /media/data/data/SEEG
+#bids_dir: /media/data/data/SEEG
 
 #external drive
-#bids_dir: /media/veracrypt6/projects/stealthMRI
+#bids_dir: /media/greydon/Snobeanery/PhD_data/SEEG
 
 subject_prefix: P
 deface: False
@@ -23,26 +23,26 @@ mean_reg2mean: resources/mean_reg2mean.nii.gz
 noncontrast_t1:
     present: True
     acq: False
-    reg_aladin: "" # use "-rigOnly" for 6 DOF and "" for 12 DOF
+    reg_aladin: "-rigOnly" # use "-rigOnly" for 6 DOF and "" for 12 DOF
 
 contrast_t1:
     present: True
 
 post_ct:
     present: True
-    position: -1
+    position: 0
     reg_aladin: "" # use "-rigOnly" for 6 DOF and "" for 12 DOF
 
 seeg_contacts:
-    present: False
+    present: True
 
 pet:
-    present: True
-    position: -1
+    present: False
+    position: 0
     task: rest
-    reg_aladin: -rigOnly # use "-rigOnly" for 6 DOF and "" for 12 DOF
+    reg_aladin: "-rigOnly" # use "-rigOnly" for 6 DOF and "" for 12 DOF
 
-subject_t1w: /bids/sub-f'{config['subject_prefix']}'{subject}/ses-pre/anat/sub-f'{config['subject_prefix']}'{subject}_ses-pre_acq-FSPGR_run-01_T1w.nii.gz
+subject_t1w: /bids/sub-{subject_id}/ses-pre/anat/sub-{subject_id}_ses-pre_acq-FSPGR_run-01_T1w.nii.gz
 
 #use this if a particular subject has a custom path
 subject_t1w_custom: []
@@ -62,7 +62,7 @@ atlas_reg:
 #
 
 fastsurfer:
-    run: False
+    run: True
     home: "/home/greydon/Documents/GitHub/FastSurfer"
     py: "python"
     sid: 'fastsurfer'
@@ -77,9 +77,16 @@ fmriprep:
     fmriprep_license: resources/license.txt
     bids_filter: resources/bids_filter.json
 
+hippunfold:
+    run: True
+    modality: T1w
+    filter_T1w: 'acquisition=None'
+    path_T1w: _ses-pre_run-01_T1w.nii.gz
+
 
 subject_elec_ct: /bids/sub-f'{config['subject_prefix']}'{subject}/ses-post/ct/sub-f'{config['subject_prefix']}'{subject}_ses-post_acq-Electrode_run-01_ct.nii.gz
 subject_elec_t1w: /bids/sub-f'{config['subject_prefix']}'{subject}/ses-post/anat/sub-f'{config['subject_prefix']}'{subject}_ses-post_acq-Electrode3D_run-01_T1w.nii.gz
+subject_t1w_hipp: 
 
 #use this if a particular subject has a custom path
 subject_elec_ct_custom: []
@@ -87,6 +94,7 @@ subject_elec_ct_custom: []
 
 subject_elec_t1w_custom: []
 
+subject_seega_scene: /derivatives/seega_scenes/sub-P{subject}/SEEGA.fcsv
 subject_electrodes: /derivatives/seega_coordinates/sub-P{subject}/sub-P{subject}_space-native_SEEGA.fcsv
 
 #use this if a particular subject has custom path
@@ -152,3 +160,4 @@ singularity:
     freesurfer: "docker://freesurfer/freesurfer:latest"
     fmriprep: resources/fmriprep-21.0.0.simg
     neuroglia: docker://khanlab/neuroglia-core:latest
+    hippunfold: docker://khanlab/hippunfold:latest

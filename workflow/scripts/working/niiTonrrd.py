@@ -12,8 +12,7 @@ import pandas as pd
 import nibabel as nb
 import numpy as np
 import matplotlib.pyplot as plt
-import itertools
-import matplotlib.pyplot as plt
+import json
 
 
 def bbox2(img):
@@ -25,12 +24,6 @@ def bbox2(img):
 	xmin, xmax = np.where(cols)[0][[0, -1]]
 	zmin, zmax = np.where(z)[0][[0, -1]]
 	return img[ymin:ymax+1, xmin:xmax+1, zmin:zmax+1]
-
-def sorted_nicely(data, reverse = False):
-	convert = lambda text: int(text) if text.isdigit() else text
-	alphanum_key = lambda key: [convert(c) for c in re.split('([0-9]+)', key)]
-	
-	return sorted(data, key = alphanum_key, reverse=reverse)
 
 def sparsify(a):
 	ncols = int(a.max()) + 1
@@ -58,6 +51,15 @@ def get_shape_origin(img_data):
 	shape = list(np.array([ymax-ymin, xmax-xmin, zmax-zmin]) + 1)
 	origin = [ymin, xmin, zmin]
 	return shape, origin
+
+def rgbToHex(color):
+	""" Converts RGB colour to HEX.
+	"""
+	r = int(color[0]*255)
+	g = int(color[1]*255)
+	b = int(color[2]*255)
+	rgb2hex = "#{:02x}{:02x}{:02x}".format(r,g,b)
+	return rgb2hex
 
 def write_nrrd(data_obj, out_file,atlas_labels):
 	
@@ -107,7 +109,7 @@ def write_nrrd(data_obj, out_file,atlas_labels):
 
 #%%
 
-debug = False
+debug = True
 
 if debug:
 	class dotdict(dict):
@@ -120,8 +122,8 @@ if debug:
 		def __init__(self, **kwargs):
 			self.__dict__.update(kwargs)
 	
-	isub="P104"
-	data_dir=r'/home/greydon/Documents/data/SEEG/derivatives/'
+	isub="P013"
+	data_dir=r'/home/greydon/Documents/data/SEEG_peds/derivatives/'
 	repo_path = r'/home/greydon/Documents/GitHub'
 	
 	input=dotdict({
@@ -130,6 +132,7 @@ if debug:
 	
 	params=dotdict({
 				'atlas_labels':repo_path + r'/seeg2bids-pipeline/resources/tpl-MNI152NLin2009cSym/tpl-MNI152NLin2009cSym_atlas-CerebrA_dseg.tsv',
+				'atlas_colors':repo_path + r'/seeg2bids-pipeline/resources/GenericColorsCopy.txt',
 				})
 	
 	output=dotdict({
@@ -140,11 +143,11 @@ if debug:
 
 
 atlas_labels = pd.read_table(snakemake.params.atlas_labels)
-atlas_colors = pd.read_csv(r'/home/greydon/Documents/GitHub/seeg2bids-pipeline/resources/FreeSurferColorLUT.txt', sep="\s{2,}",header=None, engine='python')
+atlas_colors = pd.read_csv(snakemake.params.atlas_colors, sep="\t",header=0)
 
 col_lut_out=[]
 for ilabel in list(atlas_labels['label']):
-	col_lut=sum([re.findall(r'\d+', str(x)) for x in atlas_colors[atlas_colors[0].values==int(ilabel)][[2,3,4]].to_numpy()[0]],[])
+	col_lut=sum([re.findall(r'\d+', str(x)) for x in atlas_colors[atlas_colors['index'].values==int(ilabel)][['r','g','b']].to_numpy()[0]],[])
 	col_lut_out.append([int(x) for x in col_lut])
 
 atlas_labels['lut']=col_lut_out
@@ -155,5 +158,51 @@ write_nrrd(data_obj, snakemake.output.seg_nrrd, atlas_labels)
 
 
 #%%
+
+
+atlas_labels = pd.read_table(r'/home/greydon/Documents/GitHub/trajectoryGuideModules/resources/ext_libs/space/tpl-MNI152NLin2009cAsym/atlases/Tian_Subcortex_S4_3T_label.txt',header=None)
+atlas_labels['label']=atlas_labels.index+1
+atlas_colors = pd.read_csv(snakemake.params.atlas_colors, sep="\t",header=0)
+atlas_labels.rename(columns={0:'name'}, inplace=True)
+
+col_lut_out=[]
+for ilabel in list(atlas_labels['label']):
+	col_lut=sum([re.findall(r'\d+', str(x)) for x in atlas_colors[atlas_colors['index'].values==int(ilabel)][['r','g','b']].to_numpy()[0]],[])
+	col_lut_out.append([int(x) for x in col_lut])
+
+atlas_labels['lut']=col_lut_out
+atlas_labels['hemi']=[x.split('-')[-1] for x in atlas_labels['name']]
+atlas_labels['name']=['-'.join(x.split('-')[:-1]).replace('-','') for x in atlas_labels['name']]
+
+data_obj=nb.load('/home/greydon/Downloads/Tian_Subcortex_S4_3T_2009cAsym.nii.gz')
+out_file='/home/greydon/Documents/GitHub/trajectoryGuideModules/resources/ext_libs/space/tpl-MNI152NLin2009cAsym/atlases/Tian_Subcortex_S4_3T_2009cAsym.seg.nrrd'
+
+write_nrrd(data_obj, out_file, atlas_labels)
+
+with open(r'/home/greydon/Documents/GitHub/trajectoryGuideModules/resources/ext_libs/space/template_model_dictionary.json') as (file):
+	template_model_dictionary = json.load(file)
+
+
+melbourne_dir=r'/home/greydon/Documents/GitHub/trajectoryGuideModules/resources/ext_libs/space/tpl-MNI152NLin2009cAsym/atlases/melbourne'
+
+for imodel in [x for x in os.listdir(melbourne_dir) if x.endswith('.vtk')]:
+	modelName=imodel.split('desc-')[-1].split('.vtk')[0]
+	if modelName not in list(template_model_dictionary['melbourne']):
+		template_model_dictionary['melbourne'][modelName]={}
+		template_model_dictionary['melbourne'][modelName]['main']=""
+		template_model_dictionary['melbourne'][modelName]['sub']=""
+		template_model_dictionary['melbourne'][modelName]['label']=atlas_labels[atlas_labels['name']==modelName]['name'].values[0]
+		template_model_dictionary['melbourne'][modelName]['color']=rgbToHex(np.array(atlas_labels[atlas_labels['name']==modelName]['lut'].values[0])/255)
+		template_model_dictionary['melbourne'][modelName]['visible']=True
+
+
+json_output = json.dumps(template_model_dictionary, indent=4)
+with open(r'/home/greydon/Documents/GitHub/trajectoryGuideModules/resources/ext_libs/space/template_model_dictionary.json', 'w') as (fid):
+	fid.write(json_output)
+	fid.write('\n')
+	
+
+
+
 
 

@@ -132,21 +132,21 @@ if debug:
 		def __init__(self, **kwargs):
 			self.__dict__.update(kwargs)
 	
-	isub="070"
-	datap=r'/media/veracrypt6/projects/SEEG/derivatives/atlasreg/'
+	isub="047"
+	datap=r'/home/greydon/Documents/data/clinical/derivatives/atlasreg/'
 	
 	input=dotdict({
-		#'flo':datap+f'sub-P{isub}/sub-P{isub}_acq-noncontrast_space-T1w_desc-rigid_T1w.nii.gz',
-		'flo':datap+f'sub-P{isub}/sub-P{isub}_space-MNI152NLin2009cSym_desc-affine_T1w.nii.gz',
-		#'ref':datap+f'sub-P{isub}/sub-P{isub}_acq-contrast_T1w.nii.gz'
-		'ref':'/home/greydon/Documents/GitHub/seeg2bids-pipeline/resources/tpl-MNI152NLin2009cSym/tpl-MNI152NLin2009cAsym_res-1_T1w.nii.gz'
+		'flo':datap+f'sub-P{isub}/sub-P{isub}_space-T1w_desc-rigid_ct.nii.gz',
+		#'flo':datap+f'sub-P{isub}/sub-P{isub}_space-MNI152NLin2009cSym_desc-affine_T1w.nii.gz',
+		'ref':datap+f'sub-P{isub}/sub-P{isub}_acq-contrast_T1w.nii.gz'
+		#'ref':'/home/greydon/Documents/GitHub/seeg2bids-pipeline/resources/tpl-MNI152NLin2009cSym/tpl-MNI152NLin2009cAsym_res-1_T1w.nii.gz'
 	})
 	
 	output=dotdict({
-		#'html':'/home/greydon/Downloads/' + f'sub-P{isub}_from-contrast_to-noncontrast_regqc.html',
-		'html':'/home/greydon/Downloads/' + f'sub-P{isub}_desc-affine_from-subject_to-MNI152NLin2009cSym_regqc.html',
-		#'png':'/home/greydon/Downloads/' + f'sub-P{isub}_from-contrast_to-noncontrast_regqc.png'
-		'png':'/home/greydon/Downloads/' + f'sub-P{isub}_desc-affine_from-subject_to-MNI152NLin2009cSym_regqc.png'
+		'html':'/home/greydon/Downloads/' + f'sub-P{isub}_from-ct_to-noncontrast_regqc.html',
+		#'html':'/home/greydon/Downloads/' + f'sub-P{isub}_desc-affine_from-subject_to-MNI152NLin2009cSym_regqc.html',
+		'png':'/home/greydon/Downloads/' + f'sub-P{isub}_from-ct_to-noncontrast_regqc.png'
+		#'png':'/home/greydon/Downloads/' + f'sub-P{isub}_desc-affine_from-subject_to-MNI152NLin2009cSym_regqc.png'
 	})
 	
 	snakemake = Namespace(output=output, input=input)
@@ -158,15 +158,25 @@ if debug:
 
 
 ref_img=nib.load(snakemake.input.ref)
+ref_img_data = np.round(ref_img.get_fdata()).astype(np.float32)
+ref_img = nib.Nifti1Image(ref_img_data, header=ref_img.header, affine=ref_img.affine)
+ref_img.header.set_data_dtype('float32')
+
+flo_img=nib.load(snakemake.input.flo)
+flo_img_data = np.round(flo_img.get_fdata()).astype(np.float32)
+flo_img = nib.Nifti1Image(flo_img_data, header=flo_img.header, affine=flo_img.affine)
+flo_img.header.set_data_dtype('float32')
+
+
 if not any(x in os.path.basename(snakemake.output.png) for x in ('from-subject_to-')):
 	ref_img = nib.nifti1.Nifti1Image(ref_img.get_fdata(), affine=ref_img.affine,header=ref_img.header)
 	ref_resamp = image.resample_img(ref_img, target_affine=np.eye(3), interpolation='continuous')
+	flo_img = nib.nifti1.Nifti1Image(flo_img.get_fdata(), affine=flo_img.affine,header=flo_img.header)
+	flo_resamp = image.resample_img(flo_img, target_affine=np.eye(3), interpolation='continuous')
 else:
-	ref_resamp=ref_img
+	ref_resamp=image.resample_img(ref_img, target_affine=np.eye(3), interpolation='continuous')
+	flo_resamp = image.resample_to_img(flo_img, ref_resamp, interpolation='continuous')
 
-flo_img=nib.load(snakemake.input.flo)
-flo_img = nib.nifti1.Nifti1Image(flo_img.get_fdata(), affine=flo_img.affine,header=flo_img.header)
-flo_resamp = image.resample_img(flo_img, target_affine=np.eye(3), interpolation='continuous')
 
 
 plot_args_ref={'dim':-1}
@@ -178,18 +188,16 @@ if any(x in os.path.basename(snakemake.output.png) for x in ('from-ct')):
 	plot_args_flo={'dim':0}
 
 
-display = plotting.plot_anat(ref_resamp, display_mode='ortho', draw_cross=False, cut_coords=[0,0,40],**plot_args_ref)
+display = plotting.plot_anat(ref_resamp, display_mode='ortho', draw_cross=False,cut_coords=[0,0,40], **plot_args_ref)
 fg_svgs = [fromstring(extract_svg(display,450))]
 display.close()
 
-display = plotting.plot_anat(flo_resamp, display_mode='ortho', draw_cross=False, cut_coords=[0,0,40],**plot_args_flo)
+display = plotting.plot_anat(flo_resamp, display_mode='ortho', draw_cross=False,cut_coords=[0,0,40], **plot_args_flo)
 bg_svgs = [fromstring(extract_svg(display,450))]
 display.close()
 
 final_svg="\n".join(clean_svg(fg_svgs, bg_svgs))
 
-#with open(snakemake.output.png.replace(".png",".svg"), "w") as file:
-#	file.write(final_svg)
 
 # make figure of thalamic contours
 display = plotting.plot_anat(ref_resamp, display_mode='ortho',draw_cross=False,cut_coords=[0,0,40],**plot_args_ref)

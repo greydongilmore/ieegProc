@@ -1,0 +1,33 @@
+1677819809778	geckodriver	INFO	Listening on 127.0.0.1:44387
+1677819810203	mozrunner::runner	INFO	Running command: "/usr/bin/firefox" "--marionette" "-headless" "--remote-debugging-port" "58893" "--remote-allow-hosts" "localhost" "-no-remote" "-profile" "/tmp/rust_mozprofileLtpDPn"
+*** You are running in headless mode.
+console.warn: services.settings: Ignoring preference override of remote settings server
+console.warn: services.settings: Allow by setting MOZ_REMOTE_SETTINGS_DEVTOOLS=1 in the environment
+[GFX1-]: glxtest: VA-API test failed: failed to initialise VAAPI connection.
+1677819810502	Marionette	INFO	Marionette enabled
+1677819810505	Marionette	INFO	Listening on port 34127
+WebDriver BiDi listening on ws://127.0.0.1:58893
+Read port: 34127
+1677819810761	RemoteAgent	WARN	TLS certificate errors will be ignored for this session
+[GFX1-]: RenderCompositorSWGL failed mapping default framebuffer, no dt
+console.error: ({})
+console.warn: SearchSettings: "get: No settings file exists, new profile?" (new NotFoundError("Could not open the file at /tmp/rust_mozprofileLtpDPn/search.json.mozlz4", (void 0)))
+DevTools listening on ws://127.0.0.1:58893/devtools/browser/abe3cda8-5902-4e7b-a675-c9db0e552316
+Exiting due to channel error.
+Exiting due to channel error.
+Exiting due to channel error.
+1679952416128	geckodriver	INFO	Listening on 127.0.0.1:42563
+1679952416633	mozrunner::runner	INFO	Running command: "/usr/bin/firefox" "--marionette" "-headless" "--remote-debugging-port" "32789" "--remote-allow-hosts" "localhost" "-no-remote" "-profile" "/tmp/rust_mozprofileAy74NT"
+*** You are running in headless mode.
+console.warn: services.settings: Ignoring preference override of remote settings server
+console.warn: services.settings: Allow by setting MOZ_REMOTE_SETTINGS_DEVTOOLS=1 in the environment
+1679952416869	Marionette	INFO	Marionette enabled
+1679952416872	Marionette	INFO	Listening on port 40497
+WebDriver BiDi listening on ws://127.0.0.1:32789
+Read port: 40497
+1679952417042	RemoteAgent	WARN	TLS certificate errors will be ignored for this session
+[GFX1-]: RenderCompositorSWGL failed mapping default framebuffer, no dt
+console.error: ({})
+console.warn: SearchSettings: "get: No settings file exists, new profile?" (new NotFoundError("Could not open the file at /tmp/rust_mozprofileAy74NT/search.json.mozlz4", (void 0)))
+DevTools listening on ws://127.0.0.1:32789/devtools/browser/4b0d77e2-87e5-4df7-a1d5-145b0fad6e56
+1679952777304	Marionette	INFO	Stopped listening on port 40497

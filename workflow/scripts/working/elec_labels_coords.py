@@ -247,7 +247,7 @@ if not os.path.exists(patient_output):
 	os.makedirs(patient_output)
 
 patient_files = []
-for dirpath, subdirs, subfiles in os.walk(snakemake.input.seega_scene):
+for dirpath, subdirs, subfiles in os.walk(os.path.dirname(snakemake.input.seega_scene[0])):
 	for x in subfiles:
 		if x.endswith(".fcsv") and not x.startswith('coords'):
 			patient_files.append(os.path.join(dirpath, x))

@@ -38,9 +38,13 @@ def get_pet_file(wildcards):
     file=glob(bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=config['subject_prefix']+f'{wildcards.subject}', space='T1w', desc='rigid', suffix='pet.nii.gz'))
     return file
 
+def get_seega_file(wildcards):
+    file=glob(bids(root=join(config['out_dir'], 'derivatives','seega_scenes','sub-'+config['subject_prefix']+f'{wildcards.subject}'), suffix='SEEGA.fcsv'))
+    return file
+
 rule electrode_coords:
     input:
-        seega_scene = config['subject_seega_scene']
+        seega_scene = get_seega_file,
     params:
         sub=subject_id
     output:

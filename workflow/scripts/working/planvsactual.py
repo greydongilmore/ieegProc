@@ -1,30 +1,23 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""
-Created on Wed Jan 19 20:15:44 2022
 
-@author: greydon
-"""
 
 import os
 import pandas as pd
 import numpy as np
-import re
-import csv
-import shutil
 import glob
-import matplotlib.pyplot as plt
-from mpl_toolkits.mplot3d import axes3d, Axes3D
 import math
 from statistics import NormalDist
-from pytablewriter import MarkdownTableWriter,ExcelXlsxTableWriter,CsvTableWriter
 import json
 import dataframe_image as dfi
+os.chdir('/home/greydon/Documents/GitHub/seeg2bids-pipeline/workflow/scripts/working')
+from helpers import determineFCSVCoordSystem,determine_groups,norm_vec,mag_vec
 
 
 ##################################
 ## Metrics Function Definitions ##
 ##################################
+
 
 #Euclidean distance calculation
 def euclidianDistanceCalc(xyz_planned, xyz_actual):
@@ -37,6 +30,7 @@ def euclidianDistanceCalc(xyz_planned, xyz_actual):
 		plan_act_diff = xyz_planned - xyz_actual
 		euc_dist = math.sqrt(sum(plan_act_diff**2))
 	return euc_dist
+
 
 #Radial distance calculation
 def radialDistanceCalc(pt, xyz_entry, xyz_target):
@@ -55,14 +49,15 @@ def radialDistanceCalc(pt, xyz_entry, xyz_target):
 	else:
 		x1_minus_pt = pt - xyz_entry
 		x2_minus_x1 = xyz_target - xyz_entry
-	
+		
 		sumsq_x1_minus_pt = sum(x1_minus_pt * x1_minus_pt)
 		sumsq_x2_minus_x1 = sum(x2_minus_x1 * x2_minus_x1)
-	
+		
 		mydotprod = np.dot(x1_minus_pt, x2_minus_x1)
-	
+		
 		dist3d = np.sqrt((sumsq_x1_minus_pt * sumsq_x2_minus_x1 - (mydotprod * mydotprod))/sumsq_x2_minus_x1)
 	return dist3d
+
 
 #Radial angle calculation
 def ptLineAngleCalc(pt, x_entry, x_target):
@@ -134,94 +129,6 @@ def mean_confidence_interval(data, confidence=0.95):
 	h = dist.stdev * z / ((len(data) - 1) ** .5)
 	return dist.mean - h, dist.mean + h
 
-def determineFCSVCoordSystem(input_fcsv):
-	# need to determine if file is in RAS or LPS
-	# loop through header to find coordinate system
-	coordFlag = re.compile('# CoordinateSystem')
-	coord_sys=None
-	with open(input_fcsv, 'r+') as fid:
-		rdr = csv.DictReader(filter(lambda row: row[0]=='#', fid))
-		row_cnt=0
-		for row in rdr:
-			cleaned_dict={k:v for k,v in row.items() if k is not None}
-			if any(coordFlag.match(x) for x in list(cleaned_dict.values())):
-				coordString = list(filter(coordFlag.match,  list(cleaned_dict.values())))
-				assert len(coordString)==1
-				coord_sys = coordString[0].split('=')[-1].strip()
-			row_cnt +=1
-	
-	if any(x in coord_sys for x in {'LPS','1'}):
-		df = pd.read_csv(input_fcsv, skiprows=3, header=None)
-		df[1] = -1 * df[1] # flip orientation in x
-		df[2] = -1 * df[2] # flip orientation in y
-		
-		with open(input_fcsv, 'w') as fid:
-			fid.write("# Markups fiducial file version = 4.11\n")
-			fid.write("# CoordinateSystem = 0\n")
-			fid.write("# columns = id,x,y,z,ow,ox,oy,oz,vis,sel,lock,label,desc,associatedNodeID\n")
-		
-		df.rename(columns={0:'node_id', 1:'x', 2:'y', 3:'z', 4:'ow', 5:'ox',
-							6:'oy', 7:'oz', 8:'vis', 9:'sel', 10:'lock',
-							11:'label', 12:'description', 13:'associatedNodeID'}, inplace=True)
-		
-		df['associatedNodeID']= pd.Series(np.repeat('',df.shape[0]))
-		df.round(3).to_csv(input_fcsv, sep=',', index=False, line_terminator="", mode='a', header=False)
-		
-		print(f"Converted LPS to RAS: {os.path.dirname(input_fcsv)}/{os.path.basename(input_fcsv)}")
-
-def sorted_nicely(lst):
-	convert = lambda text: int(text) if text.isdigit() else text
-	alphanum_key = lambda key: [convert(c) for c in re.split('([0-9]+)', key)]
-	sorted_lst = sorted(lst, key = alphanum_key)
-	
-	return sorted_lst
-
-def determine_groups(iterable, numbered_labels=False):
-	values = []
-	for item in iterable:
-		temp=None
-		if re.findall(r"([a-zA-Z]+)([0-9]+)([a-zA-Z]+)", item):
-			temp = "".join(list(re.findall(r"([a-zA-Z]+)([0-9]+)([a-zA-Z]+)", item)[0]))
-		elif '-' in item:
-			temp=item.split('-')[0]
-		else:
-			if numbered_labels:
-				temp=''.join([x for x in item if not x.isdigit()])
-				for sub in ("T1","T2"):
-					if sub in item:
-						temp=item.split(sub)[0] + sub
-			else:
-				temp=item
-		if temp is None:
-			temp=item
-		
-		values.append(temp)
-	
-	vals,indexes,count = np.unique(values, return_index=True, return_counts=True)
-	values_unique = [values[index] for index in sorted(indexes)]
-	
-	return values_unique,vals
-
-
-def mag_vec(P1, P2):
-	if isinstance(P1, list):
-		P1 = np.array(P1)
-	if isinstance(P1, list):
-		P2 = np.array(P2)
-	DirVec = P2-P1
-	MagVec = np.sqrt([np.square(DirVec[0]) + np.square(DirVec[1]) + np.square(DirVec[2])])
-	return MagVec
-
-def norm_vec(P1, P2):
-	if isinstance(P1, list):
-		P1 = np.array(P1)
-	if isinstance(P2, list):
-		P2 = np.array(P2)
-	DirVec = P2-P1
-	MagVec = np.sqrt([np.square(DirVec[0]) + np.square(DirVec[1]) + np.square(DirVec[2])])
-	NormVec = np.array([float(DirVec[0] / MagVec), float(DirVec[1] / MagVec), float(DirVec[2] / MagVec)])
-	return NormVec
-
 
 chan_label_dic ={
 	3:"RD10R-SP03X",
@@ -231,9 +138,6 @@ chan_label_dic ={
 	7:"RD10R-SP07X"
 }
 
-def highlight_values(val):
-	color = 'green' if val < 2  else 'yellow' if (val >=2) and (val <3) else 'red'
-	return 'color: %s' % color
 
 controlpoints_dict={
 	"id": "", 	#"vtkMRMLMarkupsFiducialNode_1",
@@ -249,10 +153,14 @@ controlpoints_dict={
 }
 
 
+
+
+
 #%%
 
-debug = False
+debug = True
 write_lines = False
+
 
 if debug:
 	class dotdict(dict):
@@ -265,9 +173,9 @@ if debug:
 		def __init__(self, **kwargs):
 			self.__dict__.update(kwargs)
 	
-	isub='sub-P103'
-	data_dir=r'/media/data/data/SEEG/derivatives/seega_scenes'
-	#data_dir=r'/home/greydon/Documents/data/SEEG/derivatives/seega_scenes'
+	isub='sub-P108'
+	#data_dir=r'/media/data/data/SEEG/derivatives/seega_scenes'
+	data_dir=r'/home/greydon/Documents/data/SEEG/derivatives/seega_scenes'
 	
 	input=dotdict({
 				'isub': isub,
