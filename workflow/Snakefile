@@ -57,4 +57,4 @@ if config['seeg_contacts']['present']:
 
 rule all:
         input:
-                final_outputs
+            final_outputs

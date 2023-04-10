@@ -5,11 +5,27 @@ def get_k_tissue_classes(wildcards):
         k_classes=config['default_k_tissue_classes']
     return k_classes
 
+def get_age_appropriate_template_name(subject):
+    df = pd.read_table(join(config['out_dir'], 'bids','participants.tsv'), dtype = str, header=0)
+    print('sub-'+config['subject_prefix']+subject[0])
+    if 'sub-'+subject[0] in df.participant_id.to_list():
+        age=int(df[df['participant_id']=='sub-'+subject[0]]['age'])
+        if age <=18 and age > 13:
+            return config['MNIPediatricAsymCohort6']['name']
+        elif age <=13 and age > 7:
+            return config['MNIPediatricAsymCohort4']['name']
+        elif age <=7:
+            return config['MNIPediatricAsymCohort2']['name']
+        else:
+            return config['adult_template']['name']
+    else:
+        return config['adult_template']['name']
+
 #this performs Atropos with k-means as initialization
 rule tissue_seg_kmeans_init:
     input:
         t1 = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'), subject=subject_id,desc='n4', suffix='T1w.nii.gz'),
-        mask = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,suffix='mask.nii.gz',from_='{template}'.format(template=config['template']),reg='affine',desc='brain'),
+        mask = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,suffix='mask.nii.gz',from_=config[get_age_appropriate_template_name(expand(subject_id,subject=subjects))]['space'],reg='affine',desc='brain'),
     params:
         k = get_k_tissue_classes,
         m = config['atropos_smoothing_factor'],
@@ -28,7 +44,7 @@ rule tissue_seg_kmeans_init:
 
 rule map_channels_to_tissue:
     input:
-        tissue_priors = expand(bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,suffix='probseg.nii.gz',label='{tissue}',from_='{template}'.format(template=config['template']),reg='affine'),
+        tissue_priors = expand(bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,suffix='probseg.nii.gz',label='{tissue}',from_=config[get_age_appropriate_template_name(expand(subject_id,subject=subjects))]['space'],reg='affine'),
                             tissue=config['tissue_labels'],allow_missing=True),
         seg_channels_4d = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,suffix='probseg.nii.gz',desc='atroposKseg'),
     output:
@@ -67,7 +83,7 @@ rule brainmask_from_tissue:
 #        t1 = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'), subject=subject_id,desc='n4', suffix='T1w.nii.gz'),
 #        gm = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,suffix='probseg.nii.gz',label='GM',desc='atropos3seg'),
 #        wm = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,suffix='probseg.nii.gz',label='WM',desc='atropos3seg'),
-#        mask = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,suffix='mask.nii.gz',from_='{template}'.format(template=config['template']),reg='affine',desc='brain'),
+#        mask = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,suffix='mask.nii.gz',from_=config[get_age_appropriate_template_name(expand(subject_id,subject=subjects))].format(template=config['template']),reg='affine',desc='brain'),
 #        seg = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,suffix='dseg.nii.gz',desc='atroposKseg'),
 #    output:
 #        t1_grad = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id, desc='magnitude', suffix='T1w.nii.gz'),

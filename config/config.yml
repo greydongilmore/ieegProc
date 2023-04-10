@@ -34,7 +34,7 @@ post_ct:
     reg_aladin: "" # use "-rigOnly" for 6 DOF and "" for 12 DOF
 
 seeg_contacts:
-    present: True
+    present: False
 
 pet:
     present: False
@@ -62,7 +62,7 @@ atlas_reg:
 #
 
 fastsurfer:
-    run: True
+    run: False
     home: "/home/greydon/Documents/GitHub/FastSurfer"
     py: "python"
     sid: 'fastsurfer'
@@ -78,7 +78,7 @@ fmriprep:
     bids_filter: resources/bids_filter.json
 
 hippunfold:
-    run: True
+    run: False
     modality: T1w
     filter_T1w: 'acquisition=None'
     path_T1w: _ses-pre_run-01_T1w.nii.gz
@@ -99,15 +99,43 @@ subject_electrodes: /derivatives/seega_coordinates/sub-P{subject}/sub-P{subject}
 
 #use this if a particular subject has custom path
 subject_electrodes_custom: []
-template: MNI152NLin2009cSym
 
-template_t1w: resources/tpl-{template}/tpl-{template}_res-1_T1w.nii.gz
-template_mask: resources/tpl-{template}/tpl-{template}_res-1_desc-brain_mask.nii.gz 
 
-template_atlas_dseg_nii: resources/tpl-{template}/tpl-{template}_res-1_atlas-{atlas}_dseg.nii.gz
-template_atlas_dseg_tsv: resources/tpl-{template}/tpl-{template}_atlas-{atlas}_dseg.tsv
+adult_template:
+    name: 'adult_template'
+    space: 'MNI152NLin2009cSym'
+    t1w: resources/tpl-MNI152NLin2009cSym/tpl-MNI152NLin2009cSym_res-1_T1w.nii.gz
+    mask: resources/tpl-MNI152NLin2009cSym/tpl-MNI152NLin2009cSym_res-1_desc-brain_mask.nii.gz
+    tissue_probseg: resources/tpl-MNI152NLin2009cSym/tpl-MNI152NLin2009cSym_res-1_label-{tissue}_probseg.nii.gz
+    atlas_dseg_nii: resources/tpl-MNI152NLin2009cSym/tpl-MNI152NLin2009cSym_res-1_atlas-{atlas}_dseg.nii.gz
+    atlas_dseg_tsv: resources/tpl-MNI152NLin2009cSym/tpl-MNI152NLin2009cSym_atlas-{atlas}_dseg.tsv
 
-template_tissue_probseg: resources/tpl-{template}/tpl-{template}_res-1_label-{tissue}_probseg.nii.gz
+MNIPediatricAsymCohort2:
+    name: 'MNIPediatricAsymCohort2'
+    space: 'MNIPediatricAsymCohort2'
+    t1w: resources/tpl-MNIPediatricAsym_from-4.5_to-8.5/tpl-MNIPediatricAsym_from-4.5_to-8.5_T1w.nii.gz
+    mask: resources/tpl-MNIPediatricAsym_from-4.5_to-8.5/tpl-MNIPediatricAsym_from-4.5_to-8.5_desc-brain_mask.nii.gz
+    tissue_probseg: resources/tpl-MNIPediatricAsym_from-4.5_to-8.5/tpl-MNIPediatricAsym_from-4.5_to-8.5_label-{tissue}_probseg.nii.gz
+    atlas_dseg_nii: resources/tpl-MNI152NLin2009cSym/tpl-MNI152NLin2009cSym_res-1_atlas-{atlas}_dseg.nii.gz
+    atlas_dseg_tsv: resources/tpl-MNI152NLin2009cSym/tpl-MNI152NLin2009cSym_atlas-{atlas}_dseg.tsv
+
+MNIPediatricAsymCohort4:
+    name: 'MNIPediatricAsymCohort4'
+    space: 'MNIPediatricAsymCohort4'
+    t1w: resources/tpl-MNIPediatricAsym_from-7.5_to-13.5/tpl-MNIPediatricAsym_from-7.5_to-13.5_T1w.nii.gz
+    mask: resources/tpl-MNIPediatricAsym_from-7.5_to-13.5/tpl-MNIPediatricAsym_from-7.5_to-13.5_desc-brain_mask.nii.gz
+    tissue_probseg: resources/tpl-MNIPediatricAsym_from-7.5_to-13.5/tpl-MNIPediatricAsym_from-7.5_to-13.5_label-{tissue}_probseg.nii.gz
+    atlas_dseg_nii: resources/tpl-MNI152NLin2009cSym/tpl-MNI152NLin2009cSym_res-1_atlas-{atlas}_dseg.nii.gz
+    atlas_dseg_tsv: resources/tpl-MNI152NLin2009cSym/tpl-MNI152NLin2009cSym_atlas-{atlas}_dseg.tsv
+
+MNIPediatricAsymCohort6:
+    name: 'MNIPediatricAsymCohort6'
+    space: 'MNIPediatricAsymCohort6'
+    t1w: resources/tpl-MNIPediatricAsym_from-13.0_to-18.5/tpl-MNIPediatricAsym_from-13.0_to-18.5_T1w.nii.gz
+    mask: resources/tpl-MNIPediatricAsym_from-13.0_to-18.5/tpl-MNIPediatricAsym_from-13.0_to-18.5_desc-brain_mask.nii.gz
+    tissue_probseg: resources/tpl-MNIPediatricAsym_from-13.0_to-18.5/tpl-MNIPediatricAsym_from-13.0_to-18.5_label-{tissue}_probseg.nii.gz
+    atlas_dseg_nii: resources/tpl-MNI152NLin2009cSym/tpl-MNI152NLin2009cSym_res-1_atlas-{atlas}_dseg.nii.gz
+    atlas_dseg_tsv: resources/tpl-MNI152NLin2009cSym/tpl-MNI152NLin2009cSym_atlas-{atlas}_dseg.tsv
 
 tissue_labels:
     - GM
