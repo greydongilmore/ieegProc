@@ -3,7 +3,7 @@
 #
 
 #laptop
-bids_dir: /home/greydon/Documents/data/DBS
+bids_dir: /home/greydon/Documents/data/SEEG
 
 #work computer
 #bids_dir: /media/data/data/SEEG
@@ -37,7 +37,7 @@ seeg_contacts:
     present: False
 
 pet:
-    present: False
+    present: True
     position: 0
     task: rest
     reg_aladin: "-rigOnly" # use "-rigOnly" for 6 DOF and "" for 12 DOF
@@ -80,7 +80,7 @@ fmriprep:
 hippunfold:
     run: True
     modality: T1w
-    filter_T1w: 'acquisition=None'
+    atlas_labels_tsv: resources/desc-subfields_atlas-bigbrain_dseg.tsv
     path_T1w: _ses-pre_run-01_T1w.nii.gz
 
 

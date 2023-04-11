@@ -64,12 +64,21 @@ rule hippunfold_seg:
         hippunfold_out = directory(join(config['out_dir'], 'derivatives', 'hippunfold')),
         hippunfold_container= config['singularity']['hippunfold'],
     output:
-        touch_hippunfold=touch(join(config['out_dir'], 'logs', 'sub-' + subject_id + "_hippunfold.done")),
         t1_fname = join(config['out_dir'], 'derivatives','hippunfold','hippunfold','sub-' + subject_id, 'anat','sub-' + subject_id + "_desc-preproc_T1w.nii.gz"),
-    #threads:config['fastsurfer']['threads']
     shell:
         "singularity run -e {params.hippunfold_container} {params.in_dir} {params.hippunfold_out} participant --force_output --participant_label {params.participant_label}\
         --modality {params.modality} --cores 4"
-    
-final_outputs.extend(expand(rules.hippunfold_seg.output.touch_hippunfold, subject=subjects))
 
+rule hippunfold_post_proc:
+    input: 
+        t1_fname = join(config['out_dir'], 'derivatives','hippunfold','hippunfold','sub-' + subject_id, 'anat','sub-' + subject_id + "_desc-preproc_T1w.nii.gz"),
+    params:
+        subject_id = subject_id,
+        dseg_labels_file=config['hippunfold']['atlas_labels_tsv'],
+        deriv_dir = directory(join(config['out_dir'], 'derivatives')),
+    output:
+        touch_hippunfold=touch(join(config['out_dir'], 'logs', 'sub-' + subject_id + "_hippunfold.done")),
+    script:
+        "../scripts/working/hippunfold_to_slicer.py"
+
+final_outputs.extend(expand(rules.hippunfold_post_proc.output.touch_hippunfold, subject=subjects))
