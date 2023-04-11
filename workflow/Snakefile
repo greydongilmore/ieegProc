@@ -48,9 +48,9 @@ if config['fastsurfer']['run']:
 if config['hippunfold']['run']:
     include: 'rules/hippunfold.smk'
 
-#include: "rules/registration.smk"
-#include: "rules/visqc.smk"
-#include: "rules/segmentation.smk"
+include: "rules/registration.smk"
+include: "rules/visqc.smk"
+include: "rules/segmentation.smk"
 
 if config['seeg_contacts']['present']:
     include: 'rules/electrodes.smk'

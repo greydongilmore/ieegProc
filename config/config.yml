@@ -11,27 +11,25 @@ bids_dir: /home/greydon/Documents/data/SEEG
 #external drive
 #bids_dir: /media/greydon/Snobeanery/PhD_data/SEEG
 
-subject_prefix: P
-deface: False
-facemask: resources/facemask.nii.gz
-mean_reg2mean: resources/mean_reg2mean.nii.gz
 
 #
 #--- imaging volumes
 #
+
+subject_prefix: P
+
+contrast_t1:
+    present: True
 
 noncontrast_t1:
     present: True
     acq: False
     reg_aladin: "-rigOnly" # use "-rigOnly" for 6 DOF and "" for 12 DOF
 
-contrast_t1:
-    present: True
-
 post_ct:
     present: False
     position: 0
-    reg_aladin: "" # use "-rigOnly" for 6 DOF and "" for 12 DOF
+    reg_aladin: "-rigOnly" # use "-rigOnly" for 6 DOF and "" for 12 DOF
 
 seeg_contacts:
     present: False
@@ -42,10 +40,9 @@ pet:
     task: rest
     reg_aladin: "-rigOnly" # use "-rigOnly" for 6 DOF and "" for 12 DOF
 
-subject_t1w: /bids/sub-{subject_id}/ses-pre/anat/sub-{subject_id}_ses-pre_acq-FSPGR_run-01_T1w.nii.gz
-
-#use this if a particular subject has a custom path
-subject_t1w_custom: []
+#
+#--- registration for within patient volumes above
+#
 
 atlas_reg:
     reg_aladin:
@@ -62,7 +59,7 @@ atlas_reg:
 #
 
 fastsurfer:
-    run: False
+    run: True
     home: "/home/greydon/Documents/GitHub/FastSurfer"
     py: "python"
     sid: 'fastsurfer'
@@ -86,7 +83,6 @@ hippunfold:
 
 subject_elec_ct: /bids/sub-f'{config['subject_prefix']}'{subject}/ses-post/ct/sub-f'{config['subject_prefix']}'{subject}_ses-post_acq-Electrode_run-01_ct.nii.gz
 subject_elec_t1w: /bids/sub-f'{config['subject_prefix']}'{subject}/ses-post/anat/sub-f'{config['subject_prefix']}'{subject}_ses-post_acq-Electrode3D_run-01_T1w.nii.gz
-subject_t1w_hipp: 
 
 #use this if a particular subject has a custom path
 subject_elec_ct_custom: []
@@ -100,6 +96,9 @@ subject_electrodes: /derivatives/seega_coordinates/sub-P{subject}/sub-P{subject}
 #use this if a particular subject has custom path
 subject_electrodes_custom: []
 
+deface: False
+facemask: resources/facemask.nii.gz
+mean_reg2mean: resources/mean_reg2mean.nii.gz
 
 adult_template:
     name: 'adult_template'

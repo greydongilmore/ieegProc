@@ -134,7 +134,7 @@ if debug:
 atlas_labels = pd.read_table(snakemake.params.dseg_labels_file)
 atlas_labels['lut']=atlas_labels[['r','g','b']].to_numpy().tolist()
 
-isub = snakemake.params.subject_id
+isub = 'sub-'+snakemake.params.subject_id
 data_dir = snakemake.params.deriv_dir
 
 

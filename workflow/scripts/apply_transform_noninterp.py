@@ -21,11 +21,11 @@ if debug:
 	
 	input=dotdict({
 				'xfm': f'{data_dir}/{isub}/{isub}_desc-rigid_from-noncontrast_to-contrast_type-ras_xfm.txt',
-				'flo_img': f'{data_dir}/{isub}/{isub}_acq-noncontrast_T1w.nii.gz',
+				'flo': f'{data_dir}/{isub}/{isub}_acq-noncontrast_T1w.nii.gz',
 				})
 	
 	output=dotdict({
-		'flo_img_trans':f'{data_dir}/{isub}/{isub}_acq-noncontrast_space-T1w_desc-rigid_T1w.nii.gz',
+		'warped_subj':f'{data_dir}/{isub}/{isub}_acq-noncontrast_space-T1w_desc-rigid_T1w.nii.gz',
 	})
 	
 	snakemake = Namespace(output=output, input=input)
@@ -33,9 +33,9 @@ if debug:
 
 transformMatrix = np.loadtxt(snakemake.input.xfm)
 
-flo_img=nib.load(snakemake.input.flo_img)
+flo_img=nib.load(snakemake.input.flo)
 transform = np.dot( np.linalg.inv(transformMatrix), flo_img.affine)
 flo_img_trans = nib.Nifti1Image(flo_img.get_fdata(), header=flo_img.header, affine=transform)
 flo_img_trans.header.set_data_dtype('float32')
-nib.save(flo_img_trans,snakemake.output.flo_img_trans)
+nib.save(flo_img_trans,snakemake.output.warped_subj)
 
