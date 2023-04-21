@@ -92,9 +92,9 @@ if debug:
 		def __init__(self, **kwargs):
 			self.__dict__.update(kwargs)
 
-	isub = 'sub-P108'
+	isub = 'sub-P011'
 	#data_dir = r'/media/data/data/SEEG/derivatives'
-	data_dir = r'/home/greydon/Documents/data/SEEG/derivatives'
+	data_dir = r'/home/greydon/Documents/data/SEEG_peds/derivatives'
 
 	input = dotdict({
 			'shopping_list': f'{data_dir}/seega_scenes/{isub}/*shopping_list.xlsx',
@@ -180,6 +180,7 @@ title_dict={
 		}
 	}
 
+errors_data=None
 if os.path.exists(snakemake.input.error_metrics):
 	errors_data=pd.read_excel(snakemake.input.error_metrics,header=0)
 	
@@ -238,41 +239,42 @@ for _, row_elec in df_elec.iterrows():
 		elec_slide=add_slide(prs, blank_slide_layout, title_dict)
 		elec_slide.name=row_elec['Target']
 		
-		if [i for i,x in enumerate(errors_data['electrode']) if f'({x.lower()})' in row_elec['Target'].lower()]:
-			error_idx=[i for i,x in enumerate(errors_data['electrode']) if f'({x.lower()})' in row_elec['Target'].lower()][0]
-			width = Inches(13.0);height = Inches(1.25)
-			left = (prs.slide_width -  width) / 2
-			top = (prs.slide_height -  height) / 10
-			
-			tbl = elec_slide.shapes.add_table(3, 7, left,(top*9.5),width, height)
-			tbl = format_table_header(tbl)
-			
-			cell=0
-			for ival in list(errors_data):
-				if isinstance(errors_data.loc[error_idx,ival],str):
-					tbl.table.rows[2].cells[cell].text_frame.text = errors_data.loc[error_idx,ival]
-					tbl.table.rows[2].cells[cell].vertical_anchor = MSO_ANCHOR.BOTTOM
-					tbl.table.rows[2].cells[cell].text_frame.paragraphs[0].font.bold = True
-					tbl.table.rows[2].cells[cell].text_frame.paragraphs[0].font.color.rgb = RGBColor(255,255,255)
-					tbl.table.rows[2].cells[cell].fill.solid()
-					tbl.table.rows[2].cells[cell].fill.fore_color.rgb = RGBColor(51,51,51)
-				elif isinstance(errors_data.loc[error_idx,ival],float):
-					tbl.table.rows[2].cells[cell].text_frame.text = f"{errors_data.loc[error_idx,ival]:1.2f}"
-					
-					if errors_data.loc[error_idx,ival]<=2:
-						col=RGBColor(99,248,99)
-					elif errors_data.loc[error_idx,ival]>2 and errors_data.loc[error_idx,ival] <3:
-						col=RGBColor(255,255,0)
-					else:
-						col=RGBColor(255,95,54)
-					
-					tbl.table.rows[2].cells[cell].fill.solid()
-					tbl.table.rows[2].cells[cell].fill.fore_color.rgb = col
-					tbl.table.rows[2].cells[cell].fill.fore_color.brightness = 0.4
-					tbl.table.rows[2].cells[cell].text_frame.paragraphs[0].alignment = PP_ALIGN.CENTER
-					tbl.table.rows[2].cells[cell].vertical_anchor = MSO_ANCHOR.BOTTOM
+		if errors_data is not None:
+			if [i for i,x in enumerate(errors_data['electrode']) if f'({x.lower()})' in row_elec['Target'].lower()]:
+				error_idx=[i for i,x in enumerate(errors_data['electrode']) if f'({x.lower()})' in row_elec['Target'].lower()][0]
+				width = Inches(13.0);height = Inches(1.25)
+				left = (prs.slide_width -  width) / 2
+				top = (prs.slide_height -  height) / 10
 				
-				cell+=1
+				tbl = elec_slide.shapes.add_table(3, 7, left,(top*9.5),width, height)
+				tbl = format_table_header(tbl)
+				
+				cell=0
+				for ival in list(errors_data):
+					if isinstance(errors_data.loc[error_idx,ival],str):
+						tbl.table.rows[2].cells[cell].text_frame.text = errors_data.loc[error_idx,ival]
+						tbl.table.rows[2].cells[cell].vertical_anchor = MSO_ANCHOR.BOTTOM
+						tbl.table.rows[2].cells[cell].text_frame.paragraphs[0].font.bold = True
+						tbl.table.rows[2].cells[cell].text_frame.paragraphs[0].font.color.rgb = RGBColor(255,255,255)
+						tbl.table.rows[2].cells[cell].fill.solid()
+						tbl.table.rows[2].cells[cell].fill.fore_color.rgb = RGBColor(51,51,51)
+					elif isinstance(errors_data.loc[error_idx,ival],float):
+						tbl.table.rows[2].cells[cell].text_frame.text = f"{errors_data.loc[error_idx,ival]:1.2f}"
+						
+						if errors_data.loc[error_idx,ival]<=2:
+							col=RGBColor(99,248,99)
+						elif errors_data.loc[error_idx,ival]>2 and errors_data.loc[error_idx,ival] <3:
+							col=RGBColor(255,255,0)
+						else:
+							col=RGBColor(255,95,54)
+						
+						tbl.table.rows[2].cells[cell].fill.solid()
+						tbl.table.rows[2].cells[cell].fill.fore_color.rgb = col
+						tbl.table.rows[2].cells[cell].fill.fore_color.brightness = 0.4
+						tbl.table.rows[2].cells[cell].text_frame.paragraphs[0].alignment = PP_ALIGN.CENTER
+						tbl.table.rows[2].cells[cell].vertical_anchor = MSO_ANCHOR.BOTTOM
+					
+					cell+=1
 		
 		if isinstance(row_elec['Electrode label'],int):
 			elec_color = 'black'

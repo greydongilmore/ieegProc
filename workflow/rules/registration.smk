@@ -57,7 +57,7 @@ def get_age_appropriate_template_name(subject):
     df = pd.read_table(join(config['out_dir'], 'bids','participants.tsv'), dtype = str, header=0)
     if 'sub-'+subject[0] in df.participant_id.to_list():
         age=int(df[df['participant_id']=='sub-'+subject[0]]['age'])
-        if age <=18 and age > 13:
+        if age <18 and age > 13:
             return config['MNIPediatricAsymCohort6']['name']
         elif age <=13 and age > 7:
             return config['MNIPediatricAsymCohort4']['name']
@@ -97,20 +97,36 @@ elif not config['contrast_t1']['present'] and config['noncontrast_t1']['present'
             'cp {input} {output}'
 
 elif config['contrast_t1']['present'] and config['noncontrast_t1']['present']:
-    rule rigonly_aladin_contrast:
-        input: 
-            flo = bids(root=join(config['out_dir'],'derivatives', 'atlasreg'),subject=subject_id,acq='noncontrast',suffix='T1w.nii.gz'),
-            ref = bids(root=join(config['out_dir'],'derivatives', 'atlasreg'),subject=subject_id,acq='contrast',suffix='T1w.nii.gz'),
-        params:
-            dof=config['noncontrast_t1']['reg_aladin']
-        output: 
-            warped_subj = bids(root=join(config['out_dir'],'derivatives', 'atlasreg'),subject=subject_id,acq='noncontrast',suffix='T1w.nii.gz',space='T1w',desc='rigidInterp'),
-            xfm_ras = bids(root=join(config['out_dir'],'derivatives', 'atlasreg'),subject=subject_id,suffix='xfm.txt',from_='noncontrast',to='contrast',desc='rigid',type_='ras'),
-        #container: config['singularity']['neuroglia']
-        group: 'preproc'
-        shell:
-            'reg_aladin -flo {input.flo} -ref {input.ref} {params.dof} -interp 0 -res {output.warped_subj} -aff {output.xfm_ras} -speeeeed'
-            #'flirt -in {input.flo} -ref {input.ref} -out {output.warped_subj} -omat {output.xfm_ras} -dof 6'
+    if config['noncontrast_t1']['algo'] =='reg_aladin':
+        rule rigonly_aladin_contrast:
+            input: 
+                flo = bids(root=join(config['out_dir'],'derivatives', 'atlasreg'),subject=subject_id,acq='noncontrast',suffix='T1w.nii.gz'),
+                ref = bids(root=join(config['out_dir'],'derivatives', 'atlasreg'),subject=subject_id,acq='contrast',suffix='T1w.nii.gz'),
+            params:
+                dof=config['atlas_reg']['reg_aladin']['dof']
+            output: 
+                warped_subj = bids(root=join(config['out_dir'],'derivatives', 'atlasreg'),subject=subject_id,acq='noncontrast',suffix='T1w.nii.gz',space='T1w',desc='rigidInterp'),
+                xfm_ras = bids(root=join(config['out_dir'],'derivatives', 'atlasreg'),subject=subject_id,suffix='xfm.txt',from_='noncontrast',to='contrast',desc='rigid',type_='ras'),
+            #container: config['singularity']['neuroglia']
+            group: 'preproc'
+            shell:
+                'reg_aladin -flo {input.flo} -ref {input.ref} {params.dof} -interp 0 -res {output.warped_subj} -aff {output.xfm_ras} -speeeeed'
+                #'flirt -in {input.flo} -ref {input.ref} -out {output.warped_subj} -omat {output.xfm_ras} -dof 6'
+    elif config['noncontrast_t1']['algo'] =='greedy':
+        rule rigonly_greedy_contrast:
+            input: 
+                flo = bids(root=join(config['out_dir'],'derivatives', 'atlasreg'),subject=subject_id,acq='noncontrast',suffix='T1w.nii.gz'),
+                ref = bids(root=join(config['out_dir'],'derivatives', 'atlasreg'),subject=subject_id,acq='contrast',suffix='T1w.nii.gz'),
+            params:
+                n_iterations_affine=config['linear_reg']['greedy']['n_iterations_affine'],
+                dof=config['linear_reg']['greedy']['dof'],
+            output: 
+                warped_subj = bids(root=join(config['out_dir'],'derivatives', 'atlasreg'),subject=subject_id,acq='noncontrast',suffix='T1w.nii.gz',space='T1w',desc='rigidInterp'),
+                xfm_ras = bids(root=join(config['out_dir'],'derivatives', 'atlasreg'),subject=subject_id,suffix='xfm.txt',from_='noncontrast',to='contrast',desc='rigid',type_='ras'),
+            group: 'preproc'
+            shell:
+                'greedy -d 3 -threads 4 -a -ia-image-centers -m MI -dof {params.dof} -i {input.ref} {input.flo} -o {output.xfm_ras} -n {params.n_iterations_affine} &&'
+                'greedy -d 3 -threads 4 -rf {input.ref} -rm {input.flo} {output.warped_subj} -r {output.xfm_ras}'
 
     rule apply_noninterp_transform_noncontrast:
         input:
@@ -147,20 +163,36 @@ if config['post_ct']['present']:
         group: 'preproc'
         shell: 'cp {input} {output}'
 
-    rule rigonly_aladin_ct:
-        input: 
-            flo = bids(root=join(config['out_dir'],'derivatives', 'atlasreg'),subject=subject_id,suffix='ct.nii.gz'),
-            ref = get_reference_t1,
-        params:
-            dof=config['post_ct']['reg_aladin']
-        output: 
-            warped_subj = bids(root=join(config['out_dir'],'derivatives', 'atlasreg'),subject=subject_id,suffix='ct.nii.gz',space='T1w',desc='rigidInterp'),
-            xfm_ras = bids(root=join(config['out_dir'],'derivatives', 'atlasreg'),subject=subject_id,suffix='xfm.txt',from_='ct',to='T1w',desc='rigid',type_='ras'),
-        #container: config['singularity']['neuroglia']
-        group: 'preproc'
-        shell:
-            'reg_aladin -flo {input.flo} -ref {input.ref} {params.dof} -interp 0 -res {output.warped_subj} -aff {output.xfm_ras} -speeeeed'
-            #'flirt -in {input.flo} -ref {input.ref} -out {output.warped_subj} -omat {output.xfm_ras} -dof 6'
+    if config['post_ct']['algo'] =='reg_aladin':
+        rule rigonly_aladin_ct:
+            input: 
+                flo = bids(root=join(config['out_dir'],'derivatives', 'atlasreg'),subject=subject_id,suffix='ct.nii.gz'),
+                ref = get_reference_t1,
+            params:
+                dof=config['atlas_reg']['reg_aladin']['dof']
+            output: 
+                warped_subj = bids(root=join(config['out_dir'],'derivatives', 'atlasreg'),subject=subject_id,suffix='ct.nii.gz',space='T1w',desc='rigidInterp'),
+                xfm_ras = bids(root=join(config['out_dir'],'derivatives', 'atlasreg'),subject=subject_id,suffix='xfm.txt',from_='ct',to='T1w',desc='rigid',type_='ras'),
+            #container: config['singularity']['neuroglia']
+            group: 'preproc'
+            shell:
+                'reg_aladin -flo {input.flo} -ref {input.ref} {params.dof} -interp 0 -res {output.warped_subj} -aff {output.xfm_ras} -speeeeed'
+                #'flirt -in {input.flo} -ref {input.ref} -out {output.warped_subj} -omat {output.xfm_ras} -dof 6'
+    elif config['post_ct']['algo'] =='greedy':
+        rule rigonly_greedy_ct:
+            input: 
+                flo = bids(root=join(config['out_dir'],'derivatives', 'atlasreg'),subject=subject_id,suffix='ct.nii.gz'),
+                ref = get_reference_t1,
+            params:
+                n_iterations_affine=config['linear_reg']['greedy']['n_iterations_affine'],
+                dof=config['linear_reg']['greedy']['dof'],
+            output: 
+                warped_subj = bids(root=join(config['out_dir'],'derivatives', 'atlasreg'),subject=subject_id,suffix='ct.nii.gz',space='T1w',desc='rigidInterp'),
+                xfm_ras = bids(root=join(config['out_dir'],'derivatives', 'atlasreg'),subject=subject_id,suffix='xfm.txt',from_='ct',to='T1w',desc='rigid',type_='ras'),
+            group: 'preproc'
+            shell:
+                'greedy -d 3 -threads 4 -a -ia-image-centers -m MI -dof {params.dof} -i {input.ref} {input.flo} -o {output.xfm_ras} -n {params.n_iterations_affine} &&'
+                'greedy -d 3 -threads 4 -rf {input.ref} -rm {input.flo} {output.warped_subj} -r {output.xfm_ras}'
 
     rule apply_noninterp_transform_ct:
         input:
@@ -196,7 +228,7 @@ if config['pet']['present']:
             flo = bids(root=join(config['out_dir'],'derivatives', 'atlasreg'),subject=subject_id,suffix='pet.nii.gz'),
             ref = get_reference_t1,
         params:
-            dof=config['pet']['reg_aladin']
+            dof=config['atlas_reg']['reg_aladin']['dof']
         output: 
             warped_subj = bids(root=join(config['out_dir'],'derivatives', 'atlasreg'),subject=subject_id,suffix='pet.nii.gz',space='T1w',desc='rigidInterp'),
             xfm_ras = bids(root=join(config['out_dir'],'derivatives', 'atlasreg'),subject=subject_id,suffix='xfm.txt',from_='pet',to='T1w',desc='rigid',type_='ras'),

@@ -58,7 +58,7 @@ def determineFCSVCoordSystem(input_fcsv):
 							11:'label', 12:'description', 13:'associatedNodeID'}, inplace=True)
 		
 		df['associatedNodeID']= pd.Series(np.repeat('',df.shape[0]))
-		df.round(3).to_csv(input_fcsv, sep=',', index=False, line_terminator="", mode='a', header=False)
+		df.to_csv(input_fcsv, sep=',', index=False, line_terminator="", mode='a', header=False, float_format='%.3f')
 		
 		print(f"Converted LPS to RAS: {os.path.dirname(input_fcsv)}/{os.path.basename(input_fcsv)}")
 	return ver_fin,headFin

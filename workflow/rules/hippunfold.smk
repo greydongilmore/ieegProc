@@ -58,10 +58,10 @@ rule hippunfold_seg:
         out_t1w=bids(root=join(config['out_dir'], 'derivatives','hippunfold_in'), subject=subject_id, datatype='anat', suffix='T1w.nii.gz')
     params:
         in_dir = directory(join(config['out_dir'], 'derivatives', 'hippunfold_in')),
+        hippunfold_out = directory(join(config['out_dir'], 'derivatives','hippunfold')),
         modality = config['hippunfold']['modality'],
         path_T1w = bids(root=join(config['out_dir'], 'derivatives','hippunfold_in'), subject=subject_id, datatype='anat', suffix='T1w.nii.gz'),
         participant_label = subject_id,
-        hippunfold_out = directory(join(config['out_dir'], 'derivatives', 'hippunfold')),
         hippunfold_container= config['singularity']['hippunfold'],
     output:
         t1_fname = join(config['out_dir'], 'derivatives','hippunfold','hippunfold','sub-' + subject_id, 'anat','sub-' + subject_id + "_desc-preproc_T1w.nii.gz"),

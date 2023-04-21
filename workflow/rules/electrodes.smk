@@ -42,6 +42,22 @@ def get_seega_file(wildcards):
     file=glob(bids(root=join(config['out_dir'], 'derivatives','seega_scenes','sub-'+config['subject_prefix']+f'{wildcards.subject}'), suffix='SEEGA.fcsv'))
     return file
 
+def get_age_appropriate_template_name(subject):
+    df = pd.read_table(join(config['out_dir'], 'bids','participants.tsv'), dtype = str, header=0)
+    if 'sub-'+subject[0] in df.participant_id.to_list():
+        age=int(df[df['participant_id']=='sub-'+subject[0]]['age'])
+        if age <18 and age > 13:
+            return config['MNIPediatricAsymCohort6']['name']
+        elif age <=13 and age > 7:
+            return config['MNIPediatricAsymCohort4']['name']
+        elif age <=7:
+            return config['MNIPediatricAsymCohort2']['name']
+        else:
+            return config['adult_template']['name']
+    else:
+        return config['adult_template']['name']
+
+
 rule electrode_coords:
     input:
         seega_scene = get_seega_file,
@@ -55,12 +71,12 @@ rule electrode_coords:
 rule label_electrodes_atlas:
     input: 
         fcsv = bids(root=join(config['out_dir'],'derivatives','seega_coordinates'),subject=subject_id,space='native', suffix='SEEGA.fcsv'),
-        dseg_tsv = config['template_atlas_dseg_tsv'],
-        dseg_nii = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,suffix='dseg.nii.gz',desc='dilated',atlas='{atlas}',from_='{template}',reg='SyN'),
+        dseg_tsv = config[get_age_appropriate_template_name(expand(subject_id,subject=subjects))]['atlas_dseg_tsv'],
+        dseg_nii = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,suffix='dseg.nii.gz',desc='dilated',atlas='{atlas}',from_=config[get_age_appropriate_template_name(expand(subject_id,subject=subjects))]['space'],reg='SyN'),
         tissue_seg = expand(bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,suffix='probseg.nii.gz',label='{tissue}',desc='atropos3seg'),
                             tissue=config['tissue_labels'],allow_missing=True),
     output:
-        tsv = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,suffix='electrodes.tsv',atlas='{atlas}',desc='dilated',from_='{template}'),
+        tsv = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,suffix='electrodes.tsv',atlas='{atlas}',desc='dilated',from_=config[get_age_appropriate_template_name(expand(subject_id,subject=subjects))]['space']),
 #        tsv = report(bids(root='results',subject=subject_id,suffix='electrodes.tsv',desc='{atlas}',from_='{template}'),
 #                caption='../reports/electrodes_vis.rst',
 #                category='Electrodes Labelled',
@@ -117,11 +133,11 @@ final_outputs.extend(
             suffix='electrodes.tsv',
             atlas='{atlas}',
             desc='dilated',
-            from_='{template}'
+            from_=config[get_age_appropriate_template_name(expand(subject_id,subject=subjects))]['space']
         ),
         subject=subjects,
         atlas=config['atlases'],
-        template=config['template']
+        template=config[get_age_appropriate_template_name(expand(subject_id,subject=subjects))]['space']
     )
 )
 

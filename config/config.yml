@@ -3,20 +3,19 @@
 #
 
 #laptop
-bids_dir: /home/greydon/Documents/data/SEEG
+bids_dir: /home/greydon/Documents/data/hippunfold2
 
 #work computer
 #bids_dir: /media/data/data/SEEG
 
 #external drive
-#bids_dir: /media/greydon/Snobeanery/PhD_data/SEEG
+#bids_dir: /media/greydon/Snobeanery/PhD_data/hippunfold2
 
+subject_prefix: P
 
 #
 #--- imaging volumes
 #
-
-subject_prefix: P
 
 contrast_t1:
     present: True
@@ -24,29 +23,37 @@ contrast_t1:
 noncontrast_t1:
     present: True
     acq: False
-    reg_aladin: "-rigOnly" # use "-rigOnly" for 6 DOF and "" for 12 DOF
+    algo: greedy
 
 post_ct:
+    present: True
+    position: 0
+    algo: greedy
+
+pet:
     present: False
     position: 0
-    reg_aladin: "-rigOnly" # use "-rigOnly" for 6 DOF and "" for 12 DOF
+    task: rest
+    algo: reg_aladin
 
 seeg_contacts:
     present: False
 
-pet:
-    present: True
-    position: 0
-    task: rest
-    reg_aladin: "-rigOnly" # use "-rigOnly" for 6 DOF and "" for 12 DOF
+#
+#--- registration paramters
+#
 
-#
-#--- registration for within patient volumes above
-#
+linear_reg:
+    reg_aladin:
+        dof: "-rigOnly" # use "-rigOnly" for 6 DOF and "" for 12 DOF
+    greedy:
+        n_iterations_affine: 100x50x0
+        dof: 6
 
 atlas_reg:
     reg_aladin:
         active: True
+        dof: "" # use "-rigOnly" for 6 DOF and "" for 12 DOF
     greedy:
         active: False
         n_iterations_affine: 100x50x0
@@ -56,6 +63,29 @@ atlas_reg:
 
 #
 #--- segmentation
+#
+
+default_k_tissue_classes: 3 #higher than 3 to capture contrast-enhanced regions too
+atropos_smoothing_factor: '[0.2,1x1x1]'
+convergence: '[3,0]'
+
+#use this to specify custom values for subjects, e.g. here sub-P001 will have k=4 tissue classes for Atropos initialization
+subject_k_tissue_classes: []
+#    001: 4
+#    012: 4
+#    039: 4
+#    047: 4
+#    050: 4
+#    058: 4
+#    061: 3
+
+tissue_labels:
+    - GM
+    - WM
+    - CSF
+
+#
+#--- connected piplines
 #
 
 fastsurfer:
@@ -75,11 +105,10 @@ fmriprep:
     bids_filter: resources/bids_filter.json
 
 hippunfold:
-    run: True
+    run: False
     modality: T1w
     atlas_labels_tsv: resources/desc-subfields_atlas-bigbrain_dseg.tsv
     path_T1w: _ses-pre_run-01_T1w.nii.gz
-
 
 subject_elec_ct: /bids/sub-f'{config['subject_prefix']}'{subject}/ses-post/ct/sub-f'{config['subject_prefix']}'{subject}_ses-post_acq-Electrode_run-01_ct.nii.gz
 subject_elec_t1w: /bids/sub-f'{config['subject_prefix']}'{subject}/ses-post/anat/sub-f'{config['subject_prefix']}'{subject}_ses-post_acq-Electrode3D_run-01_T1w.nii.gz
@@ -95,6 +124,10 @@ subject_electrodes: /derivatives/seega_coordinates/sub-P{subject}/sub-P{subject}
 
 #use this if a particular subject has custom path
 subject_electrodes_custom: []
+
+#
+#--- template space/atlases
+#
 
 deface: False
 facemask: resources/facemask.nii.gz
@@ -136,11 +169,6 @@ MNIPediatricAsymCohort6:
     atlas_dseg_nii: resources/tpl-MNI152NLin2009cSym/tpl-MNI152NLin2009cSym_res-1_atlas-{atlas}_dseg.nii.gz
     atlas_dseg_tsv: resources/tpl-MNI152NLin2009cSym/tpl-MNI152NLin2009cSym_atlas-{atlas}_dseg.tsv
 
-tissue_labels:
-    - GM
-    - WM
-    - CSF
-
 atlases:
     - CerebrA
 
@@ -148,25 +176,10 @@ atlases:
 n_atlas_dilate: 3
 n_init_mask_dilate: 1 
 
-default_k_tissue_classes: 3 #higher than 3 to capture contrast-enhanced regions too
-atropos_smoothing_factor: '[0.2,1x1x1]'
-convergence: '[3,0]'
-
-#use this to specify custom values for subjects, e.g. here sub-P001 will have k=4 tissue classes for Atropos initialization
-subject_k_tissue_classes: []
-#    001: 4
-#    012: 4
-#    039: 4
-#    047: 4
-#    050: 4
-#    058: 4
-#    061: 3
-
 
 #parameters for ants transformation
 ants:
     dim: 3
-#    random_seed: 42 #requires ants version at least 2.3.1 (includes --random-seed option) - removed this for compatibility with older version of ANTS..  (e.g. that used in neuroglia-core)
     intensity_opts: '-u 1 -w [0.01,0.99] -z 1'
     linear:
         reg_iterations: '1000x500x250x0'

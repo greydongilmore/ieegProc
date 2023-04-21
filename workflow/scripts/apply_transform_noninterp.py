@@ -2,6 +2,7 @@
 
 import numpy as np
 import nibabel as nib
+import SimpleITK as sitk
 
 
 debug = False
@@ -16,26 +17,29 @@ if debug:
 		def __init__(self, **kwargs):
 			self.__dict__.update(kwargs)
 	
-	isub='sub-P108'
+	isub='sub-P109'
 	data_dir=r'/home/greydon/Documents/data/SEEG/derivatives/atlasreg'
 	
 	input=dotdict({
-				'xfm': f'{data_dir}/{isub}/{isub}_desc-rigid_from-noncontrast_to-contrast_type-ras_xfm.txt',
-				'flo': f'{data_dir}/{isub}/{isub}_acq-noncontrast_T1w.nii.gz',
+				'xfm': f'{data_dir}/{isub}/{isub}_desc-rigid_from-ct_to-T1w_type-ras_xfm.txt',
+				'flo': f'{data_dir}/{isub}/{isub}_ct.nii.gz',
 				})
 	
 	output=dotdict({
-		'warped_subj':f'{data_dir}/{isub}/{isub}_acq-noncontrast_space-T1w_desc-rigid_T1w.nii.gz',
+		'warped_subj':f'{data_dir}/{isub}/{isub}_space-T1w_desc-rigid_ct.nii.gz',
 	})
 	
 	snakemake = Namespace(output=output, input=input)
 
-
+#load transform matrix
 transformMatrix = np.loadtxt(snakemake.input.xfm)
 
+#load source nifti and apply transform matrix
 flo_img=nib.load(snakemake.input.flo)
 transform = np.dot( np.linalg.inv(transformMatrix), flo_img.affine)
+
 flo_img_trans = nib.Nifti1Image(flo_img.get_fdata(), header=flo_img.header, affine=transform)
-flo_img_trans.header.set_data_dtype('float32')
+flo_img_trans.set_qform(flo_img_trans.affine, 1)
 nib.save(flo_img_trans,snakemake.output.warped_subj)
+
 

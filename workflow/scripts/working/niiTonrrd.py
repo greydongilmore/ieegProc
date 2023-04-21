@@ -13,6 +13,7 @@ import nibabel as nb
 import numpy as np
 import matplotlib.pyplot as plt
 import json
+import glob
 
 
 def bbox2(img):
@@ -122,12 +123,12 @@ if debug:
 		def __init__(self, **kwargs):
 			self.__dict__.update(kwargs)
 	
-	isub="P013"
+	isub="P011"
 	data_dir=r'/home/greydon/Documents/data/SEEG_peds/derivatives/'
 	repo_path = r'/home/greydon/Documents/GitHub'
 	
 	input=dotdict({
-				'segs':data_dir +  f'atlasreg/sub-{isub}/sub-{isub}_desc-dilated_atlas-CerebrA_from-MNI152NLin2009cSym_reg-SyN_dseg.nii.gz',
+				'segs':data_dir +  f'atlasreg/sub-{isub}/sub-{isub}_desc-dilated_atlas-*_from-*_reg-SyN_dseg.nii.gz',
 				})
 	
 	params=dotdict({
@@ -152,9 +153,13 @@ for ilabel in list(atlas_labels['label']):
 
 atlas_labels['lut']=col_lut_out
 
-data_obj=nb.load(snakemake.input.segs)
-
-write_nrrd(data_obj, snakemake.output.seg_nrrd, atlas_labels)
+if glob.glob(snakemake.input.segs):
+	segs_fname=glob.glob(snakemake.input.segs)[0]
+	atlas_name=[x.strip('atlas-') for x in segs_fname.split('_') if 'atlas-' in x][0]
+	space_name=[x.strip('from-') for x in segs_fname.split('_') if 'from-' in x][0]
+	data_obj=nb.load(segs_fname)
+	
+	write_nrrd(data_obj, snakemake.output.seg_nrrd, atlas_labels)
 
 
 #%%
