@@ -173,7 +173,7 @@ if debug:
 		def __init__(self, **kwargs):
 			self.__dict__.update(kwargs)
 	
-	isub='sub-P109'
+	isub='sub-P111'
 	#data_dir=r'/media/data/data/SEEG/derivatives/seega_scenes'
 	data_dir=r'/home/greydon/Documents/data/SEEG/derivatives/seega_scenes'
 	

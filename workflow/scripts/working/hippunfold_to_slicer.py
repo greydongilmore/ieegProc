@@ -116,8 +116,8 @@ if debug:
 		def __init__(self, **kwargs):
 			self.__dict__.update(kwargs)
 	
-	subject_id="P109"
-	deriv_dir='/media/greydon/Snobeanery/PhD_data/hippunfold2/derivatives'
+	subject_id="sub-P111"
+	deriv_dir='/home/greydon/Documents/data/SEEG/derivatives'
 	
 	input=dotdict({
 				't1_fname':'{deriv_dir}/hippunfold/hippunfold/{subject_id}/anat/{subject_id}_desc-preproc_T1w.nii.gz',

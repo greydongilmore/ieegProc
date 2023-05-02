@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 import os
-import glob
+import glob 
 from pptx import Presentation
 from pptx.util import Inches,Pt
 from pptx.dml.color import RGBColor
@@ -92,9 +92,9 @@ if debug:
 		def __init__(self, **kwargs):
 			self.__dict__.update(kwargs)
 
-	isub = 'sub-P011'
+	isub = 'sub-P111'
 	#data_dir = r'/media/data/data/SEEG/derivatives'
-	data_dir = r'/home/greydon/Documents/data/SEEG_peds/derivatives'
+	data_dir = r'/home/greydon/Documents/data/SEEG/derivatives'
 
 	input = dotdict({
 			'shopping_list': f'{data_dir}/seega_scenes/{isub}/*shopping_list.xlsx',

@@ -123,8 +123,8 @@ if debug:
 		def __init__(self, **kwargs):
 			self.__dict__.update(kwargs)
 	
-	isub="P011"
-	data_dir=r'/home/greydon/Documents/data/SEEG_peds/derivatives/'
+	isub="P111"
+	data_dir=r'/home/greydon/Documents/data/SEEG/derivatives/'
 	repo_path = r'/home/greydon/Documents/GitHub'
 	
 	input=dotdict({
