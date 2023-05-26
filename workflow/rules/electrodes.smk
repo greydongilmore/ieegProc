@@ -42,22 +42,6 @@ def get_seega_file(wildcards):
     file=glob(bids(root=join(config['out_dir'], 'derivatives','seega_scenes','sub-'+config['subject_prefix']+f'{wildcards.subject}'), suffix='SEEGA.fcsv'))
     return file
 
-def get_age_appropriate_template_name(subject):
-    df = pd.read_table(join(config['out_dir'], 'bids','participants.tsv'), dtype = str, header=0)
-    if 'sub-'+subject[0] in df.participant_id.to_list():
-        age=int(df[df['participant_id']=='sub-'+subject[0]]['age'])
-        if age <18 and age > 13:
-            return config['MNIPediatricAsymCohort6']['name']
-        elif age <=13 and age > 7:
-            return config['MNIPediatricAsymCohort4']['name']
-        elif age <=7:
-            return config['MNIPediatricAsymCohort2']['name']
-        else:
-            return config['adult_template']['name']
-    else:
-        return config['adult_template']['name']
-
-
 rule electrode_coords:
     input:
         seega_scene = get_seega_file,

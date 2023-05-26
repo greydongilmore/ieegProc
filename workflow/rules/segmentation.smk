@@ -6,19 +6,22 @@ def get_k_tissue_classes(wildcards):
     return k_classes
 
 def get_age_appropriate_template_name(subject):
-    df = pd.read_table(join(config['out_dir'], 'bids','participants.tsv'), dtype = str, header=0)
-    if 'sub-'+subject[0] in df.participant_id.to_list():
-        age=int(df[df['participant_id']=='sub-'+subject[0]]['age'])
-        if age <18 and age > 13:
-            return config['MNIPediatricAsymCohort6']['name']
-        elif age <=13 and age > 7:
-            return config['MNIPediatricAsymCohort4']['name']
-        elif age <=7:
-            return config['MNIPediatricAsymCohort2']['name']
+    if not exists(join(config['out_dir'], 'bids','participants.tsv')):
+        return config['adult_template']['name']
+    else:
+        df = pd.read_table(join(config['out_dir'], 'bids','participants.tsv'), dtype = str, header=0)
+        if 'sub-'+subject[0] in df.participant_id.to_list():
+            age=int(df[df['participant_id']=='sub-'+subject[0]]['age'])
+            if age <18 and age > 13:
+                return config['MNIPediatricAsymCohort6']['name']
+            elif age <=13 and age > 7:
+                return config['MNIPediatricAsymCohort4']['name']
+            elif age <=7:
+                return config['MNIPediatricAsymCohort2']['name']
+            else:
+                return config['adult_template']['name']
         else:
             return config['adult_template']['name']
-    else:
-        return config['adult_template']['name']
 
 #this performs Atropos with k-means as initialization
 rule tissue_seg_kmeans_init:
@@ -77,6 +80,30 @@ rule brainmask_from_tissue:
         #max over tissue probs, threshold, binarize, fill holes
        'fslmaths {input} -Tmax -thr {params.threshold} -bin -fillh {output}'     
 
+rule tissue_warp_to_nrrd:
+    input:
+        segs = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,suffix='dseg.nii.gz',atlas='{atlas}',from_=config[get_age_appropriate_template_name(expand(subject_id,subject=subjects))]['space'],reg='SyN'),
+    params:
+        atlas_labels= config[get_age_appropriate_template_name(expand(subject_id,subject=subjects))]['atlas_dseg_tsv'],
+        atlas_colors= config['generic_colors'],
+    output:
+        seg_nrrd = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,suffix='dseg.seg.nrrd',atlas='{atlas}',from_=config[get_age_appropriate_template_name(expand(subject_id,subject=subjects))]['space'],reg='SyN'),
+    group: 'preproc'
+    #container: config['singularity']['neuroglia']
+    script: '../scripts/working/niiTonrrd.py' 
+
+rule tissue_4d_to_nrrd:
+    input:
+        segs = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,suffix='dseg.nii.gz',atlas='{atlas}',from_=config[get_age_appropriate_template_name(expand(subject_id,subject=subjects))]['space'],desc='dilated',reg='SyN')
+    params:
+        atlas_labels= config[get_age_appropriate_template_name(expand(subject_id,subject=subjects))]['atlas_dseg_tsv'],
+        atlas_colors= config['generic_colors'],
+    output:
+        seg_nrrd = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,suffix='dseg.seg.nrrd',atlas='{atlas}',from_=config[get_age_appropriate_template_name(expand(subject_id,subject=subjects))]['space'],desc='dilated',reg='SyN')
+    group: 'preproc'
+    #container: config['singularity']['neuroglia']
+    script: '../scripts/working/niiTonrrd.py'
+
 #rule gradient_magnitude:
 #    input:
 #        t1 = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'), subject=subject_id,desc='n4', suffix='T1w.nii.gz'),
@@ -108,4 +135,8 @@ rule brainmask_from_tissue:
 #                        subject=subjects))
 #final_outputs.extend(expand(bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id, desc='intensity', suffix='T1w.nii.gz'), 
 #                        subject=subjects))
+
+final_outputs.extend(expand(bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,suffix='dseg.seg.nrrd',atlas='{atlas}',from_=config[get_age_appropriate_template_name(expand(subject_id,subject=subjects))]['space'],reg='SyN'),subject=subjects, atlas=config['atlases']))
+final_outputs.extend(expand(bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,suffix='dseg.seg.nrrd',atlas='{atlas}',from_=config[get_age_appropriate_template_name(expand(subject_id,subject=subjects))]['space'],desc='dilated',reg='SyN'),subject=subjects, atlas=config['atlases']))
+
 #TODO: make lesion mask from the holes in the brainmask (instead of just filling them..) -- could be a nice way to exclude contrast enhanced vessels

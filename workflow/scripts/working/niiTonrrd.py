@@ -110,7 +110,7 @@ def write_nrrd(data_obj, out_file,atlas_labels):
 
 #%%
 
-debug = True
+debug = False
 
 if debug:
 	class dotdict(dict):
@@ -123,8 +123,8 @@ if debug:
 		def __init__(self, **kwargs):
 			self.__dict__.update(kwargs)
 	
-	isub="P111"
-	data_dir=r'/home/greydon/Documents/data/SEEG/derivatives/'
+	isub="P031"
+	data_dir=r'/home/greydon/Documents/data/fNIRS-fmri/derivatives/'
 	repo_path = r'/home/greydon/Documents/GitHub'
 	
 	input=dotdict({
@@ -133,7 +133,7 @@ if debug:
 	
 	params=dotdict({
 				'atlas_labels':repo_path + r'/seeg2bids-pipeline/resources/tpl-MNI152NLin2009cSym/tpl-MNI152NLin2009cSym_atlas-CerebrA_dseg.tsv',
-				'atlas_colors':repo_path + r'/seeg2bids-pipeline/resources/GenericColorsCopy.txt',
+				'atlas_colors':repo_path + r'/seeg2bids-pipeline/resources/generic_colors.txt',
 				})
 	
 	output=dotdict({
@@ -152,59 +152,56 @@ for ilabel in list(atlas_labels['label']):
 	col_lut_out.append([int(x) for x in col_lut])
 
 atlas_labels['lut']=col_lut_out
+atlas_name=[x.strip('atlas-') for x in snakemake.input.segs.split('_') if 'atlas-' in x][0]
+space_name=[x.strip('from-') for x in snakemake.input.segs.split('_') if 'from-' in x][0]
+data_obj=nb.load(snakemake.input.segs)
 
-if glob.glob(snakemake.input.segs):
-	segs_fname=glob.glob(snakemake.input.segs)[0]
-	atlas_name=[x.strip('atlas-') for x in segs_fname.split('_') if 'atlas-' in x][0]
-	space_name=[x.strip('from-') for x in segs_fname.split('_') if 'from-' in x][0]
-	data_obj=nb.load(segs_fname)
-	
-	write_nrrd(data_obj, snakemake.output.seg_nrrd, atlas_labels)
+write_nrrd(data_obj, snakemake.output.seg_nrrd, atlas_labels)
 
 
 #%%
 
 
-atlas_labels = pd.read_table(r'/home/greydon/Documents/GitHub/trajectoryGuideModules/resources/ext_libs/space/tpl-MNI152NLin2009cAsym/atlases/Tian_Subcortex_S4_3T_label.txt',header=None)
-atlas_labels['label']=atlas_labels.index+1
-atlas_colors = pd.read_csv(snakemake.params.atlas_colors, sep="\t",header=0)
-atlas_labels.rename(columns={0:'name'}, inplace=True)
+# atlas_labels = pd.read_table(r'/home/greydon/Documents/GitHub/trajectoryGuideModules/resources/ext_libs/space/tpl-MNI152NLin2009cAsym/atlases/Tian_Subcortex_S4_3T_label.txt',header=None)
+# atlas_labels['label']=atlas_labels.index+1
+# atlas_colors = pd.read_csv(snakemake.params.atlas_colors, sep="\t",header=0)
+# atlas_labels.rename(columns={0:'name'}, inplace=True)
 
-col_lut_out=[]
-for ilabel in list(atlas_labels['label']):
-	col_lut=sum([re.findall(r'\d+', str(x)) for x in atlas_colors[atlas_colors['index'].values==int(ilabel)][['r','g','b']].to_numpy()[0]],[])
-	col_lut_out.append([int(x) for x in col_lut])
+# col_lut_out=[]
+# for ilabel in list(atlas_labels['label']):
+# 	col_lut=sum([re.findall(r'\d+', str(x)) for x in atlas_colors[atlas_colors['index'].values==int(ilabel)][['r','g','b']].to_numpy()[0]],[])
+# 	col_lut_out.append([int(x) for x in col_lut])
 
-atlas_labels['lut']=col_lut_out
-atlas_labels['hemi']=[x.split('-')[-1] for x in atlas_labels['name']]
-atlas_labels['name']=['-'.join(x.split('-')[:-1]).replace('-','') for x in atlas_labels['name']]
+# atlas_labels['lut']=col_lut_out
+# atlas_labels['hemi']=[x.split('-')[-1] for x in atlas_labels['name']]
+# atlas_labels['name']=['-'.join(x.split('-')[:-1]).replace('-','') for x in atlas_labels['name']]
 
-data_obj=nb.load('/home/greydon/Downloads/Tian_Subcortex_S4_3T_2009cAsym.nii.gz')
-out_file='/home/greydon/Documents/GitHub/trajectoryGuideModules/resources/ext_libs/space/tpl-MNI152NLin2009cAsym/atlases/Tian_Subcortex_S4_3T_2009cAsym.seg.nrrd'
+# data_obj=nb.load('/home/greydon/Downloads/Tian_Subcortex_S4_3T_2009cAsym.nii.gz')
+# out_file='/home/greydon/Documents/GitHub/trajectoryGuideModules/resources/ext_libs/space/tpl-MNI152NLin2009cAsym/atlases/Tian_Subcortex_S4_3T_2009cAsym.seg.nrrd'
 
-write_nrrd(data_obj, out_file, atlas_labels)
+# write_nrrd(data_obj, out_file, atlas_labels)
 
-with open(r'/home/greydon/Documents/GitHub/trajectoryGuideModules/resources/ext_libs/space/template_model_dictionary.json') as (file):
-	template_model_dictionary = json.load(file)
-
-
-melbourne_dir=r'/home/greydon/Documents/GitHub/trajectoryGuideModules/resources/ext_libs/space/tpl-MNI152NLin2009cAsym/atlases/melbourne'
-
-for imodel in [x for x in os.listdir(melbourne_dir) if x.endswith('.vtk')]:
-	modelName=imodel.split('desc-')[-1].split('.vtk')[0]
-	if modelName not in list(template_model_dictionary['melbourne']):
-		template_model_dictionary['melbourne'][modelName]={}
-		template_model_dictionary['melbourne'][modelName]['main']=""
-		template_model_dictionary['melbourne'][modelName]['sub']=""
-		template_model_dictionary['melbourne'][modelName]['label']=atlas_labels[atlas_labels['name']==modelName]['name'].values[0]
-		template_model_dictionary['melbourne'][modelName]['color']=rgbToHex(np.array(atlas_labels[atlas_labels['name']==modelName]['lut'].values[0])/255)
-		template_model_dictionary['melbourne'][modelName]['visible']=True
+# with open(r'/home/greydon/Documents/GitHub/trajectoryGuideModules/resources/ext_libs/space/template_model_dictionary.json') as (file):
+# 	template_model_dictionary = json.load(file)
 
 
-json_output = json.dumps(template_model_dictionary, indent=4)
-with open(r'/home/greydon/Documents/GitHub/trajectoryGuideModules/resources/ext_libs/space/template_model_dictionary.json', 'w') as (fid):
-	fid.write(json_output)
-	fid.write('\n')
+# melbourne_dir=r'/home/greydon/Documents/GitHub/trajectoryGuideModules/resources/ext_libs/space/tpl-MNI152NLin2009cAsym/atlases/melbourne'
+
+# for imodel in [x for x in os.listdir(melbourne_dir) if x.endswith('.vtk')]:
+# 	modelName=imodel.split('desc-')[-1].split('.vtk')[0]
+# 	if modelName not in list(template_model_dictionary['melbourne']):
+# 		template_model_dictionary['melbourne'][modelName]={}
+# 		template_model_dictionary['melbourne'][modelName]['main']=""
+# 		template_model_dictionary['melbourne'][modelName]['sub']=""
+# 		template_model_dictionary['melbourne'][modelName]['label']=atlas_labels[atlas_labels['name']==modelName]['name'].values[0]
+# 		template_model_dictionary['melbourne'][modelName]['color']=rgbToHex(np.array(atlas_labels[atlas_labels['name']==modelName]['lut'].values[0])/255)
+# 		template_model_dictionary['melbourne'][modelName]['visible']=True
+
+
+# json_output = json.dumps(template_model_dictionary, indent=4)
+# with open(r'/home/greydon/Documents/GitHub/trajectoryGuideModules/resources/ext_libs/space/template_model_dictionary.json', 'w') as (fid):
+# 	fid.write(json_output)
+# 	fid.write('\n')
 	
 
 

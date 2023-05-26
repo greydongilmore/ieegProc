@@ -3,7 +3,8 @@
 #
 
 #laptop
-bids_dir: /home/greydon/Documents/data/SEEG
+bids_dir: /media/greydon/Snobeanery1/PhD_data/retro_seeg/derivatives/scenes
+#bids_dir: /home/greydon/Documents/data/SEEG
 
 #work computer
 #bids_dir: /media/data/data/SEEG
@@ -31,13 +32,13 @@ post_ct:
     algo: greedy
 
 pet:
-    present: True
+    present: False
     position: 0
     task: rest
     algo: greedy
 
 seeg_contacts:
-    present: True
+    present: False
 
 #
 #--- registration paramters
@@ -70,8 +71,9 @@ atropos_smoothing_factor: '[0.2,1x1x1]'
 convergence: '[3,0]'
 
 #use this to specify custom values for subjects, e.g. here sub-P001 will have k=4 tissue classes for Atropos initialization
-subject_k_tissue_classes: []
-#    001: 4
+subject_k_tissue_classes:
+    033: 4
+    037: 4
 #    012: 4
 #    039: 4
 #    047: 4
@@ -89,7 +91,7 @@ tissue_labels:
 #
 
 fastsurfer:
-    run: True
+    run: False
     home: "/home/greydon/Documents/GitHub/FastSurfer"
     py: "python"
     sid: 'fastsurfer'
@@ -105,7 +107,7 @@ fmriprep:
     bids_filter: resources/bids_filter.json
 
 hippunfold:
-    run: True
+    run: False
     modality: T1w
     atlas_labels_tsv: resources/desc-subfields_atlas-bigbrain_dseg.tsv
     path_T1w: _ses-pre_run-01_T1w.nii.gz
@@ -132,6 +134,7 @@ subject_electrodes_custom: []
 deface: False
 facemask: resources/facemask.nii.gz
 mean_reg2mean: resources/mean_reg2mean.nii.gz
+generic_colors: resources/generic_colors.txt
 
 adult_template:
     name: 'adult_template'

@@ -1,3 +1,5 @@
+
+
 def get_noncontrast_filename(wildcards):
     files=glob(bids(root=join(config['out_dir'], 'bids'), subject=config['subject_prefix']+f'{wildcards.subject}', datatype='anat', session='pre', acq=config['noncontrast_t1']['acq'], run='*', suffix='T1w.nii.gz'))
     if len(files) <=1:
@@ -52,21 +54,6 @@ def get_reference_t1(wildcards):
     elif not config['contrast_t1']['present'] and config['noncontrast_t1']['present']:
         ref_file=expand(bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'), subject=config['subject_prefix']+'{subject}', acq='noncontrast', suffix='T1w.nii.gz'),subject=wildcards.subject)
     return ref_file
-
-def get_age_appropriate_template_name(subject):
-    df = pd.read_table(join(config['out_dir'], 'bids','participants.tsv'), dtype = str, header=0)
-    if 'sub-'+subject[0] in df.participant_id.to_list():
-        age=int(df[df['participant_id']=='sub-'+subject[0]]['age'])
-        if age <18 and age > 13:
-            return config['MNIPediatricAsymCohort6']['name']
-        elif age <=13 and age > 7:
-            return config['MNIPediatricAsymCohort4']['name']
-        elif age <=7:
-            return config['MNIPediatricAsymCohort2']['name']
-        else:
-            return config['adult_template']['name']
-    else:
-        return config['adult_template']['name']
 
 if config['contrast_t1']['present']:
     rule import_subj_t1:
@@ -454,7 +441,7 @@ rule ants_syn_affine_init:
     output:
         out_composite = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,suffix='Composite.h5',from_='subject',to=config[get_age_appropriate_template_name(expand(subject_id,subject=subjects))]['space']),
         out_inv_composite = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,suffix='InverseComposite.h5',from_='subject',to=config[get_age_appropriate_template_name(expand(subject_id,subject=subjects))]['space']),
-        warped_flo = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,suffix='T1w.nii.gz',space=config[get_age_appropriate_template_name(expand(subject_id,subject=subjects))]['space'],desc='SyN'),
+        warped_flo = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,suffix='T1w.nii.gz',space=config[get_age_appropriate_template_name(expand(subject_id,subject=subjects))]['space'],desc='SyN',label='brain'),
     threads: 8
     resources:
         mem_mb = 16000, # right now these are on the high-end -- could implement benchmark rules to do this at some point..
@@ -473,7 +460,7 @@ rule ants_syn_affine_init:
 rule warp_dseg_from_template:
     input: 
         dseg = config[get_age_appropriate_template_name(expand(subject_id,subject=subjects))]['atlas_dseg_nii'],
-        ref = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,suffix='T1w.nii.gz'),
+        ref = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'), subject=subject_id,suffix='T1w.nii.gz'),
         inv_composite = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,suffix='InverseComposite.h5',from_='subject',to=config[get_age_appropriate_template_name(expand(subject_id,subject=subjects))]['space']),
     output:
         dseg = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,suffix='dseg.nii.gz',atlas='{atlas}',from_=config[get_age_appropriate_template_name(expand(subject_id,subject=subjects))]['space'],reg='SyN'),
@@ -486,6 +473,23 @@ rule warp_dseg_from_template:
         'ITK_GLOBAL_DEFAULT_NUMBER_OF_THREADS={threads} '
         'antsApplyTransforms -d 3 --interpolation NearestNeighbor -i {input.dseg} -o {output.dseg} -r {input.ref} '
             ' -t {input.inv_composite} ' #use inverse xfm (going from template to subject)
+
+rule warp_t1w_to_template:
+    input: 
+        t1 = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,suffix='T1w.nii.gz'),
+        ref = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),prefix=lambda wildcards, input:  f"tpl-{config[get_age_appropriate_template_name(input)]['space']}/tpl-{config[get_age_appropriate_template_name(input)]['space']}",desc='masked',suffix='T1w.nii.gz'),
+        composite = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,suffix='Composite.h5',from_='subject',to=config[get_age_appropriate_template_name(expand(subject_id,subject=subjects))]['space']),
+    output:
+        warped_t1 = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,suffix='T1w.nii.gz',space=config[get_age_appropriate_template_name(expand(subject_id,subject=subjects))]['space'],desc='SyN'),
+    #container: config['singularity']['neuroglia']
+    group: 'preproc'
+    threads: 1
+    resources:
+        mem_mb = 16000
+    shell: 
+        'ITK_GLOBAL_DEFAULT_NUMBER_OF_THREADS={threads} '
+        'antsApplyTransforms -d 3 --interpolation Linear -i {input.t1} -o {output.warped_t1} -r {input.ref} '
+            ' -t {input.composite} ' #use inverse xfm (going from template to subject)
 
 rule warp_tissue_probseg_from_template:
     input: 
@@ -510,7 +514,7 @@ rule warp_brainmask_from_template:
         ref = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,suffix='T1w.nii.gz'),
         inv_composite = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,suffix='InverseComposite.h5',from_='subject',to=config[get_age_appropriate_template_name(expand(subject_id,subject=subjects))]['space']),
     output:
-        mask = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,suffix='mask.nii.gz',from_=config[get_age_appropriate_template_name(expand(subject_id,subject=subjects))]['space'],reg='SyN',desc='brain'),
+        mask = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,suffix='mask.nii.gz',from_=config[get_age_appropriate_template_name(expand(subject_id,subject=subjects))]['space'],reg='SyN',label='brain'),
     #container: config['singularity']['neuroglia']
     group: 'preproc'
     threads: 1
@@ -543,3 +547,5 @@ rule dilate_atlas_labels:
     group: 'preproc'
     shell:
         'fslmaths {input} {params.dil_opt} {output}'
+
+final_outputs.extend(expand(bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,suffix='T1w.nii.gz',space=config[get_age_appropriate_template_name(expand(subject_id,subject=subjects))]['space'],desc='SyN',label='brain'),subject=subjects))

@@ -1,17 +1,3 @@
-def get_age_appropriate_template_name(subject):
-    df = pd.read_table(join(config['out_dir'], 'bids','participants.tsv'), dtype = str, header=0)
-    if 'sub-'+subject[0] in df.participant_id.to_list():
-        age=int(df[df['participant_id']=='sub-'+subject[0]]['age'])
-        if age <18 and age > 13:
-            return config['MNIPediatricAsymCohort6']['name']
-        elif age <=13 and age > 7:
-            return config['MNIPediatricAsymCohort4']['name']
-        elif age <=7:
-            return config['MNIPediatricAsymCohort2']['name']
-        else:
-            return config['adult_template']['name']
-    else:
-        return config['adult_template']['name']
 
 def get_electrodes_filename(wildcards): 
     if wildcards.subject in config['subject_electrodes_custom']:
@@ -26,16 +12,16 @@ def get_reference_t1(wildcards):
         ref_file=expand(bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'), subject=config['subject_prefix']+'{subject}', acq='noncontrast', suffix='T1w.nii.gz'),subject=wildcards.subject)
     return ref_file[0]
 
-rule qc_reg:
+rule qc_reg_t1:
     input:
         ref = config[get_age_appropriate_template_name(expand(subject_id,subject=subjects))]['t1w'],
-        flo = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,suffix='T1w.nii.gz',space=config[get_age_appropriate_template_name(expand(subject_id,subject=subjects))]['space'],desc='{desc}'),
+        flo = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,suffix='T1w.nii.gz', space=config[get_age_appropriate_template_name(expand(subject_id,subject=subjects))]['space'],desc='{desc}'),
     output:
         png = report(bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),prefix='sub-'+subject_id+'/qc/sub-'+subject_id,suffix='regqc.png',from_='subject', to=config[get_age_appropriate_template_name(expand(subject_id,subject=subjects))]['space'],desc='{desc}',include_subject_dir=False),
                 caption='../reports/regqc.rst',
                 category='Registration QC',
                 subcategory=lambda wildcards, input: f"{config[get_age_appropriate_template_name(input)]['space']}"),
-        html = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),prefix='sub-'+subject_id+'/qc/sub-'+subject_id,suffix='regqc.html',from_='subject', to=config[get_age_appropriate_template_name(expand(subject_id,subject=subjects))]['space'], desc='{desc}',include_subject_dir=False),
+        html = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),prefix='sub-'+subject_id+'/qc/sub-'+subject_id,suffix='regqc.html',from_='subject', to=config[get_age_appropriate_template_name(expand(subject_id,subject=subjects))]['space'], desc='{desc}', include_subject_dir=False),
 #        html = report(bids(root='qc',subject=subject_id,suffix='regqc.html',from_='subject', to=config[get_age_appropriate_template_name(expand(subject_id,subject=subjects))]['space'], desc='{desc}'),
 #                caption='../reports/regqc.rst',
 #                category='Registration QC',
