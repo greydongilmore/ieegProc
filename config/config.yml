@@ -97,8 +97,8 @@ fastsurfer:
     batch: 8
     threads: 4
     order: 0    #(0=nearest,1=linear(default),2=quadratic,3=cubic)
-    seg_only: True
     vol_segstats: True
+    version: 'master' # master or dev
 
 fmriprep:
     run: False
