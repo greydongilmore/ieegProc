@@ -3,8 +3,8 @@
 #
 
 #laptop
-bids_dir: /media/greydon/Snobeanery1/PhD_data/retro_seeg/derivatives/scenes
-#bids_dir: /home/greydon/Documents/data/SEEG
+#bids_dir: /media/greydon/Snobeanery1/PhD_data/retro_seeg/derivatives/scenes
+bids_dir: /home/greydon/Documents/data/SEEG
 
 #work computer
 #bids_dir: /media/data/data/SEEG
@@ -27,12 +27,12 @@ noncontrast_t1:
     algo: greedy
 
 post_ct:
-    present: True
+    present: False
     position: 0
     algo: greedy
 
 pet:
-    present: False
+    present: True
     position: 0
     task: rest
     algo: greedy
@@ -71,9 +71,8 @@ atropos_smoothing_factor: '[0.2,1x1x1]'
 convergence: '[3,0]'
 
 #use this to specify custom values for subjects, e.g. here sub-P001 will have k=4 tissue classes for Atropos initialization
-subject_k_tissue_classes:
-    033: 4
-    037: 4
+subject_k_tissue_classes: 
+    081: 4
 #    012: 4
 #    039: 4
 #    047: 4
@@ -91,7 +90,7 @@ tissue_labels:
 #
 
 fastsurfer:
-    run: False
+    run: True
     home: "/home/greydon/Documents/GitHub/FastSurfer"
     py: "python"
     sid: 'fastsurfer'

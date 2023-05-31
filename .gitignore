@@ -8,3 +8,4 @@ workflow/scripts/dicom2tar/__pycache__/clinical_helpers.cpython-39.pyc
 *.pyc
 resources/fmriprep_20.2.0.sif
 resources/fmriprep-21.0.0.simg
+mri/orig/001.mgz

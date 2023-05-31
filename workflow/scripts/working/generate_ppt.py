@@ -92,7 +92,7 @@ if debug:
 		def __init__(self, **kwargs):
 			self.__dict__.update(kwargs)
 
-	isub = 'sub-P115'
+	isub = 'sub-P116'
 	#data_dir = r'/media/data/data/SEEG/derivatives'
 	data_dir = r'/home/greydon/Documents/data/SEEG/derivatives'
 
@@ -240,8 +240,8 @@ for _, row_elec in df_elec.iterrows():
 		elec_slide.name=row_elec['Target']
 		
 		if errors_data is not None:
-			if [i for i,x in enumerate(errors_data['electrode']) if f'({x.lower()})' in row_elec['Target'].lower()]:
-				error_idx=[i for i,x in enumerate(errors_data['electrode']) if f'({x.lower()})' in row_elec['Target'].lower()][0]
+			if [i for i,x in enumerate(errors_data['electrode']) if f'{x.lower()}' in row_elec['Target'].lower()]:
+				error_idx=[i for i,x in enumerate(errors_data['electrode']) if f'{x.lower()}' in row_elec['Target'].lower()][0]
 				width = Inches(13.0);height = Inches(1.25)
 				left = (prs.slide_width -  width) / 2
 				top = (prs.slide_height -  height) / 10

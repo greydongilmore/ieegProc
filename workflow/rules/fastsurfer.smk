@@ -50,7 +50,7 @@ if config['fastsurfer']['seg_only']:
         #threads:config['fastsurfer']['threads']
         shell:
             "export FASTSURFER_HOME={params.fastsurfer_run} &&PYTORCH_CUDA_ALLOC_CONF=max_split_size_mb:4096 {params.fastsurfer_run}/run_fastsurfer.sh \
---t1 {input.t1} --sd {params.fastsurfer_out} --sid {params.subjid} --order {params.order} --py {params.py} --run_viewagg_on cpu --fsaparc --parallel --surfreg"
+--t1 {input.t1} --sd {params.fastsurfer_out} --sid {params.subjid} --py {params.py} --run_viewagg_on cpu --fsaparc --parallel"
     
     final_outputs.extend(expand(rules.fastsurfer_seg.output.touch_fastsurfer, subject=subjects))
 
@@ -87,7 +87,7 @@ else:
         threads:config['fastsurfer']['threads']
         shell:
             "export PYTORCH_CUDA_ALLOC_CONF=max_split_size_mb:4096 &&export FASTSURFER_HOME={params.fastsurfer_run} &&{params.fastsurfer_run}/run_fastsurfer.sh \
---t1 {input.t1} --sd {output.fastsurfer_out} --sid {params.sid} --order {params.order} --py {params.py} --threads {params.threads} --batch {params.batch} --run_viewagg_on cpu --fsaparc --parallel --surfreg"
+--t1 {input.t1} --sd {output.fastsurfer_out} --sid {params.sid} --py {params.py} --threads {params.threads} --batch {params.batch} --run_viewagg_on cpu --fsaparc --parallel"
 
     final_outputs.extend(expand(rules.fastsurfer_all.output.touch_fastsurfer, subject=subjects))
 
