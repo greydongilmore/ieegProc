@@ -3,14 +3,14 @@ def get_electrodes_filename(wildcards):
     if wildcards.subject in config['subject_electrodes_custom']:
         return config['out_dir'] + config['subject_electrodes_custom'][wildcards.subject]
     else:
-        return config['out_dir'] + config['subject_electrodes']
+        return glob(bids(root=join(config['out_dir'], 'derivatives',config['seeg_contacts']['dirname_scenes'].split('/')[2],'sub-'+config['subject_prefix']+f'{wildcards.subject}'), suffix='SEEGA.fcsv'))[0]
 
 def get_fcsv_files(wildcards):
-    file=glob(bids(root=join(config['out_dir'], 'derivatives','seega_coordinates'), subject=config['subject_prefix']+f'{wildcards.subject}', space='native', suffix='*.fcsv'))
+    file=glob(bids(root=join(config['out_dir'], 'derivatives',config['seeg_contacts']['dirname_coords'].split('/')[2]), subject=config['subject_prefix']+f'{wildcards.subject}', space='native', suffix='*.fcsv'))
     return file
 
 def get_fcsv_files_acpc(wildcards):
-    file=glob(bids(root=join(config['out_dir'], 'derivatives','seega_scenes','sub-'+config['subject_prefix']+f'{wildcards.subject}'), suffix='acpc.fcsv'))
+    file=glob(bids(root=join(config['out_dir'], 'derivatives',config['seeg_contacts']['dirname_scenes'].split('/')[2],'sub-'+config['subject_prefix']+f'{wildcards.subject}'), suffix='acpc.fcsv'))
     return file
 
 def get_noncontrast_T1w(wildcards):
@@ -39,7 +39,7 @@ def get_pet_file(wildcards):
     return file
 
 def get_seega_file(wildcards):
-    file=glob(bids(root=join(config['out_dir'], 'derivatives','seega_scenes','sub-'+config['subject_prefix']+f'{wildcards.subject}'), suffix='SEEGA.fcsv'))
+    file=glob(bids(root=join(config['out_dir'], 'derivatives',config['seeg_contacts']['dirname_scenes'].split('/')[2],'sub-'+config['subject_prefix']+f'{wildcards.subject}'), suffix='SEEGA.fcsv'))
     return file
 
 rule electrode_coords:
@@ -48,13 +48,13 @@ rule electrode_coords:
     params:
         sub=subject_id
     output:
-        seega_fcsv = bids(root=join(config['out_dir'],'derivatives','seega_coordinates'),subject=subject_id,space='native', suffix='SEEGA.fcsv'),
+        seega_fcsv = bids(root=join(config['out_dir'],'derivatives',config['seeg_contacts']['dirname_coords'].split('/')[2]),subject=subject_id,space='native', suffix='SEEGA.fcsv'),
     group: 'preproc'
     script: '../scripts/working/elec_labels_coords.py'
 
 rule label_electrodes_atlas:
     input: 
-        fcsv = bids(root=join(config['out_dir'],'derivatives','seega_coordinates'),subject=subject_id,space='native', suffix='SEEGA.fcsv'),
+        fcsv = get_electrodes_filename,
         dseg_tsv = config[get_age_appropriate_template_name(expand(subject_id,subject=subjects))]['atlas_dseg_tsv'],
         dseg_nii = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,suffix='dseg.nii.gz',desc='dilated',atlas='{atlas}',from_=config[get_age_appropriate_template_name(expand(subject_id,subject=subjects))]['space'],reg='SyN'),
         tissue_seg = expand(bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,suffix='probseg.nii.gz',label='{tissue}',desc='atropos3seg'),

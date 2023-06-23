@@ -4,13 +4,13 @@
 
 #laptop
 #bids_dir: /media/greydon/Snobeanery1/PhD_data/retro_seeg/derivatives/scenes
-bids_dir: /home/greydon/Documents/data/SEEG
+#bids_dir: /home/greydon/Documents/data/SEEG
 
 #work computer
-#bids_dir: /media/data/data/SEEG
+bids_dir: /media/data/data/SEEG
 
 #external drive
-#bids_dir: /media/greydon/Snobeanery/PhD_data/hippunfold2
+#bids_dir: /media/greydon/lhsc_data/SEEG_rerun
 
 subject_prefix: P
 
@@ -27,8 +27,8 @@ noncontrast_t1:
     algo: greedy
 
 post_ct:
-    present: False
-    position: 0
+    present: True
+    position: -1
     algo: greedy
 
 pet:
@@ -38,7 +38,9 @@ pet:
     algo: greedy
 
 seeg_contacts:
-    present: False
+    present: True
+    dirname_coords: &dirname_coords '/derivatives/seeg_coordinates/sub-P{subject}/sub-P{subject}_space-native_SEEGA.fcsv' 
+    dirname_scenes: &dirname_scenes '/derivatives/seeg_scenes/sub-P{subject}/SEEGA.fcsv'
 
 #
 #--- registration paramters
@@ -96,9 +98,9 @@ fastsurfer:
     sid: 'fastsurfer'
     batch: 8
     threads: 4
-    order: 0    #(0=nearest,1=linear(default),2=quadratic,3=cubic)
+    vox_size: 1    #(0=nearest,1=linear(default),2=quadratic,3=cubic)
     vol_segstats: True
-    version: 'master' # master or dev
+    version: 'dev' # master or dev
 
 fmriprep:
     run: False
@@ -120,8 +122,8 @@ subject_elec_ct_custom: []
 
 subject_elec_t1w_custom: []
 
-subject_seega_scene: /derivatives/seega_scenes/sub-P{subject}/SEEGA.fcsv
-subject_electrodes: /derivatives/seega_coordinates/sub-P{subject}/sub-P{subject}_space-native_SEEGA.fcsv
+subject_seega_scene: *dirname_scenes
+subject_electrodes: *dirname_coords
 
 #use this if a particular subject has custom path
 subject_electrodes_custom: []

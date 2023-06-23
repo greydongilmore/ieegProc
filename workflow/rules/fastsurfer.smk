@@ -40,7 +40,7 @@ if config['fastsurfer']['version'] =='dev':
             sid = config['fastsurfer']['sid'],
             batch = config['fastsurfer']['batch'],
             threads = config['fastsurfer']['threads'],
-            order = config['fastsurfer']['order'],
+            vox_size = config['fastsurfer']['vox_size'],
             py = config['fastsurfer']['py'],
             fastsurfer_out = directory(join(config['out_dir'], 'derivatives', 'fastsurfer')),
             subjid=expand('sub-' + subject_id,subject=subjects),
@@ -50,7 +50,7 @@ if config['fastsurfer']['version'] =='dev':
         #threads:config['fastsurfer']['threads']
         shell:
             "export FASTSURFER_HOME={params.fastsurfer_run} &&PYTORCH_CUDA_ALLOC_CONF=max_split_size_mb:4096 {params.fastsurfer_run}/run_fastsurfer.sh \
-            --t1 {input.t1} --sd {params.fastsurfer_out} --sid {params.subjid} --py {params.py} --viewagg_device cpu --fsaparc --parallel"
+            --t1 {input.t1} --sd {params.fastsurfer_out} --sid {params.subjid} --py {params.py} --vox_size {params.vox_size} --viewagg_device cpu --fsaparc --no_cereb --parallel --ignore_fs_version"
 else:
     rule fastsurfer_seg:
         input: 
@@ -70,7 +70,7 @@ else:
         #threads:config['fastsurfer']['threads']
         shell:
             "export FASTSURFER_HOME={params.fastsurfer_run} &&PYTORCH_CUDA_ALLOC_CONF=max_split_size_mb:4096 {params.fastsurfer_run}/run_fastsurfer.sh \
-            --t1 {input.t1} --sd {params.fastsurfer_out} --sid {params.subjid} --py {params.py} --viewagg_device cpu --fsaparc --parallel"
+            --t1 {input.t1} --sd {params.fastsurfer_out} --sid {params.subjid} --order {params.order} --py {params.py} --run_viewagg_on cpu --fsaparc --parallel --surfreg"
     
 final_outputs.extend(expand(rules.fastsurfer_seg.output.touch_fastsurfer, subject=subjects))
 

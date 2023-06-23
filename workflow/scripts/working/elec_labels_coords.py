@@ -242,7 +242,7 @@ if debug:
 
 isub='sub-'+snakemake.params.sub
 
-patient_output = os.path.join(snakemake.config['out_dir'], 'derivatives','seega_coordinates',isub)
+patient_output = os.path.join(snakemake.config['out_dir'], 'derivatives', snakemake.config['seeg_contacts']['dirname_coords'].split('/')[2],isub)
 if not os.path.exists(patient_output):
 	os.makedirs(patient_output)
 

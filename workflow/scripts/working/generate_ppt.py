@@ -76,6 +76,15 @@ color_map={
 	"white": (255,255,255),
 }
 
+aborted_lang={
+	'skipped',
+	'aborted'
+	}
+
+remap_dict={
+	'Electrode label ("aborted" if skipped)':'Electrode label'
+}
+
 #%%
 
 
@@ -92,13 +101,13 @@ if debug:
 		def __init__(self, **kwargs):
 			self.__dict__.update(kwargs)
 
-	isub = 'sub-P116'
-	#data_dir = r'/media/data/data/SEEG/derivatives'
-	data_dir = r'/home/greydon/Documents/data/SEEG/derivatives'
+	isub = 'sub-P119'
+	data_dir = r'/media/greydon/lhsc_data/SEEG_rerun/derivatives'
+	#data_dir = r'/home/greydon/Documents/data/SEEG/derivatives'
 
 	input = dotdict({
-			'shopping_list': f'{data_dir}/seega_scenes/{isub}/*shopping_list.xlsx',
-			'error_metrics': f'{data_dir}/seega_scenes/{isub}/{isub}_error_metrics.xlsx',
+			'shopping_list': f'{data_dir}/seeg_scenes/{isub}/*shopping_list.xlsx',
+			'error_metrics': f'{data_dir}/seeg_scenes/{isub}/{isub}_error_metrics.xlsx',
 	 })
 	
 	snakemake = Namespace(input=input)
@@ -106,8 +115,15 @@ if debug:
 
 df_elec_raw = pd.read_excel(glob.glob(snakemake.input.shopping_list)[0],header=None)
 df_elec=df_elec_raw.iloc[4:,:].reset_index(drop=True)
-df_elec.columns=df_elec_raw.iloc[3]
-df_elec=df_elec.iloc[0:df_elec.iloc[:,1].isnull().idxmax()]
+
+# need to update the column names
+updated_colnames=df_elec_raw.iloc[3].values
+for idx,ilabel in [(i,x) for i,x in enumerate(updated_colnames) if x in list(remap_dict)]:
+	updated_colnames[idx]=remap_dict[ilabel]
+
+
+df_elec.columns=updated_colnames
+df_elec=df_elec.iloc[0:df_elec.loc[:,'No.'].isnull().idxmax()]
 
 
 pt_pin='PIN'
@@ -193,7 +209,7 @@ if os.path.exists(snakemake.input.error_metrics):
 	left = (prs.slide_width -  width) / 2
 	top = (prs.slide_height -  height) / 2
 	
-	tbl = error_slide.shapes.add_table(df_elec.shape[0]+2, 7, left,top,width, height)
+	tbl = error_slide.shapes.add_table(errors_data.shape[0]+2, 7, left,top,width, height)
 	tbl = format_table_header(tbl)
 	
 	for row in range(2,len(tbl.table.rows)):
@@ -227,7 +243,7 @@ if os.path.exists(snakemake.input.error_metrics):
 
 
 for _, row_elec in df_elec.iterrows():
-	if not row_elec['Electrode label'] =='aborted':
+	if not any (x in row_elec['Electrode label'] for x in aborted_lang):
 		title_dict={
 			row_elec['Target']:{
 				"font_size": 48,
@@ -309,7 +325,7 @@ for _, row_elec in df_elec.iterrows():
 		line.width = Inches(0.04)
 
 out_fname = f"{lastname.replace(' ','')}_{firstname}_{sx_date}_maps.pptx"
-prs.save(f'{data_dir}/seega_scenes/{isub}/{out_fname}')
+prs.save(f'{data_dir}/seeg_scenes/{isub}/{out_fname}')
 
 
 

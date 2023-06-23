@@ -3,7 +3,7 @@ def get_electrodes_filename(wildcards):
     if wildcards.subject in config['subject_electrodes_custom']:
         return config['out_dir'] + config['subject_electrodes_custom'][wildcards.subject]
     else:
-        return config['out_dir'] + config['subject_electrodes']
+        return expand(bids(root=join(config['out_dir'], 'derivatives',config['seeg_contacts']['dirname_coords'].split('/')[2]), subject=config['subject_prefix']+f'{wildcards.subject}', space='native', suffix='SEEGA.fcsv'))[0]
 
 def get_reference_t1(wildcards):
     if config['contrast_t1']['present']:
