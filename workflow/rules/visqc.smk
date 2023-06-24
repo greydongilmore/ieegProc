@@ -29,7 +29,7 @@ rule qc_reg_t1:
     group: 'preproc'
     script: '../scripts/vis_regqc.py'
 
-if config['atlas_reg']['greedy']['active']:
+if config['warp_reg']['algo']=='greedy':
     final_outputs.extend(expand(bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),prefix='sub-'+subject_id+'/qc/sub-'+subject_id,suffix='regqc.png',from_='subject', to=config[get_age_appropriate_template_name(expand(subject_id,subject=subjects))]['space'],desc='{desc}',include_subject_dir=False),
                             subject=subjects, desc=['affine','greedydeform','SyN']))
 else:
@@ -121,7 +121,8 @@ rule qc_probseg:
         seg4d = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,suffix='probseg.nii.gz',desc='atropos3seg'),
         mapping = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,suffix='mapping.json',desc='atropos3seg'),
     params:
-        ct_png=bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),prefix='sub-'+subject_id+'/qc/sub-'+subject_id,suffix='regqc.png',from_='ct', to='T1w',desc='masked',include_subject_dir=False)
+        ct_png=bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),prefix='sub-'+subject_id+'/qc/sub-'+subject_id,suffix='regqc.png',from_='ct', to='T1w',desc='masked',include_subject_dir=False),
+        tissue_classes=config['default_k_tissue_classes'],
     output:
         png = report(bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),prefix='sub-'+subject_id+'/qc/sub-'+subject_id,suffix='probseg.png',desc='brainmask',label='atropos3seg',include_subject_dir=False),
                 caption='../reports/segqc.rst',

@@ -1,7 +1,7 @@
 from nilearn import plotting, image
 import matplotlib.pyplot as plt
 import matplotlib
-matplotlib.use('Qt5Agg')
+#matplotlib.use('Qt5Agg')
 import nibabel as nib
 from matplotlib.colors import ListedColormap,LinearSegmentedColormap
 import json
@@ -61,8 +61,9 @@ with open(snakemake.input.mapping, "r+") as fid:
 	mapping_data = json.load(fid)
 
 mapping_data = {str(y):x for x,y in mapping_data.items()}
-mapping_data['3']=mapping_data['0']
-del mapping_data['0']
+if '0' in list(mapping_data):
+	mapping_data['3']=mapping_data['0']
+	del mapping_data['0']
 
 coords = plotting.find_xyz_cut_coords(ref_resamp)
 
@@ -80,7 +81,9 @@ new_yticks=[]
 for j, lab in enumerate(mapping_data.values()):
 	new_yticks.append(matplotlib.text.Text(0, (j + 1.5), text=lab))
 
-display._cbar.ax.set_yticklabels(new_yticks)
+if len(new_yticks)==snakemake.params.tissue_classes:
+	display._cbar.ax.set_yticklabels(new_yticks)
+
 display.savefig(snakemake.output.png,dpi=300)
 display.close()
 

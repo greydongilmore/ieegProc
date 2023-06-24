@@ -1,5 +1,4 @@
 
-
 def get_noncontrast_filename(wildcards):
     files=glob(bids(root=join(config['out_dir'], 'bids'), subject=config['subject_prefix']+f'{wildcards.subject}', datatype='anat', session='pre', acq=config['noncontrast_t1']['acq'], run='*', suffix='T1w.nii.gz'))
     if len(files) <=1:
@@ -14,8 +13,6 @@ def get_noncontrast_filename(wildcards):
     if file:
         if not exists(file[0]):
             file=expand(bids(root=join(config['out_dir'], 'bids'), subject=config['subject_prefix']+'{subject}', datatype='anat', session='pre', run='01', suffix='T1w.nii.gz'),subject=wildcards.subject)
-    if file:
-        print(f'Pre T1w non-contrast file: {basename(file[0])}')
     return file
 
 def get_pre_t1_filename(wildcards):
@@ -90,7 +87,7 @@ elif config['contrast_t1']['present'] and config['noncontrast_t1']['present']:
                 flo = bids(root=join(config['out_dir'],'derivatives', 'atlasreg'),subject=subject_id,acq='noncontrast',suffix='T1w.nii.gz'),
                 ref = bids(root=join(config['out_dir'],'derivatives', 'atlasreg'),subject=subject_id,acq='contrast',suffix='T1w.nii.gz'),
             params:
-                dof=config['atlas_reg']['reg_aladin']['dof']
+                dof=config['linear_reg']['reg_aladin']['dof']
             output: 
                 warped_subj = bids(root=join(config['out_dir'],'derivatives', 'atlasreg'),subject=subject_id,acq='noncontrast',suffix='T1w.nii.gz',space='T1w',desc='rigidInterp'),
                 xfm_ras = bids(root=join(config['out_dir'],'derivatives', 'atlasreg'),subject=subject_id,suffix='xfm.txt',from_='noncontrast',to='contrast',desc='rigid',type_='ras'),
@@ -156,7 +153,7 @@ if config['post_ct']['present']:
                 flo = bids(root=join(config['out_dir'],'derivatives', 'atlasreg'),subject=subject_id,suffix='ct.nii.gz'),
                 ref = get_reference_t1,
             params:
-                dof=config['atlas_reg']['reg_aladin']['dof']
+                dof=config['linear_reg']['reg_aladin']['dof']
             output: 
                 warped_subj = bids(root=join(config['out_dir'],'derivatives', 'atlasreg'),subject=subject_id,suffix='ct.nii.gz',space='T1w',desc='rigidInterp'),
                 xfm_ras = bids(root=join(config['out_dir'],'derivatives', 'atlasreg'),subject=subject_id,suffix='xfm.txt',from_='ct',to='T1w',desc='rigid',type_='ras'),
@@ -215,7 +212,7 @@ if config['pet']['present']:
             flo = bids(root=join(config['out_dir'],'derivatives', 'atlasreg'),subject=subject_id,suffix='pet.nii.gz'),
             ref = get_reference_t1,
         params:
-            dof=config['atlas_reg']['reg_aladin']['dof']
+            dof=config['linear_reg']['reg_aladin']['dof']
         output: 
             warped_subj = bids(root=join(config['out_dir'],'derivatives', 'atlasreg'),subject=subject_id,suffix='pet.nii.gz',space='T1w',desc='rigidInterp'),
             xfm_ras = bids(root=join(config['out_dir'],'derivatives', 'atlasreg'),subject=subject_id,suffix='xfm.txt',from_='pet',to='T1w',desc='rigid',type_='ras'),
@@ -247,7 +244,7 @@ if config['pet']['present']:
     final_outputs.extend(expand(bids(root=join(config['out_dir'],'derivatives', 'atlasreg'),subject=subject_id,suffix='xfm.tfm',from_='pet',to='T1w',desc='rigid',type_='ras'),
                         subject=subjects))
 
-if config['atlas_reg']['reg_aladin']['active']:
+if config['nonlin_reg']['algo']=='reg_aladin':
     rule affine_xfm:
         input: 
             flo = bids(root=join(config['out_dir'],'derivatives', 'atlasreg'),subject=subject_id,suffix='T1w.nii.gz'),
@@ -260,11 +257,11 @@ if config['atlas_reg']['reg_aladin']['active']:
         shell:
             'reg_aladin -flo {input.flo} -ref {input.ref} -res {output.warped_subj} -aff {output.affine_xfm_ras} -speeeeed'
 
-elif config['atlas_reg']['greedy']['active']:
+elif config['nonlin_reg']['algo']=='greedy':
     rule affine_xfm:
         input: 
             flo = bids(root=join(config['out_dir'],'derivatives', 'atlasreg'),subject=subject_id,suffix='T1w.nii.gz'),
-            ref = config[get_age_appropriate_template_name()]['t1w'],
+            ref = config[get_age_appropriate_template_name(expand(subject_id,subject=subjects))]['t1w'],
         output: 
             affine_xfm_ras = bids(root=join(config['out_dir'],'derivatives', 'atlasreg'),subject=subject_id,suffix='xfm.txt',from_='subject',to=config[get_age_appropriate_template_name(expand(subject_id,subject=subjects))]['space'],desc='affine',type_='ras'),
             xfm_deform = bids(root=join(config['out_dir'],'derivatives', 'atlasreg'),subject=subject_id,suffix='xfm.nii.gz',from_='subject',to=config[get_age_appropriate_template_name(expand(subject_id,subject=subjects))]['space'],desc='warp',type_='ras'),
@@ -272,10 +269,10 @@ elif config['atlas_reg']['greedy']['active']:
             warped_subj_affine = bids(root=join(config['out_dir'],'derivatives', 'atlasreg'),subject=subject_id,suffix='T1w.nii.gz',space=config[get_age_appropriate_template_name(expand(subject_id,subject=subjects))]['space'],desc='affine'),
             warped_subj_greedy = bids(root=join(config['out_dir'],'derivatives', 'atlasreg'),subject=subject_id,suffix='T1w.nii.gz',space=config[get_age_appropriate_template_name(expand(subject_id,subject=subjects))]['space'],desc='greedydeform'),
         params:
-            n_iterations_affine=config['atlas_reg']['greedy']['n_iterations_affine'],
-            n_iterations_deform=config['atlas_reg']['greedy']['n_iterations_deform'],
-            grad_sigma=config['atlas_reg']['greedy']['grad_sigma'],
-            warp_sigma=config['atlas_reg']['greedy']['warp_sigma'],
+            n_iterations_affine=config['nonlin_reg']['greedy']['n_iterations_affine'],
+            n_iterations_deform=config['nonlin_reg']['greedy']['n_iterations_deform'],
+            grad_sigma=config['nonlin_reg']['greedy']['grad_sigma'],
+            warp_sigma=config['nonlin_reg']['greedy']['warp_sigma'],
         #container: config['singularity']['neuroglia']
         group: 'preproc'
         shell:
@@ -415,47 +412,54 @@ if config['post_ct']['present']:
         shell:
             'fslmaths {input.ct} -mas {input.mask} {output.ct}'
 
-rule ants_syn_affine_init:
-    input: 
-        flo = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,suffix='T1w.nii.gz',from_='atropos3seg',desc='masked'),
-        ref = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),prefix=lambda wildcards, input:  f"tpl-{config[get_age_appropriate_template_name(input)]['space']}/tpl-{config[get_age_appropriate_template_name(input)]['space']}",desc='masked',suffix='T1w.nii.gz'),
-        init_xfm = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,suffix='xfm.txt',from_='subject',to=config[get_age_appropriate_template_name(expand(subject_id,subject=subjects))]['space'],desc='affine',type_='itk'),
-    params:
-        out_prefix = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,suffix='',from_='subject',to=config[get_age_appropriate_template_name(expand(subject_id,subject=subjects))]['space']),
-        base_opts = '--write-composite-transform -d {dim} --float 1 '.format(dim=config['ants']['dim']),
-        intensity_opts = config['ants']['intensity_opts'],
-        init_transform = lambda wildcards, input: '-r {xfm}'.format(xfm=input.init_xfm),
-        linear_multires = '-c [{reg_iterations},1e-6,10] -f {shrink_factors} -s {smoothing_factors}'.format(
-                                reg_iterations = config['ants']['linear']['reg_iterations'],
-                                shrink_factors = config['ants']['linear']['shrink_factors'],
-                                smoothing_factors = config['ants']['linear']['smoothing_factors']),
-        linear_metric = lambda wildcards, input: '-m MI[{template},{target},1,32,Regular,0.25]'.format( template=input.ref,target=input.flo),
-        deform_model = '-t {deform_model}'.format(deform_model = config['ants']['deform']['transform_model']),
-        deform_multires = '-c [{reg_iterations},1e-9,10] -f {shrink_factors} -s {smoothing_factors}'.format(
-                                reg_iterations = config['ants']['deform']['reg_iterations'],
-                                shrink_factors = config['ants']['deform']['shrink_factors'],
-                                smoothing_factors = config['ants']['deform']['smoothing_factors']),
-        deform_metric = lambda wildcards, input: '-m {metric}[{template},{target},1,4]'.format(
-                                metric=config['ants']['deform']['sim_metric'],
-                                template=input.ref, target=input.flo)
-    output:
-        out_composite = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,suffix='Composite.h5',from_='subject',to=config[get_age_appropriate_template_name(expand(subject_id,subject=subjects))]['space']),
-        out_inv_composite = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,suffix='InverseComposite.h5',from_='subject',to=config[get_age_appropriate_template_name(expand(subject_id,subject=subjects))]['space']),
-        warped_flo = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,suffix='T1w.nii.gz',space=config[get_age_appropriate_template_name(expand(subject_id,subject=subjects))]['space'],desc='SyN',label='brain'),
-    threads: 8
-    resources:
-        mem_mb = 16000, # right now these are on the high-end -- could implement benchmark rules to do this at some point..
-        time = 60 # 1 hrs
-    #container: config['singularity']['neuroglia']
-    group: 'preproc'
-    shell: 
-        'ITK_GLOBAL_DEFAULT_NUMBER_OF_THREADS={threads} '
-        'antsRegistration {params.base_opts} {params.intensity_opts} '
-        '{params.init_transform} ' #initial xfm  -- rely on this for affine
-    #    '-t Rigid[0.1] {params.linear_metric} {params.linear_multires} ' # rigid registration
-    #    '-t Affine[0.1] {params.linear_metric} {params.linear_multires} ' # affine registration
-        '{params.deform_model} {params.deform_metric} {params.deform_multires} '  # deformable registration
-        '-o [{params.out_prefix},{output.warped_flo}]'
+if  config['warp_reg']['algo']=='ants':
+    rule ants_syn_affine_init:
+        input: 
+            flo = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,suffix='T1w.nii.gz',from_='atropos3seg',desc='masked'),
+            ref = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),prefix=lambda wildcards, input:  f"tpl-{config[get_age_appropriate_template_name(input)]['space']}/tpl-{config[get_age_appropriate_template_name(input)]['space']}",desc='masked',suffix='T1w.nii.gz'),
+            init_xfm = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,suffix='xfm.txt',from_='subject',to=config[get_age_appropriate_template_name(expand(subject_id,subject=subjects))]['space'],desc='affine',type_='itk'),
+        params:
+            out_prefix = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,suffix='',from_='subject',to=config[get_age_appropriate_template_name(expand(subject_id,subject=subjects))]['space']),
+            base_opts = '--write-composite-transform -d {dim} --float 1 '.format(dim=config['warp_reg']['ants']['dim']),
+            intensity_opts = config['warp_reg']['ants']['intensity_opts'],
+            init_transform = lambda wildcards, input: '-r {xfm}'.format(xfm=input.init_xfm),
+            linear_multires = '-c [{reg_iterations},1e-6,10] -f {shrink_factors} -s {smoothing_factors}'.format(
+                                    reg_iterations = config['warp_reg']['ants']['linear']['reg_iterations'],
+                                    shrink_factors = config['warp_reg']['ants']['linear']['shrink_factors'],
+                                    smoothing_factors = config['warp_reg']['ants']['linear']['smoothing_factors']),
+            linear_metric = lambda wildcards, input: '-m MI[{template},{target},1,32,Regular,0.25]'.format( template=input.ref,target=input.flo),
+            deform_model = '-t {deform_model}'.format(deform_model = config['warp_reg']['ants']['deform']['transform_model']),
+            deform_multires = '-c [{reg_iterations},1e-9,10] -f {shrink_factors} -s {smoothing_factors}'.format(
+                                    reg_iterations = config['warp_reg']['ants']['deform']['reg_iterations'],
+                                    shrink_factors = config['warp_reg']['ants']['deform']['shrink_factors'],
+                                    smoothing_factors = config['warp_reg']['ants']['deform']['smoothing_factors']),
+            deform_metric = lambda wildcards, input: '-m {metric}[{template},{target},1,4]'.format(
+                                    metric=config['warp_reg']['ants']['deform']['sim_metric'],
+                                    template=input.ref, target=input.flo)
+        output:
+            out_composite = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,suffix='Composite.h5',from_='subject',to=config[get_age_appropriate_template_name(expand(subject_id,subject=subjects))]['space']),
+            out_inv_composite = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,suffix='InverseComposite.h5',from_='subject',to=config[get_age_appropriate_template_name(expand(subject_id,subject=subjects))]['space']),
+            warped_flo = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,suffix='T1w.nii.gz',space=config[get_age_appropriate_template_name(expand(subject_id,subject=subjects))]['space'],desc='SyN',label='brain'),
+        threads: 8
+        resources:
+            mem_mb = 16000, # right now these are on the high-end -- could implement benchmark rules to do this at some point..
+            time = 60 # 1 hrs
+        #container: config['singularity']['neuroglia']
+        group: 'preproc'
+        shell: 
+            'ITK_GLOBAL_DEFAULT_NUMBER_OF_THREADS={threads} '
+            'antsRegistration {params.base_opts} {params.intensity_opts} '
+            '{params.init_transform} ' #initial xfm  -- rely on this for affine
+        #    '-t Rigid[0.1] {params.linear_metric} {params.linear_multires} ' # rigid registration
+        #    '-t Affine[0.1] {params.linear_metric} {params.linear_multires} ' # affine registration
+            '{params.deform_model} {params.deform_metric} {params.deform_multires} '  # deformable registration
+            '-o [{params.out_prefix},{output.warped_flo}]'
+elif  config['warp_reg']['algo']=='greedy':
+    rule greedy_syn_affine_init:
+        input: 
+            flo = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,suffix='T1w.nii.gz',from_='atropos3seg',desc='masked'),
+            ref = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),prefix=lambda wildcards, input:  f"tpl-{config[get_age_appropriate_template_name(input)]['space']}/tpl-{config[get_age_appropriate_template_name(input)]['space']}",desc='masked',suffix='T1w.nii.gz'),
+            init_xfm = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,suffix='xfm.txt',from_='subject',to=config[get_age_appropriate_template_name(expand(subject_id,subject=subjects))]['space'],desc='affine',type_='itk'),
 
 rule warp_dseg_from_template:
     input: 
