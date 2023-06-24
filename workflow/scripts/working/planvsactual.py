@@ -173,7 +173,7 @@ if debug:
 		def __init__(self, **kwargs):
 			self.__dict__.update(kwargs)
 	
-	isub='sub-P119'
+	isub='sub-P120'
 	data_dir=r'/media/greydon/lhsc_data/SEEG_rerun/derivatives/seeg_scenes'
 	#data_dir=r'/home/greydon/Documents/data/SEEG/derivatives/seega_scenes'
 	
@@ -348,7 +348,6 @@ for igroup in label_set:
 elec_data_raw=pd.DataFrame(elec_data)
 
 
-
 elec_table=elec_data_raw[['electrode','euclid_dist_target', 'radial_dist_target', 'euclid_dist_entry','radial_dist_entry','radial_angle','line_angle']].round(2)
 for item in list(elec_table)[1:]:
 	elec_table[item]=elec_table[item].astype(float)
@@ -358,9 +357,9 @@ elec_table_styled=elec_table.style.applymap(lambda x: "background-color:#ccffcc;
 
 writer = pd.ExcelWriter(snakemake.output.out_excel, engine='openpyxl')
 elec_table_styled.to_excel(writer,sheet_name='Sheet1', float_format='%.2f')
-book = writer.book
-book._named_styles['Normal'].number_format = '#,##0.00'
-writer.save()
+#book = writer.book
+#book._named_styles['Normal'].number_format = '#,##0.00'
+#writer.save()
 
 dfi.export(elec_table_styled, snakemake.output.out_svg)
 
