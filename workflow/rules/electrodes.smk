@@ -26,7 +26,7 @@ def get_segs(wildcards):
     return file
 
 def get_atlas_segs(wildcards):
-    file=glob(bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=config['subject_prefix']+f'{wildcards.subject}', atlas=config['atlases'][0], 
+    file=glob(bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=config['subject_prefix']+f'{wildcards.subject}', atlas=get_age_appropriate_template_name(config['subject_prefix']+f'{wildcards.subject}'),'atlas'), 
         from_=config['template'],reg='SyN',suffix='dseg.nii.gz'))
     return file
 
@@ -120,7 +120,7 @@ final_outputs.extend(
             from_=config[get_age_appropriate_template_name(expand(subject_id,subject=subjects))]['space']
         ),
         subject=subjects,
-        atlas=config['atlases'],
+        atlas=config[get_age_appropriate_template_name(expand(subject_id,subject=subjects))]['atlas'],
         template=config[get_age_appropriate_template_name(expand(subject_id,subject=subjects))]['space']
     )
 )

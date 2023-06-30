@@ -2,10 +2,10 @@
 #--- filepaths
 #
 
-#bids_dir: /media/greydon/Snobeanery1/PhD_data/retro_seeg/derivatives/scenes
+bids_dir: /home/greydon/Documents/data/SEEG_rerun
 
 #work computer
-bids_dir: /media/data/data/SEEG
+#bids_dir: /media/data/data/SEEG
 
 #external drive
 #bids_dir: /media/greydon/lhsc_data/SEEG_rerun
@@ -36,7 +36,7 @@ pet:
     algo: greedy
 
 seeg_contacts:
-    present: True
+    present: False
     dirname_coords: &dirname_coords '/derivatives/seeg_coordinates/sub-P{subject}/sub-P{subject}_space-native_SEEGA.fcsv' 
     dirname_scenes: &dirname_scenes '/derivatives/seeg_scenes/sub-P{subject}/SEEGA.fcsv'
 
@@ -51,8 +51,8 @@ linear_reg:
         n_iterations_affine: 100x50x0
         dof: 6
 
-nonlin_reg:
-    algo: greedy
+affine_reg:
+    algo: reg_aladin
     reg_aladin:
         dof: "" # use "-rigOnly" for 6 DOF and "" for 12 DOF
     greedy:
@@ -93,9 +93,7 @@ atropos_smoothing_factor: '[0.2,1x1x1]'
 convergence: '[3,0]'
 
 #use this to specify custom values for subjects, e.g. here sub-P001 will have k=4 tissue classes for Atropos initialization
-subject_k_tissue_classes: 
-    081: 4
-    080: 4
+subject_k_tissue_classes: []
 #    012: 4
 #    039: 4
 #    047: 4
@@ -159,13 +157,25 @@ mean_reg2mean: resources/mean_reg2mean.nii.gz
 generic_colors: resources/generic_colors.txt
 
 adult_template:
-    name: 'adult_template'
-    space: 'MNI152NLin2009cSym'
-    t1w: resources/tpl-MNI152NLin2009cSym/tpl-MNI152NLin2009cSym_res-1_T1w.nii.gz
-    mask: resources/tpl-MNI152NLin2009cSym/tpl-MNI152NLin2009cSym_res-1_desc-brain_mask.nii.gz
-    tissue_probseg: resources/tpl-MNI152NLin2009cSym/tpl-MNI152NLin2009cSym_res-1_label-{tissue}_probseg.nii.gz
-    atlas_dseg_nii: resources/tpl-MNI152NLin2009cSym/tpl-MNI152NLin2009cSym_res-1_atlas-{atlas}_dseg.nii.gz
-    atlas_dseg_tsv: resources/tpl-MNI152NLin2009cSym/tpl-MNI152NLin2009cSym_atlas-{atlas}_dseg.tsv
+    active_space: 'MNI152NLin2009cSym'
+    MNI152NLin2009cSym:
+        name: 'adult_template'
+        space: 'MNI152NLin2009cSym'
+        atlas: 'CerebrA'
+        t1w: resources/tpl-MNI152NLin2009cSym/tpl-MNI152NLin2009cSym_res-1_T1w.nii.gz
+        mask: resources/tpl-MNI152NLin2009cSym/tpl-MNI152NLin2009cSym_res-1_desc-brain_mask.nii.gz
+        tissue_probseg: resources/tpl-MNI152NLin2009cSym/tpl-MNI152NLin2009cSym_res-1_label-{tissue}_probseg.nii.gz
+        atlas_dseg_nii: resources/tpl-MNI152NLin2009cSym/tpl-MNI152NLin2009cSym_res-1_atlas-{atlas}_dseg.nii.gz
+        atlas_dseg_tsv: resources/tpl-MNI152NLin2009cSym/tpl-MNI152NLin2009cSym_atlas-{atlas}_dseg.tsv
+    MNI152NLin2009aAsym:
+        name: 'adult_template'
+        space: 'MNI152NLin2009aAsym'
+        atlas: 'Glasser'
+        t1w: resources/tpl-MNI152NLin2009aAsym/tpl-MNI152NLin2009aAsym_res-1_T1w.nii.gz
+        mask: resources/tpl-MNI152NLin2009aAsym/tpl-MNI152NLin2009aAsym_res-1_desc-brain_mask.nii.gz
+        tissue_probseg: resources/tpl-MNI152NLin2009aAsym/tpl-MNI152NLin2009aAsym_res-1_label-{tissue}_probseg.nii.gz
+        atlas_dseg_nii: resources/tpl-MNI152NLin2009aAsym/tpl-MNI152NLin2009aAsym_res-1_atlas-{atlas}_dseg.nii.gz
+        atlas_dseg_tsv: resources/tpl-MNI152NLin2009aAsym/tpl-MNI152NLin2009aAsym_res-1_atlas-{atlas}_dseg.tsv
 
 MNIPediatricAsymCohort2:
     name: 'MNIPediatricAsymCohort2'
@@ -194,8 +204,6 @@ MNIPediatricAsymCohort6:
     atlas_dseg_nii: resources/tpl-MNI152NLin2009cSym/tpl-MNI152NLin2009cSym_res-1_atlas-{atlas}_dseg.nii.gz
     atlas_dseg_tsv: resources/tpl-MNI152NLin2009cSym/tpl-MNI152NLin2009cSym_atlas-{atlas}_dseg.tsv
 
-atlases:
-    - CerebrA
 
 #number of times to dilate  (each time 3x3x3 mode dilation)
 n_atlas_dilate: 3

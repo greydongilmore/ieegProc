@@ -14,15 +14,15 @@ def get_reference_t1(wildcards):
 
 rule qc_reg_t1:
     input:
-        ref = config[get_age_appropriate_template_name(expand(subject_id,subject=subjects))]['t1w'],
-        flo = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,suffix='T1w.nii.gz', space=config[get_age_appropriate_template_name(expand(subject_id,subject=subjects))]['space'],desc='{desc}'),
+        ref = get_age_appropriate_template_name(expand(subject_id,subject=subjects),'t1w'),
+        flo = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,suffix='T1w.nii.gz', space=get_age_appropriate_template_name(expand(subject_id,subject=subjects),'space'),desc='{desc}'),
     output:
-        png = report(bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),prefix='sub-'+subject_id+'/qc/sub-'+subject_id,suffix='regqc.png',from_='subject', to=config[get_age_appropriate_template_name(expand(subject_id,subject=subjects))]['space'],desc='{desc}',include_subject_dir=False),
+        png = report(bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),prefix='sub-'+subject_id+'/qc/sub-'+subject_id,suffix='regqc.png',from_='subject', to=get_age_appropriate_template_name(expand(subject_id,subject=subjects),'space'),desc='{desc}',include_subject_dir=False),
                 caption='../reports/regqc.rst',
                 category='Registration QC',
-                subcategory=lambda wildcards, input: f"{config[get_age_appropriate_template_name(input)]['space']}"),
-        html = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),prefix='sub-'+subject_id+'/qc/sub-'+subject_id,suffix='regqc.html',from_='subject', to=config[get_age_appropriate_template_name(expand(subject_id,subject=subjects))]['space'], desc='{desc}', include_subject_dir=False),
-#        html = report(bids(root='qc',subject=subject_id,suffix='regqc.html',from_='subject', to=config[get_age_appropriate_template_name(expand(subject_id,subject=subjects))]['space'], desc='{desc}'),
+                subcategory=lambda wildcards, input: f"{get_age_appropriate_template_name(input,'space')}"),
+        html = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),prefix='sub-'+subject_id+'/qc/sub-'+subject_id,suffix='regqc.html',from_='subject', to=get_age_appropriate_template_name(expand(subject_id,subject=subjects),'space'), desc='{desc}', include_subject_dir=False),
+#        html = report(bids(root='qc',subject=subject_id,suffix='regqc.html',from_='subject', to=get_age_appropriate_template_name(expand(subject_id,subject=subjects),'space'), desc='{desc}'),
 #                caption='../reports/regqc.rst',
 #                category='Registration QC',
 #                subcategory='{desc} {template}'),
@@ -30,10 +30,10 @@ rule qc_reg_t1:
     script: '../scripts/vis_regqc.py'
 
 if config['warp_reg']['algo']=='greedy':
-    final_outputs.extend(expand(bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),prefix='sub-'+subject_id+'/qc/sub-'+subject_id,suffix='regqc.png',from_='subject', to=config[get_age_appropriate_template_name(expand(subject_id,subject=subjects))]['space'],desc='{desc}',include_subject_dir=False),
+    final_outputs.extend(expand(bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),prefix='sub-'+subject_id+'/qc/sub-'+subject_id,suffix='regqc.png',from_='subject', to=get_age_appropriate_template_name(expand(subject_id,subject=subjects),'space'),desc='{desc}',include_subject_dir=False),
                             subject=subjects, desc=['affine','greedydeform','SyN']))
 else:
-    final_outputs.extend(expand(bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),prefix='sub-'+subject_id+'/qc/sub-'+subject_id,suffix='regqc.png',from_='subject', to=config[get_age_appropriate_template_name(expand(subject_id,subject=subjects))]['space'],desc='{desc}',include_subject_dir=False),
+    final_outputs.extend(expand(bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),prefix='sub-'+subject_id+'/qc/sub-'+subject_id,suffix='regqc.png',from_='subject', to=get_age_appropriate_template_name(expand(subject_id,subject=subjects),'space'),desc='{desc}',include_subject_dir=False),
                         subject=subjects, desc=['affine','SyN']))
 
 if config['contrast_t1']['present'] and config['noncontrast_t1']['present']:
@@ -47,7 +47,7 @@ if config['contrast_t1']['present'] and config['noncontrast_t1']['present']:
                     category='Registration QC',
                     subcategory='{desc} T1w'),
             html = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),prefix='sub-'+subject_id+'/qc/sub-'+subject_id,suffix='regqc.html',from_='contrast', to='noncontrast', include_subject_dir=False),
-    #        html = report(bids(root='qc',subject=subject_id,suffix='regqc.html',from_='subject', to=config[get_age_appropriate_template_name(expand(subject_id,subject=subjects))]['space'], desc='{desc}'),
+    #        html = report(bids(root='qc',subject=subject_id,suffix='regqc.html',from_='subject', to=get_age_appropriate_template_name(expand(subject_id,subject=subjects),'space'), desc='{desc}'),
     #                caption='../reports/regqc.rst',
     #                category='Registration QC',
     #                subcategory='{desc} {template}'),
@@ -68,7 +68,7 @@ if config['post_ct']['present']:
                     category='Registration QC',
                     subcategory='{desc} T1w'),
             html = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),prefix='sub-'+subject_id+'/qc/sub-'+subject_id,suffix='regqc.html',from_='ct', to='T1w', desc='rigid',include_subject_dir=False),
-    #        html = report(bids(root='qc',subject=subject_id,suffix='regqc.html',from_='subject', to=config[get_age_appropriate_template_name(expand(subject_id,subject=subjects))]['space'], desc='{desc}'),
+    #        html = report(bids(root='qc',subject=subject_id,suffix='regqc.html',from_='subject', to=get_age_appropriate_template_name(expand(subject_id,subject=subjects),'space'), desc='{desc}'),
     #                caption='../reports/regqc.rst',
     #                category='Registration QC',
     #                subcategory='{desc} {template}'),
@@ -89,7 +89,7 @@ if config['pet']['present']:
                     category='Registration QC',
                     subcategory='{desc} T1w'),
             html = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),prefix='sub-'+subject_id+'/qc/sub-'+subject_id,suffix='regqc.html',from_='pet', to='T1w', desc='rigid',include_subject_dir=False),
-    #        html = report(bids(root='qc',subject=subject_id,suffix='regqc.html',from_='subject', to=config[get_age_appropriate_template_name(expand(subject_id,subject=subjects))]['space'], desc='{desc}'),
+    #        html = report(bids(root='qc',subject=subject_id,suffix='regqc.html',from_='subject', to=get_age_appropriate_template_name(expand(subject_id,subject=subjects),'space'), desc='{desc}'),
     #                caption='../reports/regqc.rst',
     #                category='Registration QC',
     #                subcategory='{desc} {template}'),
@@ -137,41 +137,41 @@ final_outputs.extend(expand(bids(root=join(config['out_dir'], 'derivatives', 'at
 rule qc_dseg:
     input:
         img = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'), subject=subject_id, desc='masked', from_='atropos3seg', suffix='T1w.nii.gz'),
-        seg = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'), subject=subject_id,suffix='dseg.nii.gz',atlas='{atlas}',from_=config[get_age_appropriate_template_name(expand(subject_id,subject=subjects))]['space'],reg='SyN'),
+        seg = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'), subject=subject_id,suffix='dseg.nii.gz',atlas='{atlas}',from_=get_age_appropriate_template_name(expand(subject_id,subject=subjects),'space'),reg='SyN'),
     output:
-        png = report(bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),prefix='sub-'+subject_id+'/qc/sub-'+subject_id,suffix='dseg.png',atlas='{atlas}', from_=config[get_age_appropriate_template_name(expand(subject_id,subject=subjects))]['space'],desc='brainmask', include_subject_dir=False),
+        png = report(bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),prefix='sub-'+subject_id+'/qc/sub-'+subject_id,suffix='dseg.png',atlas='{atlas}', from_=get_age_appropriate_template_name(expand(subject_id,subject=subjects),'space'),desc='brainmask', include_subject_dir=False),
                 caption='../reports/segqc.rst',
                 category='Segmentation QC',
                 ),
-        html = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),prefix='sub-'+subject_id+'/qc/sub-'+subject_id,suffix='dseg.html',atlas='{atlas}', from_=config[get_age_appropriate_template_name(expand(subject_id,subject=subjects))]['space'],desc='brainmask',include_subject_dir=False),
-#        html = report(bids(root='qc',subject=subject_id,suffix='dseg.html',atlas='{atlas}', from_=config[get_age_appropriate_template_name(expand(subject_id,subject=subjects))]['space']),
+        html = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),prefix='sub-'+subject_id+'/qc/sub-'+subject_id,suffix='dseg.html',atlas='{atlas}', from_=get_age_appropriate_template_name(expand(subject_id,subject=subjects),'space'),desc='brainmask',include_subject_dir=False),
+#        html = report(bids(root='qc',subject=subject_id,suffix='dseg.html',atlas='{atlas}', from_=get_age_appropriate_template_name(expand(subject_id,subject=subjects),'space')),
 #                caption='../reports/segqc.rst',
 #                category='Segmentation QC',
 #                subcategory='{atlas} Atlas from {template}'),
     group: 'preproc'
     script: '../scripts/vis_qc_dseg.py'
 
-final_outputs.extend(expand(bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),prefix='sub-'+subject_id+'/qc/sub-'+subject_id,suffix='dseg.png',atlas='{atlas}', from_=config[get_age_appropriate_template_name(expand(subject_id,subject=subjects))]['space'],desc='brainmask',include_subject_dir=False),
-                        subject=subjects, atlas=config['atlases']))
+final_outputs.extend(expand(bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),prefix='sub-'+subject_id+'/qc/sub-'+subject_id,suffix='dseg.png',atlas='{atlas}', from_=get_age_appropriate_template_name(expand(subject_id,subject=subjects),'space'),desc='brainmask',include_subject_dir=False),
+                        subject=subjects, atlas=get_age_appropriate_template_name(expand(subject_id,subject=subjects),'atlas')))
 
 rule qc_dseg_dilated:
     input:
         img = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'), subject=subject_id, desc='masked', from_='atropos3seg', suffix='T1w.nii.gz'),
-        seg = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,suffix='dseg.nii.gz',atlas='{atlas}',from_=config[get_age_appropriate_template_name(expand(subject_id,subject=subjects))]['space'],desc='dilated',reg='SyN'),
+        seg = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,suffix='dseg.nii.gz',atlas='{atlas}',from_=get_age_appropriate_template_name(expand(subject_id,subject=subjects),'space'),desc='dilated',reg='SyN'),
     output:
-        png = report(bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),prefix='sub-'+subject_id+'/qc/sub-'+subject_id,suffix='dseg.png',atlas='{atlas}', from_=config[get_age_appropriate_template_name(expand(subject_id,subject=subjects))]['space'],desc='brainmask',label='dilated',include_subject_dir=False),
+        png = report(bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),prefix='sub-'+subject_id+'/qc/sub-'+subject_id,suffix='dseg.png',atlas='{atlas}', from_=get_age_appropriate_template_name(expand(subject_id,subject=subjects),'space'),desc='brainmask',label='dilated',include_subject_dir=False),
                 caption='../reports/segqc.rst',
                 category='Segmentation QC'),
-        html = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),prefix='sub-'+subject_id+'/qc/sub-'+subject_id,suffix='dseg.html',atlas='{atlas}', from_=config[get_age_appropriate_template_name(expand(subject_id,subject=subjects))]['space'],desc='brainmask',label='dilated',include_subject_dir=False),
-#        html = report(bids(root='qc',subject=subject_id,suffix='dseg.html',atlas='{atlas}', from_=config[get_age_appropriate_template_name(expand(subject_id,subject=subjects))]['space']),
+        html = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),prefix='sub-'+subject_id+'/qc/sub-'+subject_id,suffix='dseg.html',atlas='{atlas}', from_=get_age_appropriate_template_name(expand(subject_id,subject=subjects),'space'),desc='brainmask',label='dilated',include_subject_dir=False),
+#        html = report(bids(root='qc',subject=subject_id,suffix='dseg.html',atlas='{atlas}', from_=get_age_appropriate_template_name(expand(subject_id,subject=subjects),'space')),
 #                caption='../reports/segqc.rst',
 #                category='Segmentation QC',
 #                subcategory='{atlas} Atlas from {template}'),
     group: 'preproc'
     script: '../scripts/vis_qc_dseg.py'
 
-final_outputs.extend(expand(bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),prefix='sub-'+subject_id+'/qc/sub-'+subject_id,suffix='dseg.png',atlas='{atlas}', from_=config[get_age_appropriate_template_name(expand(subject_id,subject=subjects))]['space'],desc='brainmask',label='dilated',include_subject_dir=False),
-                        subject=subjects, atlas=config['atlases']))
+final_outputs.extend(expand(bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),prefix='sub-'+subject_id+'/qc/sub-'+subject_id,suffix='dseg.png',atlas='{atlas}', from_=get_age_appropriate_template_name(expand(subject_id,subject=subjects),'space'),desc='brainmask',label='dilated',include_subject_dir=False),
+                        subject=subjects, atlas=get_age_appropriate_template_name(expand(subject_id,subject=subjects),'atlas')))
 
 rule qc_tissue_class:
     input:
@@ -208,25 +208,25 @@ if config['seeg_contacts']['present']:
         input: 
             fcsv = get_electrodes_filename,
             t1w = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,desc='n4', suffix='T1w.nii.gz'),
-            xfm_ras = bids(root=join(config['out_dir'],'derivatives', 'atlasreg'),subject=subject_id,suffix='xfm.txt',from_='subject',to=config[get_age_appropriate_template_name(expand(subject_id,subject=subjects))]['space'],desc='affine',type_='ras'),
+            xfm_ras = bids(root=join(config['out_dir'],'derivatives', 'atlasreg'),subject=subject_id,suffix='xfm.txt',from_='subject',to=get_age_appropriate_template_name(expand(subject_id,subject=subjects),'space'),desc='affine',type_='ras'),
         params:
             contacts= bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),prefix='sub-'+subject_id+'/qc/sub-'+subject_id,suffix='contacts.html',desc='mask',space='ct',include_subject_dir=False)
         output:
-            html = report(bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),prefix='sub-'+subject_id+'/qc/sub-'+subject_id,suffix='electrodes.html',desc='affine',space=config[get_age_appropriate_template_name(expand(subject_id,subject=subjects))]['space']),
+            html = report(bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),prefix='sub-'+subject_id+'/qc/sub-'+subject_id,suffix='electrodes.html',desc='affine',space=get_age_appropriate_template_name(expand(subject_id,subject=subjects),'space')),
                     caption='../reports/electrodes_vis.rst',
                     category='Electrodes in template space',
-                    subcategory="reg to {config[get_age_appropriate_template_name(expand(subject_id,subject=subjects))]['space']}"),
-            png = report(bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),prefix='sub-'+subject_id+'/qc/sub-'+subject_id,suffix='electrodevis.png',desc='affine',space=config[get_age_appropriate_template_name(expand(subject_id,subject=subjects))]['space'],include_subject_dir=False),
+                    subcategory="reg to {get_age_appropriate_template_name(expand(subject_id,subject=subjects),'space')}"),
+            png = report(bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),prefix='sub-'+subject_id+'/qc/sub-'+subject_id,suffix='electrodevis.png',desc='affine',space=get_age_appropriate_template_name(expand(subject_id,subject=subjects),'space'),include_subject_dir=False),
                     caption='../reports/electrodes_vis.rst',
                     category='Electrodes in template space',
-                    subcategory=lambda wildcards, input: f"reg to {config[get_age_appropriate_template_name(input)]['space']}"),
+                    subcategory=lambda wildcards, input: f"reg to {get_age_appropriate_template_name(input,'space')}"),
         group: 'preproc'
         script: '../scripts/vis_electrodes.py'
 
-    final_outputs.extend(expand(bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),prefix='sub-'+subject_id+'/qc/sub-'+subject_id,suffix='electrodevis.png',desc='affine',space=config[get_age_appropriate_template_name(expand(subject_id,subject=subjects))]['space'],include_subject_dir=False),
+    final_outputs.extend(expand(bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),prefix='sub-'+subject_id+'/qc/sub-'+subject_id,suffix='electrodevis.png',desc='affine',space=get_age_appropriate_template_name(expand(subject_id,subject=subjects),'space'),include_subject_dir=False),
                         subject=subjects, desc=['rigid']))
     
-    final_outputs.extend(expand(bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),prefix='sub-'+subject_id+'/qc/sub-'+subject_id,suffix='electrodes.html',desc='affine',space=config[get_age_appropriate_template_name(expand(subject_id,subject=subjects))]['space'],include_subject_dir=False),
+    final_outputs.extend(expand(bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),prefix='sub-'+subject_id+'/qc/sub-'+subject_id,suffix='electrodes.html',desc='affine',space=get_age_appropriate_template_name(expand(subject_id,subject=subjects),'space'),include_subject_dir=False),
                         subject=subjects, desc=['rigid']))
     
     final_outputs.extend(expand(bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),prefix='sub-'+subject_id+'/qc/sub-'+subject_id,suffix='contacts.html',desc='mask',space='ct',include_subject_dir=False),

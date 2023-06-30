@@ -244,35 +244,35 @@ if config['pet']['present']:
     final_outputs.extend(expand(bids(root=join(config['out_dir'],'derivatives', 'atlasreg'),subject=subject_id,suffix='xfm.tfm',from_='pet',to='T1w',desc='rigid',type_='ras'),
                         subject=subjects))
 
-if config['nonlin_reg']['algo']=='reg_aladin':
+if config['affine_reg']['algo']=='reg_aladin':
     rule affine_xfm:
         input: 
             flo = bids(root=join(config['out_dir'],'derivatives', 'atlasreg'),subject=subject_id,suffix='T1w.nii.gz'),
-            ref = config[get_age_appropriate_template_name(expand(subject_id,subject=subjects))]['t1w'],
+            ref = get_age_appropriate_template_name(expand(subject_id,subject=subjects),'t1w'),
         output: 
-            warped_subj = bids(root=join(config['out_dir'],'derivatives', 'atlasreg'),subject=subject_id,suffix='T1w.nii.gz',space=config[get_age_appropriate_template_name(expand(subject_id,subject=subjects))]['space'],desc='affine'),
-            affine_xfm_ras = bids(root=join(config['out_dir'],'derivatives', 'atlasreg'),subject=subject_id,suffix='xfm.txt',from_='subject',to=config[get_age_appropriate_template_name(expand(subject_id,subject=subjects))]['space'],desc='affine',type_='ras'),
+            warped_subj = bids(root=join(config['out_dir'],'derivatives', 'atlasreg'),subject=subject_id,suffix='T1w.nii.gz',space=get_age_appropriate_template_name(expand(subject_id,subject=subjects),'space'),desc='affine'),
+            affine_xfm_ras = bids(root=join(config['out_dir'],'derivatives', 'atlasreg'),subject=subject_id,suffix='xfm.txt',from_='subject',to=get_age_appropriate_template_name(expand(subject_id,subject=subjects),'space'),desc='affine',type_='ras'),
         #container: config['singularity']['neuroglia']
         group: 'preproc'
         shell:
             'reg_aladin -flo {input.flo} -ref {input.ref} -res {output.warped_subj} -aff {output.affine_xfm_ras} -speeeeed'
 
-elif config['nonlin_reg']['algo']=='greedy':
+elif config['affine_reg']['algo']=='greedy':
     rule affine_xfm:
         input: 
             flo = bids(root=join(config['out_dir'],'derivatives', 'atlasreg'),subject=subject_id,suffix='T1w.nii.gz'),
-            ref = config[get_age_appropriate_template_name(expand(subject_id,subject=subjects))]['t1w'],
+            ref = get_age_appropriate_template_name(expand(subject_id,subject=subjects), 't1w'),
         output: 
-            affine_xfm_ras = bids(root=join(config['out_dir'],'derivatives', 'atlasreg'),subject=subject_id,suffix='xfm.txt',from_='subject',to=config[get_age_appropriate_template_name(expand(subject_id,subject=subjects))]['space'],desc='affine',type_='ras'),
-            xfm_deform = bids(root=join(config['out_dir'],'derivatives', 'atlasreg'),subject=subject_id,suffix='xfm.nii.gz',from_='subject',to=config[get_age_appropriate_template_name(expand(subject_id,subject=subjects))]['space'],desc='warp',type_='ras'),
-            xfm_deform_inv = bids(root=join(config['out_dir'],'derivatives', 'atlasreg'),subject=subject_id,suffix='xfm.nii.gz',from_='subject',to=config[get_age_appropriate_template_name(expand(subject_id,subject=subjects))]['space'],desc='warpInverse',type_='ras'),
-            warped_subj_affine = bids(root=join(config['out_dir'],'derivatives', 'atlasreg'),subject=subject_id,suffix='T1w.nii.gz',space=config[get_age_appropriate_template_name(expand(subject_id,subject=subjects))]['space'],desc='affine'),
-            warped_subj_greedy = bids(root=join(config['out_dir'],'derivatives', 'atlasreg'),subject=subject_id,suffix='T1w.nii.gz',space=config[get_age_appropriate_template_name(expand(subject_id,subject=subjects))]['space'],desc='greedydeform'),
+            affine_xfm_ras = bids(root=join(config['out_dir'],'derivatives', 'atlasreg'),subject=subject_id,suffix='xfm.txt',from_='subject',to=get_age_appropriate_template_name(expand(subject_id,subject=subjects),'space'),desc='affine',type_='ras'),
+            xfm_deform = bids(root=join(config['out_dir'],'derivatives', 'atlasreg'),subject=subject_id,suffix='xfm.nii.gz',from_='subject',to=get_age_appropriate_template_name(expand(subject_id,subject=subjects),'space'),desc='warp',type_='ras'),
+            xfm_deform_inv = bids(root=join(config['out_dir'],'derivatives', 'atlasreg'),subject=subject_id,suffix='xfm.nii.gz',from_='subject',to=get_age_appropriate_template_name(expand(subject_id,subject=subjects),'space'),desc='warpInverse',type_='ras'),
+            warped_subj_affine = bids(root=join(config['out_dir'],'derivatives', 'atlasreg'),subject=subject_id,suffix='T1w.nii.gz',space=get_age_appropriate_template_name(expand(subject_id,subject=subjects),'space'),desc='affine'),
+            warped_subj_greedy = bids(root=join(config['out_dir'],'derivatives', 'atlasreg'),subject=subject_id,suffix='T1w.nii.gz',space=get_age_appropriate_template_name(expand(subject_id,subject=subjects),'space'),desc='greedydeform'),
         params:
-            n_iterations_affine=config['nonlin_reg']['greedy']['n_iterations_affine'],
-            n_iterations_deform=config['nonlin_reg']['greedy']['n_iterations_deform'],
-            grad_sigma=config['nonlin_reg']['greedy']['grad_sigma'],
-            warp_sigma=config['nonlin_reg']['greedy']['warp_sigma'],
+            n_iterations_affine=config['affine_reg']['greedy']['n_iterations_affine'],
+            n_iterations_deform=config['affine_reg']['greedy']['n_iterations_deform'],
+            grad_sigma=config['affine_reg']['greedy']['grad_sigma'],
+            warp_sigma=config['affine_reg']['greedy']['warp_sigma'],
         #container: config['singularity']['neuroglia']
         group: 'preproc'
         shell:
@@ -283,22 +283,22 @@ elif config['nonlin_reg']['algo']=='greedy':
 
 rule convert_affine_xfm_tfm:
     input:
-        xfm=bids(root=join(config['out_dir'],'derivatives', 'atlasreg'),subject=subject_id,suffix='xfm.txt',from_='subject',to=config[get_age_appropriate_template_name(expand(subject_id,subject=subjects))]['space'],desc='affine',type_='ras'),
+        xfm=bids(root=join(config['out_dir'],'derivatives', 'atlasreg'),subject=subject_id,suffix='xfm.txt',from_='subject',to=get_age_appropriate_template_name(expand(subject_id,subject=subjects),'space'),desc='affine',type_='ras'),
     output:
-        tfm=bids(root=join(config['out_dir'],'derivatives', 'atlasreg'),subject=subject_id,suffix='xfm.tfm',from_='subject',to=config[get_age_appropriate_template_name(expand(subject_id,subject=subjects))]['space'],desc='affine',type_='ras'),
+        tfm=bids(root=join(config['out_dir'],'derivatives', 'atlasreg'),subject=subject_id,suffix='xfm.tfm',from_='subject',to=get_age_appropriate_template_name(expand(subject_id,subject=subjects),'space'),desc='affine',type_='ras'),
     group: 'preproc'
     script: 
         '../scripts/convert_xfm_tfm.py'
 
-final_outputs.extend(expand(bids(root=join(config['out_dir'],'derivatives', 'atlasreg'),subject=subject_id,suffix='xfm.tfm',from_='subject',to=config[get_age_appropriate_template_name(expand(subject_id,subject=subjects))]['space'],desc='affine',type_='ras'),
+final_outputs.extend(expand(bids(root=join(config['out_dir'],'derivatives', 'atlasreg'),subject=subject_id,suffix='xfm.tfm',from_='subject',to=get_age_appropriate_template_name(expand(subject_id,subject=subjects),'space'),desc='affine',type_='ras'),
                         subject=subjects))
 
 rule convert_xfm_ras2itk:
     input:
-        tfm=bids(root=join(config['out_dir'],'derivatives', 'atlasreg'),subject=subject_id,suffix='xfm.txt',from_='subject',to=config[get_age_appropriate_template_name(expand(subject_id,subject=subjects))]['space'],desc='affine',type_='ras'),
-        xfm=bids(root=join(config['out_dir'],'derivatives', 'atlasreg'),subject=subject_id,suffix='xfm.txt',from_='subject',to=config[get_age_appropriate_template_name(expand(subject_id,subject=subjects))]['space'],desc='{desc}',type_='ras'),
+        tfm=bids(root=join(config['out_dir'],'derivatives', 'atlasreg'),subject=subject_id,suffix='xfm.txt',from_='subject',to=get_age_appropriate_template_name(expand(subject_id,subject=subjects),'space'),desc='affine',type_='ras'),
+        xfm=bids(root=join(config['out_dir'],'derivatives', 'atlasreg'),subject=subject_id,suffix='xfm.txt',from_='subject',to=get_age_appropriate_template_name(expand(subject_id,subject=subjects),'space'),desc='{desc}',type_='ras'),
     output:
-        bids(root=join(config['out_dir'],'derivatives', 'atlasreg'),subject=subject_id,suffix='xfm.txt',from_='subject',to=config[get_age_appropriate_template_name(expand(subject_id,subject=subjects))]['space'],desc='{desc}',type_='itk'),
+        bids(root=join(config['out_dir'],'derivatives', 'atlasreg'),subject=subject_id,suffix='xfm.txt',from_='subject',to=get_age_appropriate_template_name(expand(subject_id,subject=subjects),'space'),desc='{desc}',type_='itk'),
     #container: config['singularity']['neuroglia']
     group: 'preproc'
     shell:
@@ -306,11 +306,11 @@ rule convert_xfm_ras2itk:
 
 rule warp_brainmask_from_template_affine:
     input: 
-        mask = config[get_age_appropriate_template_name(expand(subject_id,subject=subjects))]['mask'],
+        mask = get_age_appropriate_template_name(expand(subject_id,subject=subjects),'mask'),
         ref = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,suffix='T1w.nii.gz'),
-        xfm = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,suffix='xfm.txt',from_='subject',to=config[get_age_appropriate_template_name(expand(subject_id,subject=subjects))]['space'],desc='{desc}',type_='itk'),
+        xfm = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,suffix='xfm.txt',from_='subject',to=get_age_appropriate_template_name(expand(subject_id,subject=subjects),'space'),desc='{desc}',type_='itk'),
     output:
-        mask = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,suffix='mask.nii.gz',from_=config[get_age_appropriate_template_name(expand(subject_id,subject=subjects))]['space'],reg='{desc}',desc='brain'),
+        mask = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,suffix='mask.nii.gz',from_=get_age_appropriate_template_name(expand(subject_id,subject=subjects),'space'),reg='{desc}',desc='brain'),
     #container: config['singularity']['neuroglia']
     group: 'preproc'
     shell: 'antsApplyTransforms -d 3 --interpolation NearestNeighbor -i {input.mask} -o {output.mask} -r {input.ref} '
@@ -318,11 +318,11 @@ rule warp_brainmask_from_template_affine:
 
 rule warp_tissue_probseg_from_template_affine:
     input: 
-        probseg = config[get_age_appropriate_template_name(expand(subject_id,subject=subjects))]['tissue_probseg'],
+        probseg = get_age_appropriate_template_name(expand(subject_id,subject=subjects),'tissue_probseg'),
         ref = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,suffix='T1w.nii.gz'),
-        xfm = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,suffix='xfm.txt',from_='subject',to=config[get_age_appropriate_template_name(expand(subject_id,subject=subjects))]['space'],desc='{desc}',type_='itk'),
+        xfm = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,suffix='xfm.txt',from_='subject',to=get_age_appropriate_template_name(expand(subject_id,subject=subjects),'space'),desc='{desc}',type_='itk'),
     output:
-        probseg = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,suffix='probseg.nii.gz',label='{tissue}',from_=config[get_age_appropriate_template_name(expand(subject_id,subject=subjects))]['space'],reg='{desc}'),
+        probseg = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,suffix='probseg.nii.gz',label='{tissue}',from_=get_age_appropriate_template_name(expand(subject_id,subject=subjects),'space'),reg='{desc}'),
     #container: config['singularity']['neuroglia']
     group: 'preproc'
     threads: 1
@@ -348,10 +348,10 @@ rule n4biasfield:
 
 rule mask_template_t1w:
     input:
-        t1 = config[get_age_appropriate_template_name(expand(subject_id,subject=subjects))]['t1w'],
-        mask = config[get_age_appropriate_template_name(expand(subject_id,subject=subjects))]['mask'],
+        t1 = get_age_appropriate_template_name(expand(subject_id,subject=subjects),'t1w'),
+        mask = get_age_appropriate_template_name(expand(subject_id,subject=subjects),'mask'),
     output:
-        t1 = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),prefix=lambda wildcards, input: f"tpl-{config[get_age_appropriate_template_name(input)]['space']}/tpl-{config[get_age_appropriate_template_name(input)]['space']}",desc='masked',suffix='T1w.nii.gz')
+        t1 = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),prefix=lambda wildcards, input: f"tpl-{get_age_appropriate_template_name(input,'space')}/tpl-{get_age_appropriate_template_name(input,'space')}",desc='masked',suffix='T1w.nii.gz')
     #container: config['singularity']['neuroglia']
     group: 'preproc'
     shell:
@@ -416,10 +416,10 @@ if  config['warp_reg']['algo']=='ants':
     rule ants_syn_affine_init:
         input: 
             flo = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,suffix='T1w.nii.gz',from_='atropos3seg',desc='masked'),
-            ref = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),prefix=lambda wildcards, input:  f"tpl-{config[get_age_appropriate_template_name(input)]['space']}/tpl-{config[get_age_appropriate_template_name(input)]['space']}",desc='masked',suffix='T1w.nii.gz'),
-            init_xfm = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,suffix='xfm.txt',from_='subject',to=config[get_age_appropriate_template_name(expand(subject_id,subject=subjects))]['space'],desc='affine',type_='itk'),
+            ref = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),prefix=lambda wildcards, input:  f"tpl-{get_age_appropriate_template_name(input,'space')}/tpl-{get_age_appropriate_template_name(input,'space')}",desc='masked',suffix='T1w.nii.gz'),
+            init_xfm = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,suffix='xfm.txt',from_='subject',to=get_age_appropriate_template_name(expand(subject_id,subject=subjects),'space'),desc='affine',type_='itk'),
         params:
-            out_prefix = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,suffix='',from_='subject',to=config[get_age_appropriate_template_name(expand(subject_id,subject=subjects))]['space']),
+            out_prefix = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,suffix='',from_='subject',to=get_age_appropriate_template_name(expand(subject_id,subject=subjects),'space')),
             base_opts = '--write-composite-transform -d {dim} --float 1 '.format(dim=config['warp_reg']['ants']['dim']),
             intensity_opts = config['warp_reg']['ants']['intensity_opts'],
             init_transform = lambda wildcards, input: '-r {xfm}'.format(xfm=input.init_xfm),
@@ -437,9 +437,9 @@ if  config['warp_reg']['algo']=='ants':
                                     metric=config['warp_reg']['ants']['deform']['sim_metric'],
                                     template=input.ref, target=input.flo)
         output:
-            out_composite = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,suffix='Composite.h5',from_='subject',to=config[get_age_appropriate_template_name(expand(subject_id,subject=subjects))]['space']),
-            out_inv_composite = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,suffix='InverseComposite.h5',from_='subject',to=config[get_age_appropriate_template_name(expand(subject_id,subject=subjects))]['space']),
-            warped_flo = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,suffix='T1w.nii.gz',space=config[get_age_appropriate_template_name(expand(subject_id,subject=subjects))]['space'],desc='SyN',label='brain'),
+            out_composite = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,suffix='Composite.h5',from_='subject',to=get_age_appropriate_template_name(expand(subject_id,subject=subjects),'space')),
+            out_inv_composite = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,suffix='InverseComposite.h5',from_='subject',to=get_age_appropriate_template_name(expand(subject_id,subject=subjects),'space')),
+            warped_flo = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,suffix='T1w.nii.gz',space=get_age_appropriate_template_name(expand(subject_id,subject=subjects),'space'),desc='SyN',label='brain'),
         threads: 8
         resources:
             mem_mb = 16000, # right now these are on the high-end -- could implement benchmark rules to do this at some point..
@@ -458,16 +458,16 @@ elif  config['warp_reg']['algo']=='greedy':
     rule greedy_syn_affine_init:
         input: 
             flo = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,suffix='T1w.nii.gz',from_='atropos3seg',desc='masked'),
-            ref = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),prefix=lambda wildcards, input:  f"tpl-{config[get_age_appropriate_template_name(input)]['space']}/tpl-{config[get_age_appropriate_template_name(input)]['space']}",desc='masked',suffix='T1w.nii.gz'),
-            init_xfm = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,suffix='xfm.txt',from_='subject',to=config[get_age_appropriate_template_name(expand(subject_id,subject=subjects))]['space'],desc='affine',type_='itk'),
+            ref = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),prefix=lambda wildcards, input:  f"tpl-{get_age_appropriate_template_name(input,'space')}/tpl-{get_age_appropriate_template_name(input,'space')}",desc='masked',suffix='T1w.nii.gz'),
+            init_xfm = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,suffix='xfm.txt',from_='subject',to=get_age_appropriate_template_name(expand(subject_id,subject=subjects),'space'),desc='affine',type_='itk'),
 
 rule warp_dseg_from_template:
     input: 
-        dseg = config[get_age_appropriate_template_name(expand(subject_id,subject=subjects))]['atlas_dseg_nii'],
+        dseg = get_age_appropriate_template_name(expand(subject_id,subject=subjects),'atlas_dseg_nii'),
         ref = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'), subject=subject_id,suffix='T1w.nii.gz'),
-        inv_composite = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,suffix='InverseComposite.h5',from_='subject',to=config[get_age_appropriate_template_name(expand(subject_id,subject=subjects))]['space']),
+        inv_composite = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,suffix='InverseComposite.h5',from_='subject',to=get_age_appropriate_template_name(expand(subject_id,subject=subjects),'space')),
     output:
-        dseg = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,suffix='dseg.nii.gz',atlas='{atlas}',from_=config[get_age_appropriate_template_name(expand(subject_id,subject=subjects))]['space'],reg='SyN'),
+        dseg = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,suffix='dseg.nii.gz',atlas='{atlas}',from_=get_age_appropriate_template_name(expand(subject_id,subject=subjects),'space'),reg='SyN'),
     #container: config['singularity']['neuroglia']
     group: 'preproc'
     threads: 1
@@ -481,10 +481,10 @@ rule warp_dseg_from_template:
 rule warp_t1w_to_template:
     input: 
         t1 = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,suffix='T1w.nii.gz'),
-        ref = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),prefix=lambda wildcards, input:  f"tpl-{config[get_age_appropriate_template_name(input)]['space']}/tpl-{config[get_age_appropriate_template_name(input)]['space']}",desc='masked',suffix='T1w.nii.gz'),
-        composite = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,suffix='Composite.h5',from_='subject',to=config[get_age_appropriate_template_name(expand(subject_id,subject=subjects))]['space']),
+        ref = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),prefix=lambda wildcards, input:  f"tpl-{get_age_appropriate_template_name(input,'space')}/tpl-{get_age_appropriate_template_name(input,'space')}",desc='masked',suffix='T1w.nii.gz'),
+        composite = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,suffix='Composite.h5',from_='subject',to=get_age_appropriate_template_name(expand(subject_id,subject=subjects),'space')),
     output:
-        warped_t1 = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,suffix='T1w.nii.gz',space=config[get_age_appropriate_template_name(expand(subject_id,subject=subjects))]['space'],desc='SyN'),
+        warped_t1 = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,suffix='T1w.nii.gz',space=get_age_appropriate_template_name(expand(subject_id,subject=subjects),'space'),desc='SyN'),
     #container: config['singularity']['neuroglia']
     group: 'preproc'
     threads: 1
@@ -497,11 +497,11 @@ rule warp_t1w_to_template:
 
 rule warp_tissue_probseg_from_template:
     input: 
-        probseg = config[get_age_appropriate_template_name(expand(subject_id,subject=subjects))]['tissue_probseg'],
+        probseg = get_age_appropriate_template_name(expand(subject_id,subject=subjects),'tissue_probseg'),
         ref = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,suffix='T1w.nii.gz'),
-        inv_composite = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,suffix='InverseComposite.h5',from_='subject',to=config[get_age_appropriate_template_name(expand(subject_id,subject=subjects))]['space']),
+        inv_composite = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,suffix='InverseComposite.h5',from_='subject',to=get_age_appropriate_template_name(expand(subject_id,subject=subjects),'space')),
     output:
-        probseg = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,suffix='probseg.nii.gz',label='{tissue}',from_=config[get_age_appropriate_template_name(expand(subject_id,subject=subjects))]['space'],reg='SyN'),
+        probseg = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,suffix='probseg.nii.gz',label='{tissue}',from_=get_age_appropriate_template_name(expand(subject_id,subject=subjects),'space'),reg='SyN'),
     #container: config['singularity']['neuroglia']
     group: 'preproc'
     threads: 1
@@ -514,11 +514,11 @@ rule warp_tissue_probseg_from_template:
 
 rule warp_brainmask_from_template:
     input: 
-        mask = config[get_age_appropriate_template_name(expand(subject_id,subject=subjects))]['mask'],
+        mask = get_age_appropriate_template_name(expand(subject_id,subject=subjects),'mask'),
         ref = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,suffix='T1w.nii.gz'),
-        inv_composite = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,suffix='InverseComposite.h5',from_='subject',to=config[get_age_appropriate_template_name(expand(subject_id,subject=subjects))]['space']),
+        inv_composite = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,suffix='InverseComposite.h5',from_='subject',to=get_age_appropriate_template_name(expand(subject_id,subject=subjects),'space')),
     output:
-        mask = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,suffix='mask.nii.gz',from_=config[get_age_appropriate_template_name(expand(subject_id,subject=subjects))]['space'],reg='SyN',label='brain'),
+        mask = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,suffix='mask.nii.gz',from_=get_age_appropriate_template_name(expand(subject_id,subject=subjects),'space'),reg='SyN',label='brain'),
     #container: config['singularity']['neuroglia']
     group: 'preproc'
     threads: 1
@@ -531,9 +531,9 @@ rule warp_brainmask_from_template:
 
 rule dilate_brainmask:
     input:
-        mask = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,suffix='mask.nii.gz',from_=config[get_age_appropriate_template_name(expand(subject_id,subject=subjects))]['space'],reg='{desc}',desc='brain'),
+        mask = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,suffix='mask.nii.gz',from_=get_age_appropriate_template_name(expand(subject_id,subject=subjects),'space'),reg='{desc}',desc='brain'),
     output:
-        mask = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,suffix='mask.nii.gz',from_=config[get_age_appropriate_template_name(expand(subject_id,subject=subjects))]['space'],reg='{desc}',desc='braindilated'),
+        mask = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,suffix='mask.nii.gz',from_=get_age_appropriate_template_name(expand(subject_id,subject=subjects),'space'),reg='{desc}',desc='braindilated'),
     #container: config['singularity']['neuroglia']
     group: 'preproc'
     shell:
@@ -542,14 +542,14 @@ rule dilate_brainmask:
 #dilate labels N times to provide more of a fudge factor when assigning GM labels
 rule dilate_atlas_labels:
     input:
-        dseg = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,suffix='dseg.nii.gz',atlas='{atlas}',from_=config[get_age_appropriate_template_name(expand(subject_id,subject=subjects))]['space'],reg='SyN'),
+        dseg = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,suffix='dseg.nii.gz',atlas='{atlas}',from_=get_age_appropriate_template_name(expand(subject_id,subject=subjects),'space'),reg='SyN'),
     params:
         dil_opt =  ' '.join([ '-dilD' for i in range(config['n_atlas_dilate'])])
     output:
-        dseg = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,suffix='dseg.nii.gz',atlas='{atlas}',from_=config[get_age_appropriate_template_name(expand(subject_id,subject=subjects))]['space'],desc='dilated',reg='SyN'),
+        dseg = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,suffix='dseg.nii.gz',atlas='{atlas}',from_=get_age_appropriate_template_name(expand(subject_id,subject=subjects),'space'),desc='dilated',reg='SyN'),
     #container: config['singularity']['neuroglia']
     group: 'preproc'
     shell:
         'fslmaths {input} {params.dil_opt} {output}'
 
-final_outputs.extend(expand(bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,suffix='T1w.nii.gz',space=config[get_age_appropriate_template_name(expand(subject_id,subject=subjects))]['space'],desc='SyN',label='brain'),subject=subjects))
+final_outputs.extend(expand(bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,suffix='T1w.nii.gz',space=get_age_appropriate_template_name(expand(subject_id,subject=subjects),'space'),desc='SyN',label='brain'),subject=subjects))

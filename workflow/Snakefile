@@ -34,23 +34,23 @@ include: 'rules/common.smk'
 
 final_outputs = []
 
-def get_age_appropriate_template_name(subject):
+def get_age_appropriate_template_name(subject, key):
     if not exists(join(config['out_dir'], 'bids','participants.tsv')):
-        return config['adult_template']['name']
+        return config['adult_template'][config['adult_template']['active_space']][key]
     else:
         df = pd.read_table(join(config['out_dir'], 'bids','participants.tsv'), dtype = str, header=0)
         if 'sub-'+subject[0] in df.participant_id.to_list():
             age=int(df[df['participant_id']=='sub-'+subject[0]]['age'])
             if age <18 and age > 13:
-                return config['MNIPediatricAsymCohort6']['name']
+                return config['MNIPediatricAsymCohort6'][key]
             elif age <=13 and age > 7:
-                return config['MNIPediatricAsymCohort4']['name']
+                return config['MNIPediatricAsymCohort4'][key]
             elif age <=7:
-                return config['MNIPediatricAsymCohort2']['name']
+                return config['MNIPediatricAsymCohort2'][key]
             else:
-                return config['adult_template']['name']
+                return config['adult_template'][config['adult_template']['active_space']][key]
         else:
-            return config['adult_template']['name']
+            return config['adult_template'][config['adult_template']['active_space']][key]
 
 
 if config['fmriprep']['run']:

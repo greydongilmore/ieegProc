@@ -129,11 +129,11 @@ if debug:
 		def __init__(self, **kwargs):
 			self.__dict__.update(kwargs)
 	
-	isub="078"
-	datapath=r'/home/greydon/Documents/data/SEEG/derivatives/atlasreg/'
+	isub="107"
+	datapath=r'/media/greydon/lhsc_data/SEEG_rerun/derivatives/atlasreg'
 	input=dotdict({
-		'flo':datapath+f'sub-P{isub}/sub-P{isub}_acq-noncontrast_space-T1w_desc-affine_T1w.nii.gz',
-		'ref':datapath+f'sub-P{isub}/sub-P{isub}_acq-contrast_T1w.nii.gz'
+		'flo':'/media/greydon/lhsc_data/SEEG_rerun/derivatives/atlasreg/sub-P107/sub-P107_space-MNI152NLin2009aAsym_desc-SyN_T1w.nii.gz',
+		'ref': '/home/greydon/Documents/GitHub/seeg2bids-pipeline/resources/tpl-MNI152NLin2009aAsym/tpl-MNI152NLin2009aAsym_res-1_T1w.nii.gz'
 	})
 	
 	output=dotdict({
@@ -208,7 +208,7 @@ display.close()
 
 #html_view.save_as_html(snakemake.output.html)
 html_out=[]
-for iz in [10,20,40,60,80]:
+for iz in [-40]:
 	display = plotting.plot_anat(ref_resample, display_mode='ortho',draw_cross=False, cut_coords=[0,0,iz])
 	fg_svgs = [fromstring(extract_svg(display))]
 	display.close()
@@ -217,7 +217,7 @@ for iz in [10,20,40,60,80]:
 	bg_svgs = [fromstring(extract_svg(display))]
 	display.close()
 	
-	final_svg="\n".join(clean_svg(fg_svgs, bg_svgs))
+	final_svg="\n".join(clean_svg(bg_svgs,fg_svgs,1))
 	
 	html_out.append([f"""
 			<center>
