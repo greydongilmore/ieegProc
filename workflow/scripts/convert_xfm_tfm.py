@@ -11,7 +11,7 @@ from scipy.io import loadmat
 transformMatrix = np.loadtxt(snakemake.input.xfm)
 lps2ras=np.diag([-1, -1, 1, 1])
 ras2lps=np.diag([-1, -1, 1, 1])
-transform_lps=np.dot(ras2lps, np.dot(transformMatrix,lps2ras))
+transform_lps=np.dot(ras2lps, np.dot(np.linalg.inv(transformMatrix),lps2ras))
 
 Parameters = " ".join([str(x) for x in np.concatenate((transform_lps[0:3,0:3].reshape(9), transform_lps[0:3,3]))])
 #output_matrix_txt = filen.split('.txt')[0] + '.tfm'

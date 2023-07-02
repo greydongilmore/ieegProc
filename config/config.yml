@@ -22,18 +22,18 @@ contrast_t1:
 noncontrast_t1:
     present: True
     acq: False
-    algo: greedy
+    algo: reg_aladin
 
 post_ct:
     present: True
     position: 0
-    algo: greedy
+    algo: reg_aladin
 
 pet:
     present: False
     position: 0
     task: rest
-    algo: greedy
+    algo: reg_aladin
 
 seeg_contacts:
     present: False
@@ -57,11 +57,8 @@ affine_reg:
         dof: "" # use "-rigOnly" for 6 DOF and "" for 12 DOF
     greedy:
         n_iterations_affine: 100x50x0
-        n_iterations_deform: 100x40x20
-        grad_sigma: 4.0vox
-        warp_sigma: 1.4vox
 
-warp_reg:
+nonlin_reg:
     algo: ants
     ants:
         dim: 3
@@ -79,7 +76,6 @@ warp_reg:
         shape_update:
             gradient_step: 0.25
     greedy:
-        n_iterations_affine: 100x50x0
         n_iterations_deform: 100x40x20
         grad_sigma: 4.0vox
         warp_sigma: 1.4vox
@@ -151,7 +147,6 @@ subject_electrodes_custom: []
 #--- template space/atlases
 #
 
-deface: False
 facemask: resources/facemask.nii.gz
 mean_reg2mean: resources/mean_reg2mean.nii.gz
 generic_colors: resources/generic_colors.txt
@@ -180,6 +175,7 @@ adult_template:
 MNIPediatricAsymCohort2:
     name: 'MNIPediatricAsymCohort2'
     space: 'MNIPediatricAsymCohort2'
+    atlas: 'CerebrA'
     t1w: resources/tpl-MNIPediatricAsym_from-4.5_to-8.5/tpl-MNIPediatricAsym_from-4.5_to-8.5_T1w.nii.gz
     mask: resources/tpl-MNIPediatricAsym_from-4.5_to-8.5/tpl-MNIPediatricAsym_from-4.5_to-8.5_desc-brain_mask.nii.gz
     tissue_probseg: resources/tpl-MNIPediatricAsym_from-4.5_to-8.5/tpl-MNIPediatricAsym_from-4.5_to-8.5_label-{tissue}_probseg.nii.gz
@@ -189,6 +185,7 @@ MNIPediatricAsymCohort2:
 MNIPediatricAsymCohort4:
     name: 'MNIPediatricAsymCohort4'
     space: 'MNIPediatricAsymCohort4'
+    atlas: 'CerebrA'
     t1w: resources/tpl-MNIPediatricAsym_from-7.5_to-13.5/tpl-MNIPediatricAsym_from-7.5_to-13.5_T1w.nii.gz
     mask: resources/tpl-MNIPediatricAsym_from-7.5_to-13.5/tpl-MNIPediatricAsym_from-7.5_to-13.5_desc-brain_mask.nii.gz
     tissue_probseg: resources/tpl-MNIPediatricAsym_from-7.5_to-13.5/tpl-MNIPediatricAsym_from-7.5_to-13.5_label-{tissue}_probseg.nii.gz
@@ -198,17 +195,16 @@ MNIPediatricAsymCohort4:
 MNIPediatricAsymCohort6:
     name: 'MNIPediatricAsymCohort6'
     space: 'MNIPediatricAsymCohort6'
+    atlas: 'CerebrA'
     t1w: resources/tpl-MNIPediatricAsym_from-13.0_to-18.5/tpl-MNIPediatricAsym_from-13.0_to-18.5_T1w.nii.gz
     mask: resources/tpl-MNIPediatricAsym_from-13.0_to-18.5/tpl-MNIPediatricAsym_from-13.0_to-18.5_desc-brain_mask.nii.gz
     tissue_probseg: resources/tpl-MNIPediatricAsym_from-13.0_to-18.5/tpl-MNIPediatricAsym_from-13.0_to-18.5_label-{tissue}_probseg.nii.gz
     atlas_dseg_nii: resources/tpl-MNI152NLin2009cSym/tpl-MNI152NLin2009cSym_res-1_atlas-{atlas}_dseg.nii.gz
     atlas_dseg_tsv: resources/tpl-MNI152NLin2009cSym/tpl-MNI152NLin2009cSym_atlas-{atlas}_dseg.tsv
 
-
 #number of times to dilate  (each time 3x3x3 mode dilation)
 n_atlas_dilate: 3
 n_init_mask_dilate: 1 
-
 
 #parameters for ants transformation
 ants:

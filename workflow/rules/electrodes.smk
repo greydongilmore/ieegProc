@@ -26,7 +26,7 @@ def get_segs(wildcards):
     return file
 
 def get_atlas_segs(wildcards):
-    file=glob(bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=config['subject_prefix']+f'{wildcards.subject}', atlas=get_age_appropriate_template_name(config['subject_prefix']+f'{wildcards.subject}'),'atlas'), 
+    file=glob(bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=config['subject_prefix']+f'{wildcards.subject}', atlas=get_age_appropriate_template_name(config['subject_prefix']+f'{wildcards.subject}','atlas'), 
         from_=config['template'],reg='SyN',suffix='dseg.nii.gz'))
     return file
 
@@ -55,12 +55,12 @@ rule electrode_coords:
 rule label_electrodes_atlas:
     input: 
         fcsv = get_electrodes_filename,
-        dseg_tsv = config[get_age_appropriate_template_name(expand(subject_id,subject=subjects))]['atlas_dseg_tsv'],
-        dseg_nii = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,suffix='dseg.nii.gz',desc='dilated',atlas='{atlas}',from_=config[get_age_appropriate_template_name(expand(subject_id,subject=subjects))]['space'],reg='SyN'),
+        dseg_tsv = get_age_appropriate_template_name(expand(subject_id,subject=subjects),'atlas_dseg_tsv'),
+        dseg_nii = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,suffix='dseg.nii.gz',desc='dilated',atlas='{atlas}',from_=get_age_appropriate_template_name(expand(subject_id,subject=subjects),'space'),reg='SyN'),
         tissue_seg = expand(bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,suffix='probseg.nii.gz',label='{tissue}',desc='atropos3seg'),
                             tissue=config['tissue_labels'],allow_missing=True),
     output:
-        tsv = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,suffix='electrodes.tsv',atlas='{atlas}',desc='dilated',from_=config[get_age_appropriate_template_name(expand(subject_id,subject=subjects))]['space']),
+        tsv = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,suffix='electrodes.tsv',atlas='{atlas}',desc='dilated',from_=get_age_appropriate_template_name(expand(subject_id,subject=subjects),'space')),
 #        tsv = report(bids(root='results',subject=subject_id,suffix='electrodes.tsv',desc='{atlas}',from_='{template}'),
 #                caption='../reports/electrodes_vis.rst',
 #                category='Electrodes Labelled',
@@ -117,11 +117,11 @@ final_outputs.extend(
             suffix='electrodes.tsv',
             atlas='{atlas}',
             desc='dilated',
-            from_=config[get_age_appropriate_template_name(expand(subject_id,subject=subjects))]['space']
+            from_=get_age_appropriate_template_name(expand(subject_id,subject=subjects),'space')
         ),
         subject=subjects,
-        atlas=config[get_age_appropriate_template_name(expand(subject_id,subject=subjects))]['atlas'],
-        template=config[get_age_appropriate_template_name(expand(subject_id,subject=subjects))]['space']
+        atlas=get_age_appropriate_template_name(expand(subject_id,subject=subjects),'atlas'),
+        template=get_age_appropriate_template_name(expand(subject_id,subject=subjects),'space')
     )
 )
 

@@ -159,11 +159,11 @@ if debug:
 
 
 ref_img=nib.load(snakemake.input.ref)
-ref_img.header.set_data_dtype('float32')
+#ref_img.header.set_data_dtype('float32')
 ref_img.set_qform(ref_img.affine,1)
 
 flo_img=nib.load(snakemake.input.flo)
-flo_img.header.set_data_dtype('float32')
+#flo_img.header.set_data_dtype('float32')
 flo_img.set_qform(flo_img.affine,1)
 
 
@@ -172,15 +172,16 @@ struct_vox2mean_vox = mean_mm2vox @ ref_img.affine
 mat, vec = nib.affines.to_matvec(struct_vox2mean_vox)
 resampled_mean = affine_transform(flo_img.get_fdata(), mat, vec, output_shape=ref_img.shape)
 resampled_mean = nib.Nifti1Image(resampled_mean, header=flo_img.header, affine=ref_img.affine)
+
 flo_resamp_vox_center = (np.array(resampled_mean.shape) - 1) / 2.
 flo_cut=(resampled_mean.affine.dot(list(flo_resamp_vox_center) + [1])).astype(int).tolist()
 
 
-plot_args_ref={'dim':-1}
+plot_args_ref={'dim':-1, 'black_bg':True}
 if any(x in os.path.basename(snakemake.output.png) for x in ('from-subject_to-')):
 	plot_args_ref={'dim':1}
 
-plot_args_flo={'dim':-1}
+plot_args_flo={'dim':-1, 'black_bg':True}
 if any(x in os.path.basename(snakemake.output.png) for x in ('from-ct')):
 	plot_args_flo={'dim':1}
 

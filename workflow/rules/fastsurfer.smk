@@ -50,7 +50,7 @@ if config['fastsurfer']['version'] =='dev':
         #threads:config['fastsurfer']['threads']
         shell:
             "export FASTSURFER_HOME={params.fastsurfer_run} &&PYTORCH_CUDA_ALLOC_CONF=max_split_size_mb:4096 {params.fastsurfer_run}/run_fastsurfer.sh \
-            --t1 {input.t1} --sd {params.fastsurfer_out} --threads {params.threads} --vox_size {params.vox_size} --sid {params.subjid} --py {params.py} --viewagg_device cpu --fsaparc --parallel --no_cereb --allow_root"
+            --t1 {input.t1} --sd {params.fastsurfer_out} --threads {params.threads} --vox_size {params.vox_size} --sid {params.subjid} --py {params.py} --viewagg_device cpu --fsaparc --parallel --allow_root"
 elif config['fastsurfer']['version'] =='stable':
     rule fastsurfer_seg:
         input: 

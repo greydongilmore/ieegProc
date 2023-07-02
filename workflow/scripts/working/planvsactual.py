@@ -173,9 +173,9 @@ if debug:
 		def __init__(self, **kwargs):
 			self.__dict__.update(kwargs)
 	
-	isub='sub-P120'
-	data_dir=r'/media/greydon/lhsc_data/SEEG_rerun/derivatives/seeg_scenes'
-	#data_dir=r'/home/greydon/Documents/data/SEEG/derivatives/seega_scenes'
+	isub='sub-P014'
+	#data_dir=r'/media/greydon/lhsc_data/SEEG_rerun/derivatives/seeg_scenes'
+	data_dir=r'/home/greydon/Documents/data/SEEG_peds/derivatives/seeg_scenes'
 	
 	input=dotdict({
 				'isub': isub,
@@ -359,7 +359,7 @@ writer = pd.ExcelWriter(snakemake.output.out_excel, engine='openpyxl')
 elec_table_styled.to_excel(writer,sheet_name='Sheet1', float_format='%.2f')
 #book = writer.book
 #book._named_styles['Normal'].number_format = '#,##0.00'
-#writer.save()
+writer.save()
 
 dfi.export(elec_table_styled, snakemake.output.out_svg)
 

@@ -36,7 +36,7 @@ transformMatrix = np.loadtxt(snakemake.input.xfm)
 
 #load source nifti and apply transform matrix
 flo_img=nib.load(snakemake.input.flo)
-transform = np.dot( np.linalg.inv(transformMatrix), flo_img.affine)
+transform = np.dot(transformMatrix, flo_img.affine)
 
 flo_img_trans = nib.Nifti1Image(flo_img.get_fdata(), header=flo_img.header, affine=transform)
 flo_img_trans.set_qform(flo_img_trans.affine, 1)

@@ -29,12 +29,12 @@ rule qc_reg_t1:
     group: 'preproc'
     script: '../scripts/vis_regqc.py'
 
-if config['warp_reg']['algo']=='greedy':
+if config['nonlin_reg']['algo']=='greedy':
     final_outputs.extend(expand(bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),prefix='sub-'+subject_id+'/qc/sub-'+subject_id,suffix='regqc.png',from_='subject', to=get_age_appropriate_template_name(expand(subject_id,subject=subjects),'space'),desc='{desc}',include_subject_dir=False),
-                            subject=subjects, desc=['affine','greedydeform','SyN']))
+                            subject=subjects, desc=['affine','nonlin']))
 else:
     final_outputs.extend(expand(bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),prefix='sub-'+subject_id+'/qc/sub-'+subject_id,suffix='regqc.png',from_='subject', to=get_age_appropriate_template_name(expand(subject_id,subject=subjects),'space'),desc='{desc}',include_subject_dir=False),
-                        subject=subjects, desc=['affine','SyN']))
+                        subject=subjects, desc=['affine','nonlin']))
 
 if config['contrast_t1']['present'] and config['noncontrast_t1']['present']:
     rule qc_reg_noncontrast:
@@ -137,7 +137,7 @@ final_outputs.extend(expand(bids(root=join(config['out_dir'], 'derivatives', 'at
 rule qc_dseg:
     input:
         img = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'), subject=subject_id, desc='masked', from_='atropos3seg', suffix='T1w.nii.gz'),
-        seg = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'), subject=subject_id,suffix='dseg.nii.gz',atlas='{atlas}',from_=get_age_appropriate_template_name(expand(subject_id,subject=subjects),'space'),reg='SyN'),
+        seg = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'), subject=subject_id,suffix='dseg.nii.gz',atlas='{atlas}',from_=get_age_appropriate_template_name(expand(subject_id,subject=subjects),'space'),desc='nonlin'),
     output:
         png = report(bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),prefix='sub-'+subject_id+'/qc/sub-'+subject_id,suffix='dseg.png',atlas='{atlas}', from_=get_age_appropriate_template_name(expand(subject_id,subject=subjects),'space'),desc='brainmask', include_subject_dir=False),
                 caption='../reports/segqc.rst',
@@ -157,7 +157,7 @@ final_outputs.extend(expand(bids(root=join(config['out_dir'], 'derivatives', 'at
 rule qc_dseg_dilated:
     input:
         img = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'), subject=subject_id, desc='masked', from_='atropos3seg', suffix='T1w.nii.gz'),
-        seg = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,suffix='dseg.nii.gz',atlas='{atlas}',from_=get_age_appropriate_template_name(expand(subject_id,subject=subjects),'space'),desc='dilated',reg='SyN'),
+        seg = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,suffix='dseg.nii.gz',atlas='{atlas}',from_=get_age_appropriate_template_name(expand(subject_id,subject=subjects),'space'),desc='nonlin',label='dilated'),
     output:
         png = report(bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),prefix='sub-'+subject_id+'/qc/sub-'+subject_id,suffix='dseg.png',atlas='{atlas}', from_=get_age_appropriate_template_name(expand(subject_id,subject=subjects),'space'),desc='brainmask',label='dilated',include_subject_dir=False),
                 caption='../reports/segqc.rst',

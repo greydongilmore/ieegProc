@@ -101,9 +101,9 @@ if debug:
 		def __init__(self, **kwargs):
 			self.__dict__.update(kwargs)
 
-	isub = 'sub-P119'
-	data_dir = r'/media/greydon/lhsc_data/SEEG_rerun/derivatives'
-	#data_dir = r'/home/greydon/Documents/data/SEEG/derivatives'
+	isub = 'sub-P014'
+	#data_dir = r'/media/greydon/lhsc_data/SEEG_rerun/derivatives'
+	data_dir = r'/home/greydon/Documents/data/SEEG_peds/derivatives'
 
 	input = dotdict({
 			'shopping_list': f'{data_dir}/seeg_scenes/{isub}/*shopping_list.xlsx',
@@ -123,7 +123,7 @@ for idx,ilabel in [(i,x) for i,x in enumerate(updated_colnames) if x in list(rem
 
 
 df_elec.columns=updated_colnames
-df_elec=df_elec.iloc[0:df_elec.loc[:,'No.'].isnull().idxmax()]
+df_elec=df_elec.iloc[0:df_elec.loc[:,'Target'].isnull().idxmax()]
 
 
 pt_pin='PIN'
@@ -241,7 +241,6 @@ if os.path.exists(snakemake.input.error_metrics):
 	tbl.top = int((prs.slide_height / 2) - (tbl.height / 2))
 
 
-
 for _, row_elec in df_elec.iterrows():
 	if not any (x in row_elec['Electrode label'] for x in aborted_lang):
 		title_dict={
@@ -256,8 +255,14 @@ for _, row_elec in df_elec.iterrows():
 		elec_slide.name=row_elec['Target']
 		
 		if errors_data is not None:
-			if [i for i,x in enumerate(errors_data['electrode']) if f'{x.lower()}' in row_elec['Target'].lower()]:
-				error_idx=[i for i,x in enumerate(errors_data['electrode']) if f'{x.lower()}' in row_elec['Target'].lower()][0]
+			error_idx=[]
+			if [i for i,x in enumerate(errors_data['electrode']) if f'({x.lower()})' in row_elec['Target'].lower()]:
+				error_idx=[i for i,x in enumerate(errors_data['electrode']) if f'({x.lower()})' in row_elec['Target'].lower()][0]
+			elif [i for i,x in enumerate(errors_data['electrode']) if row_elec['Target'].lower().startswith(f'{x.lower()}')]:
+				error_idx=[i for i,x in enumerate(errors_data['electrode']) if row_elec['Target'].lower().startswith(f'{x.lower()}')][0]
+			
+			if isinstance(error_idx,int):
+				
 				width = Inches(13.0);height = Inches(1.25)
 				left = (prs.slide_width -  width) / 2
 				top = (prs.slide_height -  height) / 10
