@@ -1,32 +1,4 @@
-def get_noncontrast_filename(wildcards):
-    files=glob(bids(root=join(config['out_dir'], 'bids'), subject=config['subject_prefix']+f'{wildcards.subject}', datatype='anat', session='pre', acq=config['noncontrast_t1']['acq'], run='*', suffix='T1w.nii.gz'))
-    if len(files) <=1:
-        file=expand(bids(root=join(config['out_dir'], 'bids'), subject=config['subject_prefix']+'{subject}', datatype='anat', session='pre', acq=config['noncontrast_t1']['acq'], run='01', suffix='T1w.nii.gz'),subject=wildcards.subject)
-        if not exists(file[0]):
-            file=expand(bids(root=join(config['out_dir'], 'bids'), subject=config['subject_prefix']+'{subject}', datatype='anat', session='pre', acq=config['noncontrast_t1']['acq'], run='02', suffix='T1w.nii.gz'),subject=wildcards.subject)
-            if not exists(file[0]):
-                file=expand(bids(root=join(config['out_dir'], 'bids'), subject=config['subject_prefix']+'{subject}', datatype='anat', session='pre', run='01', suffix='T1w.nii.gz'),subject=wildcards.subject)
-    else:
-        files.sort(key=lambda f: int(re.sub('\D', '', f)))
-        file=files[-1]
-    if file:
-        if not exists(file[0]):
-            file=expand(bids(root=join(config['out_dir'], 'bids'), subject=config['subject_prefix']+'{subject}', datatype='anat', session='pre', run='01', suffix='T1w.nii.gz'),subject=wildcards.subject)
-    if file:
-        print(f'Pre T1w non-contrast file: {basename(file[0])}')
-    return file
 
-def get_pre_t1_filename(wildcards):
-    files=glob(bids(root=join(config['out_dir'], 'bids'), subject=config['subject_prefix']+f'{wildcards.subject}', datatype='anat', session='pre', run='*', suffix='T1w.nii.gz'))
-    if len(files)==0:
-        file=expand(bids(root=join(config['out_dir'], 'bids'), subject=config['subject_prefix']+'{subject}', datatype='anat', session='pre', acq=config['noncontrast_t1']['acq'], run='01', suffix='T1w.nii.gz'), subject=wildcards.subject)
-    else:
-        files.sort(key=lambda f: int(re.sub('\D', '', f)))
-        file=files[-1]
-    
-    if file:
-        print(f'Pre T1w contrast file: {basename(file)}')
-    return file
 
 if config['noncontrast_t1']['present']:
     rule import_subj_t1_hippunfold:

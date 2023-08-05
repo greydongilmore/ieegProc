@@ -209,7 +209,7 @@ def determineFCSVCoordSystem(input_fcsv):
 							11:'label', 12:'description', 13:'associatedNodeID'}, inplace=True)
 		
 		df['associatedNodeID']= pd.Series(np.repeat('',df.shape[0]))
-		df.round(3).to_csv(input_fcsv, sep=',', index=False, line_terminator="", mode='a', header=False)
+		df.round(3).to_csv(input_fcsv, sep=',', index=False, lineterminator="", mode='a', header=False)
 		
 		print(f"Converted LPS to RAS: {os.path.dirname(input_fcsv)}/{os.path.basename(input_fcsv)}")
 
@@ -242,19 +242,19 @@ if debug:
 
 isub='sub-'+snakemake.params.sub
 
-patient_output = os.path.join(snakemake.config['out_dir'], 'derivatives', snakemake.config['seeg_contacts']['dirname_coords'].split('/')[2],isub)
-if not os.path.exists(patient_output):
-	os.makedirs(patient_output)
+patient_output = os.path.dirname(snakemake.output.seega_fcsv)
+#if not os.path.exists(patient_output):
+#	os.makedirs(patient_output)
 
 patient_files = []
-for dirpath, subdirs, subfiles in os.walk(os.path.dirname(snakemake.input.seega_scene[0])):
+for dirpath, subdirs, subfiles in os.walk(os.path.dirname(snakemake.input.seega_scene)):
 	for x in subfiles:
 		if x.endswith(".fcsv") and not x.startswith('coords'):
 			patient_files.append(os.path.join(dirpath, x))
 
 
 acpc_file = [x for x in patient_files if os.path.splitext(x)[0].lower().endswith('acpc')]
-patient_files = [x for x in patient_files if any(os.path.splitext(x)[0].lower().endswith(y) for y in ('seega','planned','actual'))]
+patient_files = [x for x in patient_files if any(os.path.splitext(x)[0].lower().endswith(y) for y in ('seega','seeg','planned','actual'))]
 
 if acpc_file:
 	
@@ -286,10 +286,10 @@ for ifile in patient_files:
 					6:'oy', 7:'oz', 8:'vis', 9:'sel', 10:'lock',
 					11:'label', 12:'description', 13:'associatedNodeID'}, inplace=True)
 	
-	#data_table_full['label'] = data_table_full['label'].str.replace('-','')
-	data_table_full['type'] = np.repeat(ifile.split(os.sep)[-1].split('.fcsv')[0], data_table_full.shape[0])
+	coords_type=os.path.splitext(os.path.basename(ifile))[0].split('_')[-1]
+	data_table_full['type'] = np.repeat(coords_type, data_table_full.shape[0])
 	
-	if os.path.splitext(ifile.split(os.sep)[-1])[0].lower().endswith('seega'):
+	if coords_type.lower().endswith('seega'):
 		groups,n_members = determine_groups(np.array(data_table_full['label'].values), True)
 		
 		group_pair = []
@@ -318,16 +318,16 @@ for ifile in patient_files:
 		data_table_full['z_mcp'] = data_table_full['z'] - mcp_point[2]
 		
 		#### Write MCP Based Coords TSV file
-		output_fname = make_bids_filename(isub, 'acpc', None, ifile.split(os.sep)[-1].split('.fcsv')[0] + '.tsv', patient_output)
-		if 'seega' in ifile.split(os.sep)[-1].split('.fcsv')[0].lower():
+		output_fname = make_bids_filename(isub, 'acpc', None, coords_type + '.tsv', patient_output)
+		if 'seeg' in coords_type.lower():
 			head = ['type','label','x_mcp','y_mcp','z_mcp','orig_group','new_label','new_group']
 		else:
 			head = ['type','label','x_mcp','y_mcp','z_mcp']
 			
-		data_table_full.round(3).to_csv(output_fname, sep='\t', index=False, na_rep='n/a', line_terminator="", columns = head)
+		data_table_full.round(3).to_csv(output_fname, sep='\t', index=False, na_rep='n/a', lineterminator="", columns = head)
 		
 		#### Write MCP Based Coords FCSV file
-		output_fname = make_bids_filename(isub, 'acpc', None, ifile.split(os.sep)[-1], patient_output)
+		output_fname = make_bids_filename(isub, 'acpc', None, coords_type + '.fcsv', patient_output)
 		with open(output_fname, 'w') as fid:
 			fid.write("# Markups fiducial file version = 4.11\n")
 			fid.write("# CoordinateSystem = 0\n")
@@ -336,19 +336,19 @@ for ifile in patient_files:
 		head = ['node_id', 'x_mcp', 'y_mcp', 'z_mcp', 'ow', 'ox', 'oy', 'oz', 'vis','sel', 'lock', 'label', 'description', 'associatedNodeID']
 		data_table_full['node_id'] = ['vtkMRMLMarkupsFiducialNode_' + str(x) for x in range(data_table_full.shape[0])]
 		data_table_full['associatedNodeID'] = np.repeat('',data_table_full.shape[0])
-		data_table_full.round(3).to_csv(output_fname, sep=',', index=False, line_terminator="", columns = head, mode='a', header=False)
+		data_table_full.round(3).to_csv(output_fname, sep=',', index=False, lineterminator="", columns = head, mode='a', header=False)
 	
 	#### Write Native Coords TSV file
-	output_fname = make_bids_filename(isub, 'native', None, ifile.split(os.sep)[-1].split('.fcsv')[0] + '.tsv', patient_output)
-	if os.path.splitext(ifile.split(os.sep)[-1])[0].lower().endswith('seega'):
+	output_fname = make_bids_filename(isub, 'native', None, coords_type + '.tsv', patient_output)
+	if coords_type.lower().endswith('seega'):
 		head=['type','label','x','y','z','orig_group','new_label','new_group']
 	else:
 		head=['type','label','x','y','z']
 		
-	data_table_full.round(3).to_csv(output_fname, sep='\t', index=False, na_rep='n/a', line_terminator="", columns = head)
+	data_table_full.round(3).to_csv(output_fname, sep='\t', index=False, na_rep='n/a', lineterminator="", columns = head)
 	
 	#### Write Native Coords FCSV file
-	output_fname = make_bids_filename(isub, 'native', None, ifile.split(os.sep)[-1], patient_output)
+	output_fname = make_bids_filename(isub, 'native', None, coords_type + '.fcsv', patient_output)
 	with open(output_fname, 'w') as fid:
 		fid.write("# Markups fiducial file version = 4.11\n")
 		fid.write("# CoordinateSystem = 0\n")
@@ -359,7 +359,7 @@ for ifile in patient_files:
 	del data_table_full['associatedNodeID']
 	data_table_full.insert(data_table_full.shape[1],'node_id',pd.Series(['vtkMRMLMarkupsFiducialNode_' + str(x) for x in range(data_table_full.shape[0])]))
 	data_table_full.insert(data_table_full.shape[1],'associatedNodeID', pd.Series(np.repeat('',data_table_full.shape[0])))
-	data_table_full.round(3).to_csv(output_fname, sep=',', index=False, line_terminator="", columns = head, mode='a', header=False)
+	data_table_full.round(3).to_csv(output_fname, sep=',', index=False, lineterminator="", columns = head, mode='a', header=False)
 
 
 coords_fname = make_bids_filename(isub, 'native', None, 'SEEGA.tsv', patient_output)
@@ -378,7 +378,7 @@ coords_pairs['seega_labels'] = slicer_chans_groups_orig
 
 coords_pairs = pd.DataFrame(coords_pairs)
 output_fname = make_bids_filename(isub, None, None, 'mapping.tsv', patient_output)
-coords_pairs.to_csv(output_fname, sep='\t', index=False, na_rep='n/a', line_terminator="")
+coords_pairs.to_csv(output_fname, sep='\t', index=False, na_rep='n/a', lineterminator="")
 
 
 

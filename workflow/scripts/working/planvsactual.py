@@ -173,8 +173,8 @@ if debug:
 		def __init__(self, **kwargs):
 			self.__dict__.update(kwargs)
 	
-	isub='sub-P014'
-	#data_dir=r'/media/greydon/lhsc_data/SEEG_rerun/derivatives/seeg_scenes'
+	isub='sub-P016'
+	#data_dir=r'/media/greydon/lhsc_data/SEEG_peds/derivatives/seeg_scenes_new'
 	data_dir=r'/home/greydon/Documents/data/SEEG_peds/derivatives/seeg_scenes'
 	
 	input=dotdict({
@@ -220,11 +220,12 @@ for ifile in [x for x in patient_files if not x.endswith('empty.csv')]:
 		file_data['acpc']=fcsv_data
 
 groupsPlanned, planned_all = determine_groups(np.array(file_data['planned']['label'].values))
-label_set=set(groupsPlanned)
+label_set=sorted(set(groupsPlanned), key=groupsPlanned.index)
+
 
 if 'actual' in list(file_data):
 	groupsActual, actual_all = determine_groups(np.array(file_data['actual']['label'].values))
-	label_set=set(groupsActual).intersection(groupsPlanned)
+	label_set=sorted(set(groupsActual).intersection(groupsPlanned), key=groupsActual.index)
 
 if 'seega' in list(file_data):
 	groupsSeega, seega_all = determine_groups(np.array(file_data['seega']['label'].values), True)
@@ -352,15 +353,19 @@ elec_table=elec_data_raw[['electrode','euclid_dist_target', 'radial_dist_target'
 for item in list(elec_table)[1:]:
 	elec_table[item]=elec_table[item].astype(float)
 
-elec_table = elec_table.sort_values('electrode').set_index('electrode').round(2)
-elec_table_styled=elec_table.style.applymap(lambda x: "background-color:#ccffcc;" if x<2 else 'background-color:#ffff00;' if x>=2 and x<3 else "background-color:#ffcccc;")
+elec_table = elec_table.set_index('electrode')
+elec_table_styled=elec_table.style.applymap(lambda x: "background-color:#ccffcc;" if x<2 else 'background-color:#ffff00;' if x>=2 and x<3 else "background-color:#ffcccc;")\
+	.format('{0:,.2f}').set_properties(**{'text-align': 'center'})
 
 writer = pd.ExcelWriter(snakemake.output.out_excel, engine='openpyxl')
 elec_table_styled.to_excel(writer,sheet_name='Sheet1', float_format='%.2f')
 #book = writer.book
 #book._named_styles['Normal'].number_format = '#,##0.00'
-writer.save()
+writer.close()
 
-dfi.export(elec_table_styled, snakemake.output.out_svg)
+
+pd.set_option('colheader_justify', 'center')
+pd.set_option('display.width', -1)
+dfi.export(elec_table_styled, snakemake.output.out_svg, table_conversion='firefox')
 
 

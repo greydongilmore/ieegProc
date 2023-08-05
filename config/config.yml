@@ -21,13 +21,13 @@ contrast_t1:
 
 noncontrast_t1:
     present: True
-    acq: False
+    acq: null #use 'null' if you want to ignore
     algo: reg_aladin
 
 post_ct:
     present: True
     position: 0
-    algo: reg_aladin
+    algo: greedy
 
 pet:
     present: False
@@ -35,10 +35,19 @@ pet:
     task: rest
     algo: reg_aladin
 
+other_vol:
+    present: True
+    session: 'post'
+    datatype: 'anat'
+    acq: null
+    run: '01'
+    suffix: 'T1w.nii.gz'
+    algo: greedy
+
 seeg_contacts:
     present: False
-    dirname_coords: &dirname_coords '/derivatives/seeg_coordinates/sub-P{subject}/sub-P{subject}_space-native_SEEGA.fcsv' 
-    dirname_scenes: &dirname_scenes '/derivatives/seeg_scenes/sub-P{subject}/SEEGA.fcsv'
+    space_coords: &space_coords derivatives/seeg_coordinates/sub-{subject}/sub-{subject}_space-{coords_space}_{coords_type}.fcsv
+    scene_coords: &scene_coords derivatives/seeg_scenes/sub-{subject}/sub-{subject}_{coords_type}.fcsv
 
 #
 #--- registration paramters
@@ -107,7 +116,8 @@ tissue_labels:
 #
 
 fastsurfer:
-    run: False
+    run: True
+    ses: 'post'
     home: "/home/greydon/Documents/GitHub/FastSurfer"
     py: "python"
     sid: 'fastsurfer'
@@ -115,7 +125,7 @@ fastsurfer:
     threads: 4
     vox_size: 1    #(0=nearest,1=linear(default),2=quadratic,3=cubic)
     vol_segstats: True
-    version: 'dev' # master or dev
+    version: 'stable' # master, stable or dev
 
 fmriprep:
     run: False
@@ -127,21 +137,6 @@ hippunfold:
     modality: T1w
     atlas_labels_tsv: resources/desc-subfields_atlas-bigbrain_dseg.tsv
     path_T1w: _ses-pre_run-01_T1w.nii.gz
-
-subject_elec_ct: /bids/sub-f'{config['subject_prefix']}'{subject}/ses-post/ct/sub-f'{config['subject_prefix']}'{subject}_ses-post_acq-Electrode_run-01_ct.nii.gz
-subject_elec_t1w: /bids/sub-f'{config['subject_prefix']}'{subject}/ses-post/anat/sub-f'{config['subject_prefix']}'{subject}_ses-post_acq-Electrode3D_run-01_T1w.nii.gz
-
-#use this if a particular subject has a custom path
-subject_elec_ct_custom: []
-    #'047': /bids/sub-P{subject}/ses-post/ct/sub-P{subject}_ses-post_acq-Electrode_run-03_ct.nii.gz
-
-subject_elec_t1w_custom: []
-
-subject_seega_scene: *dirname_scenes
-subject_electrodes: *dirname_coords
-
-#use this if a particular subject has custom path
-subject_electrodes_custom: []
 
 #
 #--- template space/atlases

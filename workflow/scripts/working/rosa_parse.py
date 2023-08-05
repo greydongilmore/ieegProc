@@ -117,7 +117,7 @@ ros_file_path=r'/home/greydon/Documents/data/SEEG_peds/derivatives/seeg_scenes'
 
 for isub in sorted([x for x in os.listdir(ros_file_path) if x.startswith('sub-')])[:1]:
 	nii_fname=glob.glob(f"{ros_file_path}/{isub}/*-contrast*_T1w.nii.gz")
-	ros_fname=glob.glob(f"{ros_file_path}/{isub}/**/*.ros")
+	ros_fname=glob.glob(f"{ros_file_path}/{isub}/*.ros")
 	out_fcsv=os.path.join(ros_file_path,isub,f'{isub}_planned.fcsv')
 	out_tfm=os.path.join(ros_file_path,isub,f'{isub}_planned.tfm')
 	

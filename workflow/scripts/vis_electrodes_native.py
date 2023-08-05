@@ -104,6 +104,17 @@ def determine_groups(iterable, numbered_labels=False):
 	count=count[indexes.argsort()]
 	return vals,count
 
+def get_vox2ras_tkr(img):
+	'''Get the vox2ras-tkr transform. Inspired
+	by get_vox2ras_tkr in
+	'''
+	ds = img.header.get_zooms()[:3]
+	ns = np.array(img.shape[:3]) * ds / 2.0
+	v2rtkr = np.array([[-ds[0], 0, 0, ns[0]],
+					   [0, 0, ds[2], -ns[2]],
+					   [0, -ds[1], 0, ns[1]],
+					   [0, 0, 0, 1]], dtype=np.float32)
+	return v2rtkr
 
 hemi = ["lh", "rh"]
 surf_suffix = ["pial", "white", "inflated"]
@@ -127,17 +138,17 @@ if debug:
 		def __init__(self, **kwargs):
 			self.__dict__.update(kwargs)
 	
-	isub="098"
-	datap=r'/home/greydon/Documents/data/SEEG/derivatives'
+	isub="016"
+	datap=r'/home/greydon/Documents/data/SEEG_peds/derivatives'
 	
 	input=dotdict({
 		't1_fname':datap+f'/fastsurfer/sub-P{isub}/mri/orig.mgz',
-		'fcsv':datap+ f'/seega_coordinates/sub-P{isub}/sub-P{isub}_space-native_SEEGA.tsv',
+		'fcsv':datap+ f'/seeg_coordinates/sub-P{isub}/sub-P{isub}_space-native_SEEGA.tsv',
 		'xfm_noncontrast':datap+f'/atlasreg/sub-P{isub}/sub-P{isub}_desc-rigid_from-noncontrast_to-contrast_type-ras_xfm.txt',
 	})
 	
 	output=dotdict({
-		'html':datap+f'/atlasreg/sub-P{isub}/sub-P{isub}_space-native_electrodes.html',
+		'html':datap+f'/atlasreg/qc/sub-P{isub}/sub-P{isub}_space-native_electrodes.html',
 	})
 	
 	params=dotdict({
@@ -150,8 +161,7 @@ if debug:
 	snakemake = Namespace(output=output, input=input,params=params)
 
 t1_obj = nb.load(snakemake.input.t1_fname)
-Torig = t1_obj.header.get_vox2ras_tkr()
-#fs_transform=(t1_obj.affine-Torig)+np.eye(4)
+Torig = get_vox2ras_tkr(t1_obj)
 fs_transform=np.dot(t1_obj.affine, np.linalg.inv(Torig))
 
 verl,facel=nb.freesurfer.read_geometry(snakemake.params.lh_pial)
@@ -166,8 +176,8 @@ all_ver_shift=(apply_trans(fs_transform, all_ver))
 if len(snakemake.input.xfm_noncontrast)>0:
 	if os.path.exists(snakemake.input.xfm_noncontrast):
 		t1_transform=readRegMatrix(snakemake.input.xfm_noncontrast)
-		all_ver_shift=(apply_trans(np.linalg.inv(t1_transform), all_ver_shift))
-		#all_ver_shift=(apply_trans(t1_transform, all_ver_shift))
+		#all_ver_shift=(apply_trans(np.linalg.inv(t1_transform), all_ver_shift))
+		all_ver_shift=(apply_trans(t1_transform, all_ver_shift))
 
 
 lh_sulc_data = nb.freesurfer.read_morph_data(snakemake.params.lh_sulc)

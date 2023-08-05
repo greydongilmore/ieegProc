@@ -1,4 +1,4 @@
-from os import listdir,makedirs,walk
+from os import listdir,makedirs,walk,sep
 from os.path import join,isdir,dirname,split,abspath,exists,basename
 import pandas as pd
 from glob import glob
@@ -14,7 +14,6 @@ subject_id = config['subject_prefix']+'{subject}'
 
 config['out_dir'] = config['bids_dir']
 config['participants_tsv'] = join(config['bids_dir'], 'participants_run.tsv')
-config['subject_seega_scene'] = join(config['bids_dir'], config['subject_seega_scene'])
 
 if exists(config['participants_tsv']):
     df = pd.read_table(config['participants_tsv'], dtype = str, header=0)
@@ -34,24 +33,8 @@ include: 'rules/common.smk'
 
 final_outputs = []
 
-def get_age_appropriate_template_name(subject, key):
-    if not exists(join(config['out_dir'], 'bids','participants.tsv')):
-        return config['adult_template'][config['adult_template']['active_space']][key]
-    else:
-        df = pd.read_table(join(config['out_dir'], 'bids','participants.tsv'), dtype = str, header=0)
-        if 'sub-'+subject[0] in df.participant_id.to_list():
-            age=int(df[df['participant_id']=='sub-'+subject[0]]['age'])
-            if age <18 and age > 13:
-                return config['MNIPediatricAsymCohort6'][key]
-            elif age <=13 and age > 7:
-                return config['MNIPediatricAsymCohort4'][key]
-            elif age <=7:
-                return config['MNIPediatricAsymCohort2'][key]
-            else:
-                return config['adult_template'][config['adult_template']['active_space']][key]
-        else:
-            return config['adult_template'][config['adult_template']['active_space']][key]
-
+include: "rules/registration.smk"
+include: "rules/segmentation.smk"
 
 if config['fmriprep']['run']:
     include: 'rules/fmriprep.smk'
@@ -64,12 +47,10 @@ if config['fastsurfer']['run']:
 if config['hippunfold']['run']:
     include: 'rules/hippunfold.smk'
 
-include: "rules/registration.smk"
-include: "rules/visqc.smk"
-include: "rules/segmentation.smk"
-
 if config['seeg_contacts']['present']:
     include: 'rules/electrodes.smk'
+
+include: "rules/visqc.smk"
 
 rule all:
         input:

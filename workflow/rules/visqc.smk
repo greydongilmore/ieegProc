@@ -1,10 +1,4 @@
 
-def get_electrodes_filename(wildcards): 
-    if wildcards.subject in config['subject_electrodes_custom']:
-        return config['out_dir'] + config['subject_electrodes_custom'][wildcards.subject]
-    else:
-        return expand(bids(root=join(config['out_dir'], 'derivatives',config['seeg_contacts']['dirname_coords'].split('/')[2]), subject=config['subject_prefix']+f'{wildcards.subject}', space='native', suffix='SEEGA.fcsv'))[0]
-
 def get_reference_t1(wildcards):
     if config['contrast_t1']['present']:
         ref_file=expand(bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'), subject=config['subject_prefix']+'{subject}', acq='contrast', suffix='T1w.nii.gz'),subject=wildcards.subject)
@@ -99,6 +93,28 @@ if config['pet']['present']:
     final_outputs.extend(expand(bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),prefix='sub-'+subject_id+'/qc/sub-'+subject_id,suffix='regqc.png',from_='pet', to='T1w',desc='rigid',include_subject_dir=False), 
                         subject=subjects))
 
+if config['other_vol']['present']:
+    rule qc_reg_other:
+        input:
+            ref = get_reference_t1,
+            flo = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,session=config['other_vol']['session'], suffix=config['other_vol']['suffix'],acq=config['other_vol']['acq'],space='T1w',desc='rigid',include_session_dir=False),
+        output:
+            png = report(bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),prefix='sub-'+subject_id+'/qc/sub-'+subject_id,suffix='regqc.png',from_='other', to='T1w',desc='rigid',include_subject_dir=False),
+                    caption='../reports/regqc.rst',
+                    category='Registration QC',
+                    subcategory='{desc} T1w'),
+            html = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),prefix='sub-'+subject_id+'/qc/sub-'+subject_id,suffix='regqc.html',from_='other', to='T1w', desc='rigid',include_subject_dir=False),
+    #        html = report(bids(root='qc',subject=subject_id,suffix='regqc.html',from_='subject', to=get_age_appropriate_template_name(expand(subject_id,subject=subjects),'space'), desc='{desc}'),
+    #                caption='../reports/regqc.rst',
+    #                category='Registration QC',
+    #                subcategory='{desc} {template}'),
+        group: 'preproc'
+        script: '../scripts/vis_regqc.py'
+
+    final_outputs.extend(expand(bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),prefix='sub-'+subject_id+'/qc/sub-'+subject_id,suffix='regqc.png',from_='other', to='T1w',desc='rigid',include_subject_dir=False), 
+                        subject=subjects))
+
+
 #if config['pet']['present'] and config['fastsurfer']['run']:
 #    rule qc_pet_surf:
 #        input:
@@ -190,44 +206,3 @@ rule qc_tissue_class:
 final_outputs.extend(expand(bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),prefix='sub-'+subject_id+'/qc/sub-'+subject_id,suffix='probseg.png', desc='brainmask', label='classes',include_subject_dir=False),
                         subject=subjects))
 
-
-if config['seeg_contacts']['present']:
-    rule vis_contacts:
-        input:
-            ct = bids(root=join(config['out_dir'],'derivatives', 'atlasreg'),subject=subject_id,suffix='ct.nii.gz',space='T1w',desc='rigid'),
-            mask = bids(root=join(config['out_dir'],'derivatives', 'atlasreg'),subject=subject_id,suffix='contacts.nii.gz',space='ct',desc='mask'),
-        output:
-            html = report(bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),prefix='sub-'+subject_id+'/qc/sub-'+subject_id,suffix='contacts.html',desc='mask',space='ct',include_subject_dir=False),
-                    caption='../reports/contacts_vis.rst',
-                    category='Contacts in CT space',
-                    subcategory='landmarks mask'),
-        group: 'preproc'
-        script: '../scripts/vis_contacts.py'
-
-    rule vis_electrodes:
-        input: 
-            fcsv = get_electrodes_filename,
-            t1w = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,desc='n4', suffix='T1w.nii.gz'),
-            xfm_ras = bids(root=join(config['out_dir'],'derivatives', 'atlasreg'),subject=subject_id,suffix='xfm.txt',from_='subject',to=get_age_appropriate_template_name(expand(subject_id,subject=subjects),'space'),desc='affine',type_='ras'),
-        params:
-            contacts= bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),prefix='sub-'+subject_id+'/qc/sub-'+subject_id,suffix='contacts.html',desc='mask',space='ct',include_subject_dir=False)
-        output:
-            html = report(bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),prefix='sub-'+subject_id+'/qc/sub-'+subject_id,suffix='electrodes.html',desc='affine',space=get_age_appropriate_template_name(expand(subject_id,subject=subjects),'space')),
-                    caption='../reports/electrodes_vis.rst',
-                    category='Electrodes in template space',
-                    subcategory="reg to {get_age_appropriate_template_name(expand(subject_id,subject=subjects),'space')}"),
-            png = report(bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),prefix='sub-'+subject_id+'/qc/sub-'+subject_id,suffix='electrodevis.png',desc='affine',space=get_age_appropriate_template_name(expand(subject_id,subject=subjects),'space'),include_subject_dir=False),
-                    caption='../reports/electrodes_vis.rst',
-                    category='Electrodes in template space',
-                    subcategory=lambda wildcards, input: f"reg to {get_age_appropriate_template_name(input,'space')}"),
-        group: 'preproc'
-        script: '../scripts/vis_electrodes.py'
-
-    final_outputs.extend(expand(bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),prefix='sub-'+subject_id+'/qc/sub-'+subject_id,suffix='electrodevis.png',desc='affine',space=get_age_appropriate_template_name(expand(subject_id,subject=subjects),'space'),include_subject_dir=False),
-                        subject=subjects, desc=['rigid']))
-    
-    final_outputs.extend(expand(bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),prefix='sub-'+subject_id+'/qc/sub-'+subject_id,suffix='electrodes.html',desc='affine',space=get_age_appropriate_template_name(expand(subject_id,subject=subjects),'space'),include_subject_dir=False),
-                        subject=subjects, desc=['rigid']))
-    
-    final_outputs.extend(expand(bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),prefix='sub-'+subject_id+'/qc/sub-'+subject_id,suffix='contacts.html',desc='mask',space='ct',include_subject_dir=False),
-            subject=subjects))

@@ -101,7 +101,7 @@ if debug:
 		def __init__(self, **kwargs):
 			self.__dict__.update(kwargs)
 
-	isub = 'sub-P014'
+	isub = 'sub-P016'
 	#data_dir = r'/media/greydon/lhsc_data/SEEG_rerun/derivatives'
 	data_dir = r'/home/greydon/Documents/data/SEEG_peds/derivatives'
 
@@ -124,6 +124,9 @@ for idx,ilabel in [(i,x) for i,x in enumerate(updated_colnames) if x in list(rem
 
 df_elec.columns=updated_colnames
 df_elec=df_elec.iloc[0:df_elec.loc[:,'Target'].isnull().idxmax()]
+
+if all(~df_elec.loc[:,'Ord.'].isnull()):
+	df_elec=df_elec.sort_values(by=['Ord.']).reset_index(drop=True)
 
 
 pt_pin='PIN'

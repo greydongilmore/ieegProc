@@ -1,66 +1,32 @@
 
-def get_electrodes_filename(wildcards): 
-    if wildcards.subject in config['subject_electrodes_custom']:
-        return config['out_dir'] + config['subject_electrodes_custom'][wildcards.subject]
-    else:
-        return glob(bids(root=join(config['out_dir'], 'derivatives',config['seeg_contacts']['dirname_scenes'].split('/')[2],'sub-'+config['subject_prefix']+f'{wildcards.subject}'), suffix='SEEGA.fcsv'))[0]
-
-def get_fcsv_files(wildcards):
-    file=glob(bids(root=join(config['out_dir'], 'derivatives',config['seeg_contacts']['dirname_coords'].split('/')[2]), subject=config['subject_prefix']+f'{wildcards.subject}', space='native', suffix='*.fcsv'))
-    return file
-
-def get_fcsv_files_acpc(wildcards):
-    file=glob(bids(root=join(config['out_dir'], 'derivatives',config['seeg_contacts']['dirname_scenes'].split('/')[2],'sub-'+config['subject_prefix']+f'{wildcards.subject}'), suffix='acpc.fcsv'))
-    return file
-
-def get_noncontrast_T1w(wildcards):
-    file=glob(bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=config['subject_prefix']+f'{wildcards.subject}', acq='noncontrast', space='T1w',desc='rigid',suffix='T1w.nii.gz'))
-    return file
-
-def get_contrast_T1w(wildcards):
-    file=glob(bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'), subject=config['subject_prefix']+f'{wildcards.subject}', acq='contrast', suffix='T1w.nii.gz'))
-    return file
-
-def get_segs(wildcards):
-    file=glob(bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'), subject=config['subject_prefix']+f'{wildcards.subject}', label='*', desc='atropos3seg', suffix='probseg.nii.gz'))
-    return file
-
-def get_atlas_segs(wildcards):
-    file=glob(bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=config['subject_prefix']+f'{wildcards.subject}', atlas=get_age_appropriate_template_name(config['subject_prefix']+f'{wildcards.subject}','atlas'), 
-        from_=config['template'],reg='SyN',suffix='dseg.nii.gz'))
-    return file
-
-def get_ct_file(wildcards):
-    file=glob(bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=config['subject_prefix']+f'{wildcards.subject}', space='T1w', desc='rigid', suffix='ct.nii.gz'))
-    return file
-
-def get_pet_file(wildcards):
-    file=glob(bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=config['subject_prefix']+f'{wildcards.subject}', space='T1w', desc='rigid', suffix='pet.nii.gz'))
-    return file
-
-def get_seega_file(wildcards):
-    file=glob(bids(root=join(config['out_dir'], 'derivatives',config['seeg_contacts']['dirname_scenes'].split('/')[2],'sub-'+config['subject_prefix']+f'{wildcards.subject}'), suffix='SEEGA.fcsv'))
-    return file
-
 rule electrode_coords:
     input:
-        seega_scene = get_seega_file,
+        seega_scene = get_electrodes_coords(expand(subject_id,subject=subjects),coords_type='SEEGA'),
     params:
         sub=subject_id
     output:
-        seega_fcsv = bids(root=join(config['out_dir'],'derivatives',config['seeg_contacts']['dirname_coords'].split('/')[2]),subject=subject_id,space='native', suffix='SEEGA.fcsv'),
+        seega_fcsv = f'{sep}'.join([config['out_dir'], config['seeg_contacts']['space_coords'].format(subject=subject_id, coords_space='native', coords_type='SEEGA')])
     group: 'preproc'
     script: '../scripts/working/elec_labels_coords.py'
 
+rule warp_contact_coords:
+    input: 
+        fcsv = get_electrodes_coords(expand(subject_id,subject=subjects),coords_space='native', coords_type='SEEGA'),
+        xfm_composite = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,suffix='InverseComposite.h5',from_='subject',to=get_age_appropriate_template_name(subject_id,'space')),
+    output:
+        fcsv_fname_warped = f'{sep}'.join([config['out_dir'], config['seeg_contacts']['space_coords'].format(subject=subject_id, coords_space=get_age_appropriate_template_name(subject_id,'space'), coords_type='SEEGA')])
+    group: 'preproc'
+    script: '../scripts/working/apply_warp_to_points.py'
+
 rule label_electrodes_atlas:
     input: 
-        fcsv = get_electrodes_filename,
-        dseg_tsv = get_age_appropriate_template_name(expand(subject_id,subject=subjects),'atlas_dseg_tsv'),
-        dseg_nii = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,suffix='dseg.nii.gz',desc='dilated',atlas='{atlas}',from_=get_age_appropriate_template_name(expand(subject_id,subject=subjects),'space'),reg='SyN'),
+        fcsv = get_electrodes_coords(expand(subject_id,subject=subjects),coords_space='native', coords_type='SEEGA'),
+        dseg_tsv = get_age_appropriate_template_name(subject_id,'atlas_dseg_tsv'),
+        dseg_nii = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,suffix='dseg.nii.gz', atlas='{atlas}',from_=get_age_appropriate_template_name(subject_id,'space'),desc='nonlin',label='dilated'),
         tissue_seg = expand(bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,suffix='probseg.nii.gz',label='{tissue}',desc='atropos3seg'),
                             tissue=config['tissue_labels'],allow_missing=True),
     output:
-        tsv = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,suffix='electrodes.tsv',atlas='{atlas}',desc='dilated',from_=get_age_appropriate_template_name(expand(subject_id,subject=subjects),'space')),
+        tsv = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,suffix='electrodes.tsv',atlas='{atlas}', from_=get_age_appropriate_template_name(subject_id,'space'),desc='nonlin'),
 #        tsv = report(bids(root='results',subject=subject_id,suffix='electrodes.tsv',desc='{atlas}',from_='{template}'),
 #                caption='../reports/electrodes_vis.rst',
 #                category='Electrodes Labelled',
@@ -70,7 +36,7 @@ rule label_electrodes_atlas:
 
 rule contact_landmarks:
     input: 
-        fcsv = get_electrodes_filename,
+        fcsv = get_electrodes_coords(expand(subject_id,subject=subjects),coords_space='native', coords_type='SEEGA'),
     output:
         txt = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,suffix='landmarks.txt',space='ct'),    
     group: 'preproc'
@@ -91,24 +57,53 @@ rule mask_contacts:
     shell:
         'c3d {input.ct} -scale 0 -landmarks-to-spheres {input.txt} 1 -o {output.mask}'
 
-#rule generate_slicer_directory:
-#    input:
-#        fcsv_files=get_fcsv_files,
-#        fcsv_acpc=get_fcsv_files_acpc,
-#        ct = bids(root=join(config['out_dir'],'derivatives', 'atlasreg'),subject=subject_id,suffix='ct.nii.gz',space='T1w',desc='rigid'),
-#        noncontrast_t1w=get_noncontrast_T1w,
-#        contrast_t1w=get_contrast_T1w,
-#        segs=get_segs,
-#        atlas_segs=bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,atlas=config['atlases'][0], from_=config['template'],suffix='dseg.nii.gz',reg='SyN'),
-#        ct_file=get_ct_file,
-#        pet_file=get_pet_file,
-#    output:
-#        touch_slicer=touch(bids(root=join(config['out_dir'], 'derivatives', 'slicer_scene'), subject=subject_id, suffix='slicer.done')),
-#    script:
-#        '../scripts/slicer_dir.py'
-        
+rule vis_contacts:
+    input:
+        ct = bids(root=join(config['out_dir'],'derivatives', 'atlasreg'),subject=subject_id,suffix='ct.nii.gz',space='T1w',desc='rigid'),
+        mask = bids(root=join(config['out_dir'],'derivatives', 'atlasreg'),subject=subject_id,suffix='contacts.nii.gz',space='ct',desc='mask'),
+    output:
+        html = report(bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),prefix='sub-'+subject_id+'/qc/sub-'+subject_id,suffix='contacts.html',desc='mask',space='ct',include_subject_dir=False),
+                caption='../reports/contacts_vis.rst',
+                category='Contacts in CT space',
+                subcategory='landmarks mask'),
+    group: 'preproc'
+    script: '../scripts/vis_contacts.py'
+
+rule vis_electrodes:
+    input: 
+        fcsv = get_electrodes_coords(expand(subject_id,subject=subjects),coords_space='native',coords_type='SEEGA'),
+        t1w = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,desc='n4', suffix='T1w.nii.gz'),
+        xfm_ras = bids(root=join(config['out_dir'],'derivatives', 'atlasreg'),subject=subject_id,suffix='xfm.txt',from_='subject',to=get_age_appropriate_template_name(subject_id,'space'),desc='affine',type_='ras'),
+    params:
+        contacts= bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),prefix='sub-'+subject_id+'/qc/sub-'+subject_id,suffix='contacts.html',desc='mask',space='ct',include_subject_dir=False)
+    output:
+        html = report(bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),prefix='sub-'+subject_id+'/qc/sub-'+subject_id,suffix='electrodes.html',desc='affine',space=get_age_appropriate_template_name(subject_id,'space')),
+                caption='../reports/electrodes_vis.rst',
+                category='Electrodes in template space',
+                subcategory=f"reg to {get_age_appropriate_template_name(subject_id,'space')}"),
+        png = report(bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),prefix='sub-'+subject_id+'/qc/sub-'+subject_id,suffix='electrodevis.png',desc='affine',space=get_age_appropriate_template_name(subject_id,'space'),include_subject_dir=False),
+                caption='../reports/electrodes_vis.rst',
+                category='Electrodes in template space',
+                subcategory=f"reg to {get_age_appropriate_template_name(subject_id,'space')}"),
+    group: 'preproc'
+    script: '../scripts/vis_electrodes.py'
+
+final_outputs.extend(expand(bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),prefix='sub-'+subject_id+'/qc/sub-'+subject_id,suffix='electrodevis.png',desc='affine',space=get_age_appropriate_template_name(subject_id,'space'),include_subject_dir=False),
+                    subject=subjects, desc=['rigid']))
+
+final_outputs.extend(expand(bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),prefix='sub-'+subject_id+'/qc/sub-'+subject_id,suffix='electrodes.html',desc='affine',space=get_age_appropriate_template_name(subject_id,'space'),include_subject_dir=False),
+                    subject=subjects, desc=['rigid']))
+
+final_outputs.extend(expand(bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),prefix='sub-'+subject_id+'/qc/sub-'+subject_id,suffix='contacts.html',desc='mask',space='ct',include_subject_dir=False),
+        subject=subjects))
 
 
+final_outputs.extend(
+    expand(
+        rules.warp_contact_coords.output.fcsv_fname_warped,
+        subject=subjects
+    )
+)
 
 final_outputs.extend(
     expand(
@@ -116,23 +111,13 @@ final_outputs.extend(
             subject=subject_id,
             suffix='electrodes.tsv',
             atlas='{atlas}',
-            desc='dilated',
-            from_=get_age_appropriate_template_name(expand(subject_id,subject=subjects),'space')
+            from_=get_age_appropriate_template_name(subject_id,'space'),
+            desc='nonlin'
         ),
         subject=subjects,
-        atlas=get_age_appropriate_template_name(expand(subject_id,subject=subjects),'atlas'),
-        template=get_age_appropriate_template_name(expand(subject_id,subject=subjects),'space')
+        atlas=get_age_appropriate_template_name(subject_id,'atlas'),
+        template=get_age_appropriate_template_name(subject_id,'space')
     )
 )
 
 
-
-#final_outputs.extend(
-#    expand(
-#        bids(root=join(config['out_dir'], 'derivatives', 'slicer_scene'),
-#            subject=subject_id,
-#            suffix='slicer.done'
-#        ),
-#        subject=subjects
-#    )
-#)

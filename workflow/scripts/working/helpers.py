@@ -58,7 +58,7 @@ def determineFCSVCoordSystem(input_fcsv):
 							11:'label', 12:'description', 13:'associatedNodeID'}, inplace=True)
 		
 		df['associatedNodeID']= pd.Series(np.repeat('',df.shape[0]))
-		df.to_csv(input_fcsv, sep=',', index=False, line_terminator="", mode='a', header=False, float_format='%.3f')
+		df.to_csv(input_fcsv, sep=',', index=False, lineterminator="", mode='a', header=False, float_format='%.3f')
 		
 		print(f"Converted LPS to RAS: {os.path.dirname(input_fcsv)}/{os.path.basename(input_fcsv)}")
 	return ver_fin,headFin
@@ -123,7 +123,7 @@ def writeFCSV(data_fcsv, fcsv_fname, coord_sys='RAS'):
 		fid.write(f"# CoordinateSystem = {coord_sys}\n")
 		fid.write("# columns = id,x,y,z,ow,ox,oy,oz,vis,sel,lock,label,desc,associatedNodeID\n")
 	
-	data_fcsv.to_csv(fcsv_fname, sep=',', encoding='utf-8', header= False, index = False, na_rep='', mode='a', line_terminator="", float_format='%.3f')
+	data_fcsv.to_csv(fcsv_fname, sep=',', encoding='utf-8', header= False, index = False, na_rep='', mode='a', lineterminator="", float_format='%.3f')
 
 class IndexTracker:
 	def __init__(self, ax, img_data,points=None, rotate_img=False, rotate_points=False, title=None):

@@ -8,6 +8,7 @@ openpyxl>=3.0.9
 pandas>=0.24.2
 pybids>=0.14.0
 pydicom>=1.0.2
+pynrrd>=1.0.0
 scikit-image>=0.19.2
 setuptools>=39.2.0
 snakemake>=5.23.0
