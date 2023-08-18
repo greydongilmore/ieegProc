@@ -130,6 +130,7 @@ def mean_confidence_interval(data, confidence=0.95):
 	return dist.mean - h, dist.mean + h
 
 
+
 chan_label_dic ={
 	3:"RD10R-SP03X",
 	4:"RD10R-SP04X",
@@ -153,7 +154,9 @@ controlpoints_dict={
 }
 
 
-
+remap_dict={
+	'Electrode label ("aborted" if skipped)':'Electrode label'
+}
 
 
 #%%
@@ -173,9 +176,9 @@ if debug:
 		def __init__(self, **kwargs):
 			self.__dict__.update(kwargs)
 	
-	isub='sub-P016'
+	isub='sub-P123'
 	#data_dir=r'/media/greydon/lhsc_data/SEEG_peds/derivatives/seeg_scenes_new'
-	data_dir=r'/home/greydon/Documents/data/SEEG_peds/derivatives/seeg_scenes'
+	data_dir=r'/media/data/data/single/derivatives/seeg_scenes'
 	
 	input=dotdict({
 				'isub': isub,
@@ -202,7 +205,6 @@ data_dir = snakemake.input.data_dir
 
 patient_files = glob.glob(f"{os.path.join(data_dir,isub)}/*csv")
 
-
 file_data={}
 for ifile in [x for x in patient_files if not x.endswith('empty.csv')]:
 	determineFCSVCoordSystem(ifile)
@@ -222,13 +224,39 @@ for ifile in [x for x in patient_files if not x.endswith('empty.csv')]:
 groupsPlanned, planned_all = determine_groups(np.array(file_data['planned']['label'].values))
 label_set=sorted(set(groupsPlanned), key=groupsPlanned.index)
 
-
 if 'actual' in list(file_data):
 	groupsActual, actual_all = determine_groups(np.array(file_data['actual']['label'].values))
 	label_set=sorted(set(groupsActual).intersection(groupsPlanned), key=groupsActual.index)
 
 if 'seega' in list(file_data):
 	groupsSeega, seega_all = determine_groups(np.array(file_data['seega']['label'].values), True)
+
+
+shopping_list = glob.glob(f"{os.path.join(data_dir,isub)}/*shopping_list.xlsx")
+if shopping_list:
+	df_shopping_raw = pd.read_excel(shopping_list[0],header=None)
+	df_shopping_list=df_shopping_raw.iloc[4:,:].reset_index(drop=True)
+	
+	# need to update the column names
+	updated_colnames=df_shopping_raw.iloc[3].values
+	for idx,ilabel in [(i,x) for i,x in enumerate(updated_colnames) if x in list(remap_dict)]:
+		updated_colnames[idx]=remap_dict[ilabel]
+	
+	df_shopping_list.columns=updated_colnames
+	df_shopping_list=df_shopping_list.iloc[0:df_shopping_list.loc[:,'Target'].isnull().idxmax()]
+	
+	if all(~df_shopping_list.loc[:,'Ord.'].isnull()):
+		df_shopping_list=df_shopping_list.sort_values(by=['Ord.']).reset_index(drop=True)
+	
+	error_idx=[]
+	for _,row_elec in df_shopping_list.iterrows():
+		if [i for i,x in enumerate(label_set) if f"({x.lower()})" in row_elec['Target'].lower()]:
+			error_idx.append([i for i,x in enumerate(label_set) if f"({x.lower()})" in row_elec['Target'].lower()][0])
+		elif [i for i,x in enumerate(label_set) if f"{x.lower()}" in row_elec['Target'].lower()]:
+			error_idx.append([i for i,x in enumerate(label_set) if f"{x.lower()}" in row_elec['Target'].lower()][0])
+	
+	label_set=[label_set[x] for x in error_idx]
+
 
 mcp_point=None
 
@@ -359,8 +387,6 @@ elec_table_styled=elec_table.style.applymap(lambda x: "background-color:#ccffcc;
 
 writer = pd.ExcelWriter(snakemake.output.out_excel, engine='openpyxl')
 elec_table_styled.to_excel(writer,sheet_name='Sheet1', float_format='%.2f')
-#book = writer.book
-#book._named_styles['Normal'].number_format = '#,##0.00'
 writer.close()
 
 

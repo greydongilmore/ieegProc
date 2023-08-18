@@ -101,9 +101,9 @@ if debug:
 		def __init__(self, **kwargs):
 			self.__dict__.update(kwargs)
 
-	isub = 'sub-P016'
+	isub = 'sub-P123'
 	#data_dir = r'/media/greydon/lhsc_data/SEEG_rerun/derivatives'
-	data_dir = r'/home/greydon/Documents/data/SEEG_peds/derivatives'
+	data_dir = r'/media/data/data/single/derivatives'
 
 	input = dotdict({
 			'shopping_list': f'{data_dir}/seeg_scenes/{isub}/*shopping_list.xlsx',
@@ -127,6 +127,7 @@ df_elec=df_elec.iloc[0:df_elec.loc[:,'Target'].isnull().idxmax()]
 
 if all(~df_elec.loc[:,'Ord.'].isnull()):
 	df_elec=df_elec.sort_values(by=['Ord.']).reset_index(drop=True)
+
 
 
 pt_pin='PIN'
@@ -202,6 +203,7 @@ title_dict={
 errors_data=None
 if os.path.exists(snakemake.input.error_metrics):
 	errors_data=pd.read_excel(snakemake.input.error_metrics,header=0)
+	
 	
 	error_slide=add_slide(prs, prs.slide_layouts[6],title_dict)
 	error_slide.name="errors"

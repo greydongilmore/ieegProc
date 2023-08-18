@@ -2,10 +2,10 @@
 #--- filepaths
 #
 
-bids_dir: /home/greydon/Documents/data/SEEG_rerun
+#bids_dir: /home/greydon/Documents/data/templates
 
 #work computer
-#bids_dir: /media/data/data/SEEG
+bids_dir: /media/data/data/single
 
 #external drive
 #bids_dir: /media/greydon/lhsc_data/SEEG_rerun
@@ -36,16 +36,16 @@ pet:
     algo: reg_aladin
 
 other_vol:
-    present: True
+    present: False
     session: 'post'
     datatype: 'anat'
     acq: null
     run: '01'
-    suffix: 'T1w.nii.gz'
+    suffix: 'T2w.nii.gz'
     algo: greedy
 
 seeg_contacts:
-    present: False
+    present: True
     space_coords: &space_coords derivatives/seeg_coordinates/sub-{subject}/sub-{subject}_space-{coords_space}_{coords_type}.fcsv
     scene_coords: &scene_coords derivatives/seeg_scenes/sub-{subject}/sub-{subject}_{coords_type}.fcsv
 
@@ -117,7 +117,7 @@ tissue_labels:
 
 fastsurfer:
     run: True
-    ses: 'post'
+    ses: 'pre'
     home: "/home/greydon/Documents/GitHub/FastSurfer"
     py: "python"
     sid: 'fastsurfer'
@@ -125,7 +125,7 @@ fastsurfer:
     threads: 4
     vox_size: 1    #(0=nearest,1=linear(default),2=quadratic,3=cubic)
     vol_segstats: True
-    version: 'stable' # master, stable or dev
+    version: 'dev' # master, stable or dev
 
 fmriprep:
     run: False

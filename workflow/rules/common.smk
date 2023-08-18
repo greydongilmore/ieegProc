@@ -190,6 +190,7 @@ def get_noncontrast_filename(wildcards):
 
 def get_noncontrast_filename_fs(subject_id, ses='pre'):
     files=glob(bids(root=join(config['out_dir'], 'bids','sub-'+subject_id[0]), prefix='sub-'+subject_id[0], datatype='anat', session=ses, acq=config['noncontrast_t1']['acq'], run='*', suffix='T1w.nii.gz'))
+    print(files)
     if len(files) <=1:
         files=expand(bids(root=join(config['out_dir'], 'bids','sub-'+subject_id[0]), prefix='sub-'+subject_id[0], datatype='anat', session=ses, acq=config['noncontrast_t1']['acq'], run='01', suffix='T1w.nii.gz'))
         if not exists(files[0]):
