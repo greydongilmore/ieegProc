@@ -9,6 +9,9 @@ rule electrode_coords:
     group: 'preproc'
     script: '../scripts/working/elec_labels_coords.py'
 
+final_outputs.extend(expand(f'{sep}'.join([config['out_dir'], config['seeg_contacts']['space_coords'].format(subject=subject_id, coords_space='native', coords_type='SEEGA')]),
+        subject=subjects))
+
 rule warp_contact_coords:
     input: 
         fcsv = get_electrodes_coords(expand(subject_id,subject=subjects),coords_space='native', coords_type='SEEGA'),

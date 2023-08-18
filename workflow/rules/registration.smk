@@ -97,6 +97,7 @@ elif config['contrast_t1']['present'] and config['noncontrast_t1']['present']:
         output:
             warped_subj = bids(root=join(config['out_dir'],'derivatives', 'atlasreg'),subject=subject_id,acq='noncontrast',suffix='T1w.nii.gz',space='T1w',desc='rigid'),
         group: 'preproc'
+        threads: 1
         script: 
             '../scripts/apply_transform_noninterp.py'
 
@@ -106,6 +107,7 @@ elif config['contrast_t1']['present'] and config['noncontrast_t1']['present']:
         output:
             tfm=bids(root=join(config['out_dir'],'derivatives', 'atlasreg'),subject=subject_id,suffix='xfm.tfm',from_='noncontrast',to='contrast',desc='rigid',type_='ras'),
         group: 'preproc'
+        threads: 1
         script: 
             '../scripts/convert_xfm_tfm.py'
 
@@ -334,6 +336,7 @@ rule convert_affine_xfm_tfm:
     output:
         tfm=bids(root=join(config['out_dir'],'derivatives', 'atlasreg'),subject=subject_id,suffix='xfm.tfm',from_='subject',to=get_age_appropriate_template_name(subject_id,'space'),desc='affine',type_='ras'),
     group: 'preproc'
+    threads: 1
     script: 
         '../scripts/convert_xfm_tfm.py'
 
@@ -346,6 +349,7 @@ rule convert_xfm_ras2itk:
         xfm_itk=bids(root=join(config['out_dir'],'derivatives', 'atlasreg'),subject=subject_id,suffix='xfm.txt',from_='subject',to=get_age_appropriate_template_name(subject_id,'space'),desc='affine',type_='itk'),
     #container: config['singularity']['neuroglia']
     group: 'preproc'
+    threads: 1
     shell:
         'c3d_affine_tool {input.xfm} -oitk {output.xfm_itk}'
 
@@ -358,6 +362,7 @@ rule warp_brainmask_from_template_affine:
         mask = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,suffix='mask.nii.gz',from_=get_age_appropriate_template_name(subject_id,'space'),desc='affine',label='brain'),
     #container: config['singularity']['neuroglia']
     group: 'preproc'
+    threads: 1
     shell: 'antsApplyTransforms -d 3 --interpolation NearestNeighbor -i {input.mask} -o {output.mask} -r {input.ref} '
             ' -t [{input.xfm},0] ' #use inverse xfm (going from template to subject)
 
@@ -383,7 +388,7 @@ rule n4biasfield:
         t1 = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,suffix='T1w.nii.gz'),
     output:
         t1 = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,desc='n4', suffix='T1w.nii.gz'),
-    threads: 8
+    threads: 4
     #container: config['singularity']['neuroglia']
     group: 'preproc'
     shell:
@@ -399,6 +404,7 @@ rule mask_template_t1w:
         t1 = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg','sub-'+subject_id),prefix=f"tpl-{get_age_appropriate_template_name(subject_id,'space')}",desc='masked',suffix='T1w.nii.gz')
     #container: config['singularity']['neuroglia']
     group: 'preproc'
+    threads: 1
     shell:
         'fslmaths {input.t1} -mas {input.mask} {output}'
 
@@ -410,6 +416,7 @@ rule mask_subject_t1w:
         t1 = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,suffix='T1w.nii.gz',from_='atropos3seg',desc='masked'),
     #container: config['singularity']['neuroglia']
     group: 'preproc'
+    threads: 1
     shell:
         'fslmaths {input.t1} -mas {input.mask} {output}'
 
@@ -628,6 +635,7 @@ rule dilate_brainmask:
         mask = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,suffix='mask.nii.gz',from_=get_age_appropriate_template_name(subject_id,'space'),desc='affine',label='braindilated'),
     #container: config['singularity']['neuroglia']
     group: 'preproc'
+    threads: 1
     shell:
         'fslmaths {input} -dilD {output}'
 
@@ -641,7 +649,8 @@ rule dilate_atlas_labels:
         dseg = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,suffix='dseg.nii.gz',atlas='{atlas}',from_=get_age_appropriate_template_name(subject_id,'space'),desc='nonlin',label='dilated'),
     #container: config['singularity']['neuroglia']
     group: 'preproc'
+    threads: 1
     shell:
         'fslmaths {input} {params.dil_opt} {output}'
-print(expand(bids(root=join(config['out_dir'], 'derivatives', 'atlasreg','sub-'+subject_id),prefix=f"tpl-{get_age_appropriate_template_name(subject_id,'space')}",desc='masked',suffix='T1w.nii.gz'),subject=subjects))
+
 final_outputs.extend(expand(bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,suffix='T1w.nii.gz',space=get_age_appropriate_template_name(subject_id,'space'),desc='nonlin',label='brain'),subject=subjects))
