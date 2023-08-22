@@ -77,6 +77,42 @@ elif config['fastsurfer']['version'] =='master':
 
 final_outputs.extend(expand(rules.fastsurfer_seg.output.touch_fastsurfer, subject=subjects))
 
+rule fastsurfer_symlinks:
+    input: 
+        t1_fname = join(config['out_dir'],'derivatives','fastsurfer','sub-' + subject_id, 'mri','orig.mgz'),
+    params:
+        talairach_xfm = join(config['out_dir'],'derivatives','fastsurfer','sub-' + subject_id, 'mri','transforms','talairach.xfm.lta'),
+        lh_pial_t1 = join(config['out_dir'],'derivatives','fastsurfer','sub-' + subject_id, 'surf','lh.pial.T1'),
+        rh_pial_t1 = join(config['out_dir'],'derivatives','fastsurfer','sub-' + subject_id, 'surf','rh.pial.T1'),
+        lh_white_preaparc_h = join(config['out_dir'],'derivatives','fastsurfer','sub-' + subject_id, 'surf','lh.white.preaparc.H'),
+        rh_white_preaparc_h = join(config['out_dir'],'derivatives','fastsurfer','sub-' + subject_id, 'surf','rh.white.preaparc.H'),
+        lh_white_preaparc_k = join(config['out_dir'],'derivatives','fastsurfer','sub-' + subject_id, 'surf','lh.white.preaparc.K'),
+        rh_white_preaparc_k = join(config['out_dir'],'derivatives','fastsurfer','sub-' + subject_id, 'surf','lh.white.preaparc.K'),
+    output:
+        talairach_lta = join(config['out_dir'],'derivatives','fastsurfer','sub-' + subject_id, 'mri','transforms','talairach.lta'),
+        talairach_skull_lta = join(config['out_dir'],'derivatives','fastsurfer','sub-' + subject_id, 'mri','transforms','talairach_with_skull.lta'),
+        rawavg = join(config['out_dir'],'derivatives','fastsurfer','sub-' + subject_id, 'mri','rawavg.mgz'),
+        lh_pial = join(config['out_dir'],'derivatives','fastsurfer','sub-' + subject_id, 'surf','lh.pial'),
+        rh_pial = join(config['out_dir'],'derivatives','fastsurfer','sub-' + subject_id, 'surf','rh.pial'),
+        lh_white_h = join(config['out_dir'],'derivatives','fastsurfer','sub-' + subject_id, 'surf','lh.white.H'),
+        rh_white_h = join(config['out_dir'],'derivatives','fastsurfer','sub-' + subject_id, 'surf','rh.white.H'),
+        lh_white_k = join(config['out_dir'],'derivatives','fastsurfer','sub-' + subject_id, 'surf','lh.white.K'),
+        rh_white_k = join(config['out_dir'],'derivatives','fastsurfer','sub-' + subject_id, 'surf','rh.white.K'),
+    group: 'preproc'
+    threads: 1
+    shell:
+        "cp {params.talairach_xfm} {output.talairach_lta}&&\
+        cp {params.talairach_xfm} {output.talairach_skull_lta}&&\
+        cp {input.t1_fname} {output.rawavg}&&\
+        cp {params.lh_pial_t1} {output.lh_pial}&&\
+        cp {params.rh_pial_t1} {output.rh_pial}&&\
+        cp {params.lh_white_preaparc_h} {output.lh_white_h}&&\
+        cp {params.rh_white_preaparc_h} {output.rh_white_h}&&\
+        cp {params.lh_white_preaparc_k} {output.lh_white_k}&&\
+        cp {params.rh_white_preaparc_k} {output.rh_white_k}"
+
+final_outputs.extend(expand(rules.fastsurfer_symlinks.output.rh_white_k, subject=subjects))
+
 if config['seeg_contacts']['present']:
     rule vis_electrodes_native:
         input: 
