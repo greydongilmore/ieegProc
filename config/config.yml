@@ -2,11 +2,11 @@
 #--- filepaths
 #
 
-#bids_dir: /home/greydon/Documents/data/templates
+bids_dir: /home/greydon/Documents/data/single
 
 
 #work computer
-bids_dir: /home/greydon/Documents/data/cingulate_seizures
+#bids_dir: /home/greydon/Documents/data/cingulate_seizures
 
 #external drive
 #bids_dir: /media/greydon/lhsc_data/cingulate_seizures
@@ -26,12 +26,12 @@ noncontrast_t1:
     algo: reg_aladin
 
 post_ct:
-    present: True
+    present: False
     position: 0
     algo: greedy
 
 pet:
-    present: False
+    present: True
     position: 0
     task: rest
     algo: reg_aladin
@@ -46,7 +46,7 @@ other_vol:
     algo: greedy
 
 seeg_contacts:
-    present: True
+    present: False
     space_coords: &space_coords derivatives/seeg_coordinates/sub-{subject}/sub-{subject}_space-{coords_space}_{coords_type}.fcsv
     scene_coords: &scene_coords derivatives/seeg_scenes/sub-{subject}/sub-{subject}_{coords_type}.fcsv
 
@@ -117,7 +117,7 @@ tissue_labels:
 #
 
 fastsurfer:
-    run: False
+    run: True
     ses: 'pre'
     home: "/home/greydon/Documents/GitHub/FastSurfer"
     py: "python3"
