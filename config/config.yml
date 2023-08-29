@@ -2,7 +2,7 @@
 #--- filepaths
 #
 
-bids_dir: /home/greydon/Documents/data/single
+bids_dir: /home/greydon/Documents/data/SEEG_rerun
 
 
 #work computer
@@ -26,12 +26,12 @@ noncontrast_t1:
     algo: reg_aladin
 
 post_ct:
-    present: False
+    present: True
     position: 0
-    algo: greedy
+    algo: reg_aladin
 
 pet:
-    present: True
+    present: False
     position: 0
     task: rest
     algo: reg_aladin
@@ -56,9 +56,9 @@ seeg_contacts:
 
 linear_reg:
     reg_aladin:
-        dof: "-rigOnly" # use "-rigOnly" for 6 DOF and "" for 12 DOF
+        dof: "" # use "-rigOnly" for 6 DOF and "" for 12 DOF
     greedy:
-        n_iterations_affine: 100x50x0
+        n_iterations_affine: 100x50x10
         dof: 6
 
 affine_reg:
@@ -116,8 +116,9 @@ tissue_labels:
 #--- connected piplines
 #
 
+
 fastsurfer:
-    run: True
+    run: False
     ses: 'pre'
     home: "/home/greydon/Documents/GitHub/FastSurfer"
     py: "python3"

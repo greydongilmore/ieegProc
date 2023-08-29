@@ -41,14 +41,14 @@ if config['fmriprep']['run']:
     if not exists(join(config['out_dir'], 'derivatives', 'fmriprep')):
        makedirs(join(config['out_dir'], 'derivatives', 'fmriprep'))
 
-if config['fastsurfer']['run']:
-    include: 'rules/fastsurfer.smk'
-
 if config['hippunfold']['run']:
     include: 'rules/hippunfold.smk'
 
 if config['seeg_contacts']['present']:
     include: 'rules/electrodes.smk'
+
+if config['fastsurfer']['run']:
+    include: 'rules/fastsurfer.smk'
 
 include: "rules/visqc.smk"
 
