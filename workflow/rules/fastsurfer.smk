@@ -98,7 +98,8 @@ rule fastsurfer_symlinks:
         touch_fastsurfer=touch(join(config['out_dir'], 'logs', 'sub-' + subject_id + "_fastsurfer_symlinks.done")),
     group: 'preproc'
     shell:
-        "cp {params.talairach_xfm} {params.talairach_lta}&&\
+        "rm {params.talairach_lta} {params.talairach_skull_lta} {params.rawavg} {params.lh_pial} {params.rh_pial} {params.lh_white_h} {params.rh_white_h} {params.lh_white_k} {params.rh_white_k}&&\
+        cp {params.talairach_xfm} {params.talairach_lta}&&\
         cp {params.talairach_xfm} {params.talairach_skull_lta}&&\
         cp {input.t1_fname} {params.rawavg}&&\
         cp {params.lh_pial_t1} {params.lh_pial}&&\

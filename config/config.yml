@@ -9,7 +9,7 @@ bids_dir: /home/greydon/Documents/data/SEEG_rerun
 #bids_dir: /home/greydon/Documents/data/cingulate_seizures
 
 #external drive
-#bids_dir: /media/greydon/lhsc_data/cingulate_seizures
+#bids_dir: /media/greydon/lhsc_data/SEEG_rerun
 
 subject_prefix: P
 
@@ -28,10 +28,10 @@ noncontrast_t1:
 post_ct:
     present: True
     position: 0
-    algo: reg_aladin
+    algo: greedy
 
 pet:
-    present: False
+    present: True
     position: 0
     task: rest
     algo: reg_aladin
@@ -56,9 +56,9 @@ seeg_contacts:
 
 linear_reg:
     reg_aladin:
-        dof: "" # use "-rigOnly" for 6 DOF and "" for 12 DOF
+        dof: "-rigOnly" # use "-rigOnly" for 6 DOF and "" for 12 DOF
     greedy:
-        n_iterations_affine: 100x50x10
+        n_iterations_affine: 100x50x0
         dof: 6
 
 affine_reg:
@@ -118,7 +118,7 @@ tissue_labels:
 
 
 fastsurfer:
-    run: False
+    run: True
     ses: 'pre'
     home: "/home/greydon/Documents/GitHub/FastSurfer"
     py: "python3"

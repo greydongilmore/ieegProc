@@ -10,7 +10,13 @@ import math
 from statistics import NormalDist
 import json
 import dataframe_image as dfi
-os.chdir('/home/greydon/Documents/GitHub/seeg2bids-pipeline/workflow/scripts/working')
+
+if os.path.exists('/home/greydon/Documents/GitHub/seeg2bids-pipeline'):
+	root_dir=r'/home/greydon/Documents/GitHub/seeg2bids-pipeline'
+else:
+	root_dir=r'/home/greydon/Documents/GitHub/ieegProc'
+
+os.chdir(os.path.join(root_dir,'workflow/scripts/working'))
 from helpers import determineFCSVCoordSystem,determine_groups,norm_vec,mag_vec
 
 
@@ -176,16 +182,18 @@ if debug:
 		def __init__(self, **kwargs):
 			self.__dict__.update(kwargs)
 	
-	isub='sub-P124'
-	#data_dir=r'/media/greydon/lhsc_data/SEEG_peds/derivatives/seeg_scenes_new'
-	data_dir=r'/home/greydon/Documents/data/single/derivatives/seeg_scenes'
+	isub='sub-P126'
+	data_dir=r'/media/greydon/lhsc_data/SEEG_rerun/derivatives/seeg_scenes'
+	#data_dir=r'/home/greydon/Documents/data/single/derivatives/seeg_scenes'
+	
+	
 	
 	input=dotdict({
 				'isub': isub,
 				'data_dir':data_dir,
 				})
 	params=dotdict({
-				'sample_line': r'/home/greydon/Documents/GitHub/seeg2bids-pipeline/resources/sample_line.mrk.json',
+				'sample_line': os.path.join(root_dir,'resources/sample_line.mrk.json'),
 				})
 	output=dotdict({
 		'out_svg':f'{data_dir}/{isub}/{isub}_errors.svg',
