@@ -4,14 +4,24 @@
 
 bids_dir: /home/greydon/Documents/data/SEEG_rerun
 
-
 #work computer
 #bids_dir: /home/greydon/Documents/data/cingulate_seizures
 
 #external drive
 #bids_dir: /media/greydon/lhsc_data/SEEG_rerun
 
-subject_prefix: P
+subject_prefix: 'P'
+
+registration:
+    run: True
+segmentation:
+    run: True
+visqc:
+    run: True
+fastsurfer:
+    run: True
+hippunfold:
+    run: False
 
 #
 #--- imaging volumes
@@ -27,12 +37,12 @@ noncontrast_t1:
 
 post_ct:
     present: True
-    position: 0
+    position: -1
     algo: greedy
 
 pet:
     present: True
-    position: 0
+    position: 1
     task: rest
     algo: reg_aladin
 
@@ -46,7 +56,7 @@ other_vol:
     algo: greedy
 
 seeg_contacts:
-    present: False
+    present: True
     space_coords: &space_coords derivatives/seeg_coordinates/sub-{subject}/sub-{subject}_space-{coords_space}_{coords_type}.fcsv
     scene_coords: &scene_coords derivatives/seeg_scenes/sub-{subject}/sub-{subject}_{coords_type}.fcsv
 
@@ -58,7 +68,7 @@ linear_reg:
     reg_aladin:
         dof: "-rigOnly" # use "-rigOnly" for 6 DOF and "" for 12 DOF
     greedy:
-        n_iterations_affine: 100x50x0
+        n_iterations_affine: 100x50x10
         dof: 6
 
 affine_reg:
@@ -66,7 +76,7 @@ affine_reg:
     reg_aladin:
         dof: "" # use "-rigOnly" for 6 DOF and "" for 12 DOF
     greedy:
-        n_iterations_affine: 100x50x0
+        n_iterations_affine: 100x50x10
 
 nonlin_reg:
     algo: ants
@@ -116,15 +126,15 @@ tissue_labels:
 #--- connected piplines
 #
 
-
-fastsurfer:
-    run: True
+fastsurfer_config:
     ses: 'pre'
     home: "/home/greydon/Documents/GitHub/FastSurfer"
+    colors: resources/FreeSurferColorLUT.tsv
     py: "python3"
     sid: 'fastsurfer'
     batch: 8
     threads: 4
+    orien: 'lps'
     vox_size: 1    #(0=nearest,1=linear(default),2=quadratic,3=cubic)
     vol_segstats: True
     version: 'dev' # master, stable or dev
@@ -134,8 +144,7 @@ fmriprep:
     fmriprep_license: resources/license.txt
     bids_filter: resources/bids_filter.json
 
-hippunfold:
-    run: False
+hippunfold_config:
     modality: T1w
     atlas_labels_tsv: resources/desc-subfields_atlas-bigbrain_dseg.tsv
     path_T1w: _ses-pre_run-01_T1w.nii.gz
@@ -154,6 +163,7 @@ adult_template:
         name: 'adult_template'
         space: 'MNI152NLin2009cSym'
         atlas: 'CerebrA'
+        orien: 'ras'
         t1w: resources/tpl-MNI152NLin2009cSym/tpl-MNI152NLin2009cSym_res-1_T1w.nii.gz
         mask: resources/tpl-MNI152NLin2009cSym/tpl-MNI152NLin2009cSym_res-1_desc-brain_mask.nii.gz
         tissue_probseg: resources/tpl-MNI152NLin2009cSym/tpl-MNI152NLin2009cSym_res-1_label-{tissue}_probseg.nii.gz
@@ -163,6 +173,7 @@ adult_template:
         name: 'adult_template'
         space: 'MNI152NLin2009aAsym'
         atlas: 'Glasser'
+        orien: 'ras'
         t1w: resources/tpl-MNI152NLin2009aAsym/tpl-MNI152NLin2009aAsym_res-1_T1w.nii.gz
         mask: resources/tpl-MNI152NLin2009aAsym/tpl-MNI152NLin2009aAsym_res-1_desc-brain_mask.nii.gz
         tissue_probseg: resources/tpl-MNI152NLin2009aAsym/tpl-MNI152NLin2009aAsym_res-1_label-{tissue}_probseg.nii.gz
@@ -173,6 +184,7 @@ MNIPediatricAsymCohort2:
     name: 'MNIPediatricAsymCohort2'
     space: 'MNIPediatricAsymCohort2'
     atlas: 'CerebrA'
+    orien: 'ras'
     t1w: resources/tpl-MNIPediatricAsym_from-4.5_to-8.5/tpl-MNIPediatricAsym_from-4.5_to-8.5_T1w.nii.gz
     mask: resources/tpl-MNIPediatricAsym_from-4.5_to-8.5/tpl-MNIPediatricAsym_from-4.5_to-8.5_desc-brain_mask.nii.gz
     tissue_probseg: resources/tpl-MNIPediatricAsym_from-4.5_to-8.5/tpl-MNIPediatricAsym_from-4.5_to-8.5_label-{tissue}_probseg.nii.gz
@@ -183,6 +195,7 @@ MNIPediatricAsymCohort4:
     name: 'MNIPediatricAsymCohort4'
     space: 'MNIPediatricAsymCohort4'
     atlas: 'CerebrA'
+    orien: 'ras'
     t1w: resources/tpl-MNIPediatricAsym_from-7.5_to-13.5/tpl-MNIPediatricAsym_from-7.5_to-13.5_T1w.nii.gz
     mask: resources/tpl-MNIPediatricAsym_from-7.5_to-13.5/tpl-MNIPediatricAsym_from-7.5_to-13.5_desc-brain_mask.nii.gz
     tissue_probseg: resources/tpl-MNIPediatricAsym_from-7.5_to-13.5/tpl-MNIPediatricAsym_from-7.5_to-13.5_label-{tissue}_probseg.nii.gz
@@ -193,6 +206,7 @@ MNIPediatricAsymCohort6:
     name: 'MNIPediatricAsymCohort6'
     space: 'MNIPediatricAsymCohort6'
     atlas: 'CerebrA'
+    orien: 'ras'
     t1w: resources/tpl-MNIPediatricAsym_from-13.0_to-18.5/tpl-MNIPediatricAsym_from-13.0_to-18.5_T1w.nii.gz
     mask: resources/tpl-MNIPediatricAsym_from-13.0_to-18.5/tpl-MNIPediatricAsym_from-13.0_to-18.5_desc-brain_mask.nii.gz
     tissue_probseg: resources/tpl-MNIPediatricAsym_from-13.0_to-18.5/tpl-MNIPediatricAsym_from-13.0_to-18.5_label-{tissue}_probseg.nii.gz

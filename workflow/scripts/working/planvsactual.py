@@ -182,11 +182,9 @@ if debug:
 		def __init__(self, **kwargs):
 			self.__dict__.update(kwargs)
 	
-	isub='sub-P126'
-	data_dir=r'/media/greydon/lhsc_data/SEEG_rerun/derivatives/seeg_scenes'
-	#data_dir=r'/home/greydon/Documents/data/single/derivatives/seeg_scenes'
-	
-	
+	isub='sub-P129'
+	#data_dir=r'/media/greydon/lhsc_data/SEEG_rerun/derivatives/seeg_scenes'
+	data_dir=r'/home/greydon/Documents/data/SEEG_rerun/derivatives/seeg_scenes'
 	
 	input=dotdict({
 				'isub': isub,
@@ -317,6 +315,10 @@ for igroup in label_set:
 		  file_data['planned'].loc[planned_idx,['x','y','z']].values[1])
 		plannedTipOffset=file_data['planned'].loc[planned_idx,['x','y','z']].values[1]-(norm*(mag-1))
 		
+# 		elec_temp['plannedOffsetX']=plannedTipOffset[0]
+# 		elec_temp['plannedOffsetY']=plannedTipOffset[1]
+# 		elec_temp['plannedOffsetZ']=plannedTipOffset[2]
+# 		
 		elec_temp['plannedOffsetX']=elec_temp['plannedTipX']
 		elec_temp['plannedOffsetY']=elec_temp['plannedTipY']
 		elec_temp['plannedOffsetZ']=elec_temp['plannedTipZ']
@@ -328,8 +330,8 @@ for igroup in label_set:
 		
 		elec_temp['euclid_dist_target'] = euclidianDistanceCalc(xyz_planned_target, xyz_actual_target)
 		elec_temp['euclid_dist_entry'] = euclidianDistanceCalc(xyz_planned_entry, xyz_actual_entry)
-		elec_temp['radial_dist_target'] = radialDistanceCalc(xyz_actual_target, xyz_planned_entry, xyz_planned_target)
-		elec_temp['radial_dist_entry'] = radialDistanceCalc(xyz_actual_entry, xyz_planned_entry, xyz_planned_target)
+		elec_temp['radial_dist_target'] = radialDistanceCalc(xyz_planned_target, xyz_actual_entry, xyz_actual_target)
+		elec_temp['radial_dist_entry'] = radialDistanceCalc(xyz_planned_entry, xyz_actual_entry, xyz_actual_target)
 		
 		if not np.array_equal(np.round(xyz_actual_target,2), np.round(xyz_planned_target,2)):
 			try:

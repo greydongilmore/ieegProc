@@ -72,6 +72,7 @@ rule tissue_warp_to_nrrd:
     params:
         atlas_labels= get_age_appropriate_template_name(subject_id,'atlas_dseg_tsv'),
         atlas_colors= config['generic_colors'],
+        orien= get_age_appropriate_template_name(subject_id,'orien'),
     output:
         seg_nrrd = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,suffix='dseg.seg.nrrd',atlas='{atlas}',from_=get_age_appropriate_template_name(subject_id,'space'),desc='nonlin'),
     group: 'preproc'
@@ -84,6 +85,7 @@ rule tissue_4d_to_nrrd:
     params:
         atlas_labels= get_age_appropriate_template_name(subject_id,'atlas_dseg_tsv'),
         atlas_colors= config['generic_colors'],
+        orien= get_age_appropriate_template_name(subject_id,'orien'),
     output:
         seg_nrrd = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,suffix='dseg.seg.nrrd',atlas='{atlas}',from_=get_age_appropriate_template_name(subject_id,'space'),desc='nonlin',label='dilated')
     group: 'preproc'

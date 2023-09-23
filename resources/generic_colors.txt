@@ -1,4 +1,4 @@
-index	index2	r	g	b	tot
+label	index2	r	g	b	tot
 1	1	128	174	128	255
 2	2	241	214	145	255
 3	3	177	122	101	255

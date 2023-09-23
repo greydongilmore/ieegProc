@@ -114,23 +114,6 @@ if config['other_vol']['present']:
     final_outputs.extend(expand(bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),prefix='sub-'+subject_id+'/qc/sub-'+subject_id,suffix='regqc.png',from_='other', to='T1w',desc='rigid',include_subject_dir=False), 
                         subject=subjects))
 
-
-#if config['pet']['present'] and config['fastsurfer']['run']:
-#    rule qc_pet_surf:
-#        input:
-#            pet = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,suffix='pet.nii.gz',space='T1w', desc='rigid'),
-#            lh_pial = join(config['out_dir'], 'derivatives', config['fastsurfer']['sid'], 'sub-' + subject_id,config['fastsurfer']['sid'],'surf','lh.pial'),
-#            rh_pial = join(config['out_dir'], 'derivatives', config['fastsurfer']['sid'], 'sub-' + subject_id,config['fastsurfer']['sid'],'surf','rh.pial'),
-#        output:
-#            pet_png = report(bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),prefix='sub-'+subject_id+'/qc/sub-'+subject_id,suffix='brain4views.png',desc='PET',include_subject_dir=False),
-#                    caption='../reports/regqc.rst',
-#                    category='Registration QC',
-#                    subcategory='{desc} T1w'),
-#        group: 'preproc'
-#        script: '../scripts/pet_surf_brain4views.py'
-#
-#    final_outputs.extend(expand(bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),prefix='sub-'+subject_id+'/qc/sub-'+subject_id,suffix='brain4views.png',desc='PET',include_subject_dir=False), 
-#                        subject=subjects))
 rule qc_probseg:
     input:
         img = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'), subject=subject_id, desc='masked', from_='atropos3seg', suffix='T1w.nii.gz'),

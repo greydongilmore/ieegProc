@@ -473,10 +473,9 @@ if  config['nonlin_reg']['algo']=='ants':
             out_composite = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,suffix='Composite.h5',from_='subject',to=get_age_appropriate_template_name(subject_id,'space')),
             out_inv_composite = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,suffix='InverseComposite.h5',from_='subject',to=get_age_appropriate_template_name(subject_id,'space')),
             warped_flo = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,suffix='T1w.nii.gz',space=get_age_appropriate_template_name(subject_id,'space'),desc='nonlin',label='brain'),
-        threads: 4
+        threads: 6
         resources:
-            mem_mb = 16000, # right now these are on the high-end -- could implement benchmark rules to do this at some point..
-            time = 60 # 1 hrs
+            mem_mb = 12000, # right now these are on the high-end -- could implement benchmark rules to do this at some point..
         #container: config['singularity']['neuroglia']
         group: 'preproc'
         shell: 

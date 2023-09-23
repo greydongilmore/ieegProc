@@ -31,7 +31,7 @@ rule hippunfold_seg:
     params:
         in_dir = directory(join(config['out_dir'], 'derivatives', 'hippunfold_in')),
         hippunfold_out = directory(join(config['out_dir'], 'derivatives','hippunfold')),
-        modality = config['hippunfold']['modality'],
+        modality = config['hippunfold_config']['modality'],
         path_T1w = bids(root=join(config['out_dir'], 'derivatives','hippunfold_in'), subject=subject_id, datatype='anat', suffix='T1w.nii.gz'),
         participant_label = subject_id,
         hippunfold_container= config['singularity']['hippunfold'],
@@ -46,7 +46,7 @@ rule hippunfold_post_proc:
         t1_fname = join(config['out_dir'], 'derivatives','hippunfold','hippunfold','sub-' + subject_id, 'anat','sub-' + subject_id + "_desc-preproc_T1w.nii.gz"),
     params:
         subject_id = subject_id,
-        dseg_labels_file=config['hippunfold']['atlas_labels_tsv'],
+        dseg_labels_file=config['hippunfold_config']['atlas_labels_tsv'],
         deriv_dir = directory(join(config['out_dir'], 'derivatives')),
     output:
         touch_hippunfold=touch(join(config['out_dir'], 'logs', 'sub-' + subject_id + "_hippunfold.done")),

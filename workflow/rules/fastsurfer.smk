@@ -9,64 +9,73 @@ def get_transform_filename(wildcards):
     print(file)
     return file
 
-if config['fastsurfer']['version'] =='dev':
+if config['fastsurfer_config']['version'] =='dev':
     rule fastsurfer_seg:
         input: 
-            t1 = get_noncontrast_filename_fs(expand(subject_id,subject=subjects),config['fastsurfer']['ses']),
+            t1 = get_noncontrast_filename_fs(expand(subject_id,subject=subjects),config['fastsurfer_config']['ses']),
         params:
-            fastsurfer_run = config['fastsurfer']['home'],
-            sid = config['fastsurfer']['sid'],
-            batch = config['fastsurfer']['batch'],
-            threads = config['fastsurfer']['threads'],
-            vox_size = config['fastsurfer']['vox_size'],
-            py = config['fastsurfer']['py'],
+            fastsurfer_run = config['fastsurfer_config']['home'],
+            sid = config['fastsurfer_config']['sid'],
+            batch = config['fastsurfer_config']['batch'],
+            threads = config['fastsurfer_config']['threads'],
+            vox_size = config['fastsurfer_config']['vox_size'],
+            py = config['fastsurfer_config']['py'],
             fastsurfer_out = directory(join(config['out_dir'], 'derivatives', 'fastsurfer')),
             subjid=expand('sub-' + subject_id,subject=subjects),
         output:
             touch_fastsurfer=touch(join(config['out_dir'], 'logs', 'sub-' + subject_id + "_fastsurfer.done")),
             t1_fname = join(config['out_dir'],'derivatives','fastsurfer','sub-' + subject_id, 'mri','orig.mgz'),
-        #threads:config['fastsurfer']['threads']
+            segs = join(config['out_dir'],'derivatives','fastsurfer','sub-' + subject_id, 'mri','aparc+aseg.mgz'),
+        threads: 6
+        resources:
+            mem_mb = 12000,
         group: 'preproc'
         shell:
             "export FASTSURFER_HOME={params.fastsurfer_run} &&PYTORCH_CUDA_ALLOC_CONF=max_split_size_mb:4096 {params.fastsurfer_run}/run_fastsurfer.sh \
             --t1 {input.t1} --sd {params.fastsurfer_out} --threads {params.threads} --vox_size {params.vox_size} --sid {params.subjid} --py {params.py} --viewagg_device cpu --fsaparc --parallel --allow_root"
-elif config['fastsurfer']['version'] =='stable':
+elif config['fastsurfer_config']['version'] =='stable':
     rule fastsurfer_seg:
         input: 
-            t1 = get_noncontrast_filename_fs(expand(subject_id,subject=subjects),config['fastsurfer']['ses']),
+            t1 = get_noncontrast_filename_fs(expand(subject_id,subject=subjects),config['fastsurfer_config']['ses']),
         params:
-            fastsurfer_run = config['fastsurfer']['home'],
-            sid = config['fastsurfer']['sid'],
-            batch = config['fastsurfer']['batch'],
-            threads = config['fastsurfer']['threads'],
-            vox_size = config['fastsurfer']['vox_size'],
-            py = config['fastsurfer']['py'],
+            fastsurfer_run = config['fastsurfer_config']['home'],
+            sid = config['fastsurfer_config']['sid'],
+            batch = config['fastsurfer_config']['batch'],
+            threads = config['fastsurfer_config']['threads'],
+            vox_size = config['fastsurfer_config']['vox_size'],
+            py = config['fastsurfer_config']['py'],
             fastsurfer_out = directory(join(config['out_dir'], 'derivatives', 'fastsurfer')),
             subjid=expand('sub-' + subject_id,subject=subjects),
         output:
             touch_fastsurfer=touch(join(config['out_dir'], 'logs', 'sub-' + subject_id + "_fastsurfer.done")),
             t1_fname = join(config['out_dir'],'derivatives','fastsurfer','sub-' + subject_id, 'mri','orig.mgz'),
-        #threads:config['fastsurfer']['threads']
+            segs = join(config['out_dir'],'derivatives','fastsurfer','sub-' + subject_id, 'mri','aparc+aseg.mgz'),
+        threads: 6
+        resources:
+            mem_mb = 12000,
         group: 'preproc'
         shell:
             "export FASTSURFER_HOME={params.fastsurfer_run} &&PYTORCH_CUDA_ALLOC_CONF=max_split_size_mb:4096 {params.fastsurfer_run}/run_fastsurfer.sh \
             --t1 {input.t1} --sd {params.fastsurfer_out} --sid {params.subjid} --py {params.py} --vox_size {params.vox_size} --viewagg_device cpu --fsaparc --no_cereb --parallel --ignore_fs_version --allow_root"
-elif config['fastsurfer']['version'] =='master':
+elif config['fastsurfer_config']['version'] =='master':
     rule fastsurfer_seg:
         input: 
-            t1 = get_noncontrast_filename_fs(expand(subject_id,subject=subjects),config['fastsurfer']['ses']),
+            t1 = get_noncontrast_filename_fs(expand(subject_id,subject=subjects),config['fastsurfer_config']['ses']),
         params:
-            fastsurfer_run = config['fastsurfer']['home'],
-            sid = config['fastsurfer']['sid'],
-            batch = config['fastsurfer']['batch'],
-            threads = config['fastsurfer']['threads'],
-            py = config['fastsurfer']['py'],
+            fastsurfer_run = config['fastsurfer_config']['home'],
+            sid = config['fastsurfer_config']['sid'],
+            batch = config['fastsurfer_config']['batch'],
+            threads = config['fastsurfer_config']['threads'],
+            py = config['fastsurfer_config']['py'],
             fastsurfer_out = directory(join(config['out_dir'], 'derivatives', 'fastsurfer')),
             subjid=expand('sub-' + subject_id,subject=subjects),
         output:
             touch_fastsurfer=touch(join(config['out_dir'], 'logs', 'sub-' + subject_id + "_fastsurfer.done")),
             t1_fname = join(config['out_dir'],'derivatives','fastsurfer','sub-' + subject_id, 'mri','orig.mgz'),
-        #threads:config['fastsurfer']['threads']
+            segs = join(config['out_dir'],'derivatives','fastsurfer','sub-' + subject_id, 'mri','aparc+aseg.mgz'),
+        threads: 6
+        resources:
+            mem_mb = 12000,
         group: 'preproc'
         shell:
             "export FASTSURFER_HOME={params.fastsurfer_run} &&PYTORCH_CUDA_ALLOC_CONF=max_split_size_mb:4096 {params.fastsurfer_run}/run_fastsurfer.sh \
@@ -110,6 +119,21 @@ rule fastsurfer_symlinks:
         cp {params.rh_white_preaparc_k} {params.rh_white_k}"
 
 final_outputs.extend(expand(join(config['out_dir'], 'logs', 'sub-' + subject_id + "_fastsurfer_symlinks.done"), subject=subjects))
+
+rule aparcseg_to_nrrd:
+    input:
+        segs = join(config['out_dir'],'derivatives','fastsurfer','sub-' + subject_id, 'mri','aparc+aseg.mgz'),
+    params:
+        atlas_labels = config['fastsurfer_config']['colors'],
+        atlas_colors= config['fastsurfer_config']['colors'],
+        orien= config['fastsurfer_config']['orien'],
+    output:
+        seg_nrrd = join(config['out_dir'],'derivatives','fastsurfer','sub-' + subject_id, 'mri','aparc+aseg.seg.nrrd')
+    group: 'preproc'
+    #container: config['singularity']['neuroglia']
+    script: '../scripts/working/niiTonrrd.py'
+
+final_outputs.extend(expand(join(config['out_dir'],'derivatives','fastsurfer','sub-' + subject_id, 'mri','aparc+aseg.seg.nrrd'), subject=subjects))
 
 if config['seeg_contacts']['present']:
     rule vis_electrodes_native:

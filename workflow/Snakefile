@@ -33,8 +33,11 @@ include: 'rules/common.smk'
 
 final_outputs = []
 
-include: "rules/registration.smk"
-include: "rules/segmentation.smk"
+if config['registration']['run']:
+    include: "rules/registration.smk"
+
+if config['segmentation']['run']:
+    include: "rules/segmentation.smk"
 
 if config['fmriprep']['run']:
     include: 'rules/fmriprep.smk'
@@ -50,7 +53,8 @@ if config['seeg_contacts']['present']:
 if config['fastsurfer']['run']:
     include: 'rules/fastsurfer.smk'
 
-include: "rules/visqc.smk"
+if config['visqc']['run']:
+    include: "rules/visqc.smk"
 
 rule all:
         input:
