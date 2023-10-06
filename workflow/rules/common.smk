@@ -149,9 +149,9 @@ def bids(root=None, datatype=None, prefix=None, suffix=None, subject=None, sessi
 
 def get_electrodes_coords(subject_id,coords_space=None,coords_type=None):
     if coords_space is not None:
-        file=f'{sep}'.join([config['out_dir'], config['seeg_contacts']['space_coords'].format(subject=subject_id[0],coords_space=coords_space,coords_type=coords_type)])
+        file=f'{sep}'.join([config['out_dir'], config['seeg_contacts']['space_coords'].format(subject=subject_id,coords_space=coords_space,coords_type=coords_type)])
     else:
-        file=f'{sep}'.join([config['out_dir'], config['seeg_contacts']['scene_coords'].format(subject=subject_id[0],coords_type=coords_type)])
+        file=f'{sep}'.join([config['out_dir'], config['seeg_contacts']['scene_coords'].format(subject=subject_id,coords_type=coords_type)])
     print(file)
     return file
 
@@ -188,20 +188,20 @@ def get_noncontrast_filename(wildcards):
     print(f'Pre T1w non-contrast file: {basename(file)}')
     return file
 
-def get_noncontrast_filename_fs(subject_id, ses='pre'):
-    files=glob(bids(root=join(config['out_dir'], 'bids','sub-'+subject_id[0]), prefix='sub-'+subject_id[0], datatype='anat', session=ses, acq=config['noncontrast_t1']['acq'], run='*', suffix='T1w.nii.gz'))
-    print(files)
+def get_noncontrast_filename_fs(wildcards):
+    ses=config['fastsurfer_config']['ses']
+    files=glob(bids(root=join(config['out_dir'], 'bids','sub-'+config['subject_prefix']+f'{wildcards.subject}'), prefix='sub-'+config['subject_prefix']+f'{wildcards.subject}', datatype='anat', session=ses, acq=config['noncontrast_t1']['acq'], run='*', suffix='T1w.nii.gz'))
     if len(files) <=1:
-        files=expand(bids(root=join(config['out_dir'], 'bids','sub-'+subject_id[0]), prefix='sub-'+subject_id[0], datatype='anat', session=ses, acq=config['noncontrast_t1']['acq'], run='01', suffix='T1w.nii.gz'))
-        if not exists(files[0]):
-            files=glob(bids(root=join(config['out_dir'], 'bids','sub-'+subject_id[0]), prefix='sub-'+subject_id[0], datatype='anat', session=ses, acq=config['noncontrast_t1']['acq'], run='02', suffix='T1w.nii.gz'))
-            if not exists(files[0]):
-                files=glob(bids(root=join(config['out_dir'], 'bids','sub-'+subject_id[0]), prefix='sub-'+subject_id[0], datatype='anat', session=ses, run='01', suffix='T1w.nii.gz'))
+        file=expand(bids(root=join(config['out_dir'], 'bids','sub-'+config['subject_prefix']+'{subject}'), prefix='sub-'+config['subject_prefix']+'{subject}', datatype='anat', session=ses, acq=config['noncontrast_t1']['acq'], run='01', suffix='T1w.nii.gz'),subject=wildcards.subject)
+        print(file)
+        if not exists(file[0]):
+            file=expand(bids(root=join(config['out_dir'], 'bids','sub-'+config['subject_prefix']+'{subject}'), prefix='sub-'+config['subject_prefix']+'{subject}', datatype='anat', session=ses, acq=config['noncontrast_t1']['acq'], run='02', suffix='T1w.nii.gz'),subject=wildcards.subject)
+            if not exists(file[0]):
+                file=expand(bids(root=join(config['out_dir'], 'bids','sub-'+config['subject_prefix']+'{subject}'), prefix='sub-'+config['subject_prefix']+'{subject}', datatype='anat', session=ses, run='01', suffix='T1w.nii.gz'),subject=wildcards.subject)
     
     files.sort(key=lambda f: int(re.sub('\D', '', f)))
     file=files[0]
-    print(f'fs {ses} T1w non-contrast file: {basename(file)}')
-
+    print(f'Pre T1w non-contrast file: {basename(file)}')
     return file
 
 def get_pre_t1_filename(wildcards):

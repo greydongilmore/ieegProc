@@ -97,7 +97,6 @@ elif config['contrast_t1']['present'] and config['noncontrast_t1']['present']:
         output:
             warped_subj = bids(root=join(config['out_dir'],'derivatives', 'atlasreg'),subject=subject_id,acq='noncontrast',suffix='T1w.nii.gz',space='T1w',desc='rigid'),
         group: 'preproc'
-        threads: 1
         script: 
             '../scripts/apply_transform_noninterp.py'
 
@@ -107,7 +106,6 @@ elif config['contrast_t1']['present'] and config['noncontrast_t1']['present']:
         output:
             tfm=bids(root=join(config['out_dir'],'derivatives', 'atlasreg'),subject=subject_id,suffix='xfm.tfm',from_='noncontrast',to='contrast',desc='rigid',type_='ras'),
         group: 'preproc'
-        threads: 1
         script: 
             '../scripts/convert_xfm_tfm.py'
 
@@ -403,7 +401,6 @@ rule n4biasfield:
         t1 = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,suffix='T1w.nii.gz'),
     output:
         t1 = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,desc='n4', suffix='T1w.nii.gz'),
-    threads: 4
     #container: config['singularity']['neuroglia']
     group: 'preproc'
     shell:
@@ -544,7 +541,6 @@ if  config['nonlin_reg']['algo']=='ants':
             mask = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,suffix='mask.nii.gz',from_=get_age_appropriate_template_name(subject_id,'space'),desc='nonlin',label='brain'),
         #container: config['singularity']['neuroglia']
         group: 'preproc'
-        threads: 1
         resources:
             mem_mb = 16000
         shell: 

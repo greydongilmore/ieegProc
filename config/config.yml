@@ -13,11 +13,11 @@ bids_dir: /home/greydon/Documents/data/SEEG_rerun
 subject_prefix: 'P'
 
 registration:
-    run: True
+    run: False
 segmentation:
-    run: True
+    run: False
 visqc:
-    run: True
+    run: False
 fastsurfer:
     run: True
 hippunfold:
@@ -36,27 +36,27 @@ noncontrast_t1:
     algo: reg_aladin
 
 post_ct:
-    present: True
+    present: False
     position: -1
     algo: greedy
 
 pet:
-    present: True
+    present: False
     position: 1
     task: rest
     algo: reg_aladin
 
 other_vol:
     present: False
-    session: 'post'
+    session: 'pre'
     datatype: 'anat'
-    acq: null
+    acq: 'Cor'
     run: '01'
-    suffix: 'T2w.nii.gz'
-    algo: greedy
+    suffix: 'FLAIR.nii.gz'
+    algo: reg_aladin
 
 seeg_contacts:
-    present: True
+    present: False
     space_coords: &space_coords derivatives/seeg_coordinates/sub-{subject}/sub-{subject}_space-{coords_space}_{coords_type}.fcsv
     scene_coords: &scene_coords derivatives/seeg_scenes/sub-{subject}/sub-{subject}_{coords_type}.fcsv
 

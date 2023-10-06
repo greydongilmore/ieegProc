@@ -151,7 +151,7 @@ for isub in os.listdir(os.path.join(data_dir,'hippunfold','hippunfold')):
 	
 	
 	for ihemi in ('L','R'):
-		base_filename=f'{isub}_hemi-{ihemi}_space-cropT1w_desc-subfields_atlas-bigbrain_dseg'
+		base_filename=f'{isub}_hemi-{ihemi}_space-cropT1w_desc-subfields_atlas-multihist7_dseg'
 		seg_file_fname = f'{data_dir}/hippunfold/hippunfold/{isub}/anat/{base_filename}.nii.gz'
 		seg_out_fname = f'{data_dir}/hippunfold/hippunfold/{isub}/anat/{base_filename}.seg.nrrd'
 		if not os.path.exists(seg_out_fname):

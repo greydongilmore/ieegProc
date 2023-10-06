@@ -8,6 +8,7 @@ from pptx.dml.color import RGBColor
 from pptx.enum.text import PP_ALIGN,MSO_ANCHOR
 import pandas as pd
 from pptx.enum.text import MSO_AUTO_SIZE
+import numpy as np
 
 
 def add_slide(presentation, layout, title_dict):
@@ -101,7 +102,7 @@ if debug:
 		def __init__(self, **kwargs):
 			self.__dict__.update(kwargs)
 
-	isub = 'sub-P129'
+	isub = 'sub-P132'
 	#data_dir = r'/media/greydon/lhsc_data/SEEG_rerun/derivatives'
 	data_dir = r'/home/greydon/Documents/data/SEEG_rerun/derivatives'
 
@@ -121,8 +122,8 @@ updated_colnames=df_elec_raw.iloc[3].values
 for idx,ilabel in [(i,x) for i,x in enumerate(updated_colnames) if x in list(remap_dict)]:
 	updated_colnames[idx]=remap_dict[ilabel]
 
-
 df_elec.columns=updated_colnames
+df_elec.drop(np.nan, axis = 1, inplace = True)
 df_elec=df_elec.iloc[0:df_elec.loc[:,'Target'].isnull().idxmax()]
 
 if all(~df_elec.loc[:,'Ord.'].isnull()):
@@ -248,8 +249,14 @@ if os.path.exists(snakemake.input.error_metrics):
 
 for _, row_elec in df_elec.iterrows():
 	if not any (x in row_elec['Electrode label'] for x in aborted_lang):
+		
+		if any([x.lower()=='label' for x in list(row_elec.keys())]):
+			slide_title=f"{row_elec['Target']} ({row_elec['Label']})"
+		else:
+			slide_title=row_elec['Target']
+		
 		title_dict={
-			row_elec['Target']:{
+			slide_title:{
 				"font_size": 48,
 				"color": RGBColor(255,255,255),
 				"position": (Inches(3), Inches(.5), Inches(10), Inches(1))
@@ -257,15 +264,18 @@ for _, row_elec in df_elec.iterrows():
 			}
 		
 		elec_slide=add_slide(prs, blank_slide_layout, title_dict)
-		elec_slide.name=row_elec['Target']
+		elec_slide.name=slide_title
 		
 		if errors_data is not None:
 			error_idx=[]
-			if [i for i,x in enumerate(errors_data['electrode']) if f'({x.lower()})' in row_elec['Target'].lower()]:
-				error_idx=[i for i,x in enumerate(errors_data['electrode']) if f'({x.lower()})' in row_elec['Target'].lower()][0]
-			elif [i for i,x in enumerate(errors_data['electrode']) if row_elec['Target'].lower().startswith(f'{x.lower()}')]:
-				error_idx=[i for i,x in enumerate(errors_data['electrode']) if row_elec['Target'].lower().startswith(f'{x.lower()}')][0]
-			
+			if any([x.lower() =='label' for x in list(row_elec.keys())]):
+				error_idx=[i for i,x in enumerate(errors_data['electrode']) if x.lower() == row_elec['Label'].lower()][0]
+			else:
+				if [i for i,x in enumerate(errors_data['electrode']) if f'({x.lower()})' in row_elec['Target'].lower()]:
+					error_idx=[i for i,x in enumerate(errors_data['electrode']) if f'({x.lower()})' in row_elec['Target'].lower()][0]
+				elif [i for i,x in enumerate(errors_data['electrode']) if row_elec['Target'].lower().startswith(f'{x.lower()}')]:
+					error_idx=[i for i,x in enumerate(errors_data['electrode']) if row_elec['Target'].lower().startswith(f'{x.lower()}')][0]
+				
 			if isinstance(error_idx,int):
 				
 				width = Inches(13.0);height = Inches(1.25)

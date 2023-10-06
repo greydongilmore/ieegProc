@@ -182,7 +182,7 @@ if debug:
 		def __init__(self, **kwargs):
 			self.__dict__.update(kwargs)
 	
-	isub='sub-P129'
+	isub='sub-P132'
 	#data_dir=r'/media/greydon/lhsc_data/SEEG_rerun/derivatives/seeg_scenes'
 	data_dir=r'/home/greydon/Documents/data/SEEG_rerun/derivatives/seeg_scenes'
 	
@@ -249,6 +249,7 @@ if shopping_list:
 		updated_colnames[idx]=remap_dict[ilabel]
 	
 	df_shopping_list.columns=updated_colnames
+	df_shopping_list.drop(np.nan, axis = 1, inplace = True)
 	df_shopping_list=df_shopping_list.iloc[0:df_shopping_list.loc[:,'Target'].isnull().idxmax()]
 	
 	if all(~df_shopping_list.loc[:,'Ord.'].isnull()):
@@ -256,10 +257,13 @@ if shopping_list:
 	
 	error_idx=[]
 	for _,row_elec in df_shopping_list.iterrows():
-		if [i for i,x in enumerate(label_set) if f"({x.lower()})" in row_elec['Target'].lower()]:
-			error_idx.append([i for i,x in enumerate(label_set) if f"({x.lower()})" in row_elec['Target'].lower()][0])
-		elif [i for i,x in enumerate(label_set) if f"{x.lower()}" in row_elec['Target'].lower()]:
-			error_idx.append([i for i,x in enumerate(label_set) if f"{x.lower()}" in row_elec['Target'].lower()][0])
+		if any([x.lower()=='label' for x in list(row_elec.keys())]):
+			error_idx.append([i for i,x in enumerate(label_set) if x.lower() == row_elec['Label'].lower()][0])
+		else:
+			if [i for i,x in enumerate(label_set) if f"({x.lower()})" in row_elec['Target'].lower()]:
+				error_idx.append([i for i,x in enumerate(label_set) if f"({x.lower()})" in row_elec['Target'].lower()][0])
+			elif [i for i,x in enumerate(label_set) if f"{x.lower()}" in row_elec['Target'].lower()]:
+				error_idx.append([i for i,x in enumerate(label_set) if f"{x.lower()}" in row_elec['Target'].lower()][0])
 	
 	label_set=[label_set[x] for x in error_idx]
 
@@ -315,13 +319,13 @@ for igroup in label_set:
 		  file_data['planned'].loc[planned_idx,['x','y','z']].values[1])
 		plannedTipOffset=file_data['planned'].loc[planned_idx,['x','y','z']].values[1]-(norm*(mag-1))
 		
-# 		elec_temp['plannedOffsetX']=plannedTipOffset[0]
-# 		elec_temp['plannedOffsetY']=plannedTipOffset[1]
-# 		elec_temp['plannedOffsetZ']=plannedTipOffset[2]
-# 		
-		elec_temp['plannedOffsetX']=elec_temp['plannedTipX']
-		elec_temp['plannedOffsetY']=elec_temp['plannedTipY']
-		elec_temp['plannedOffsetZ']=elec_temp['plannedTipZ']
+		elec_temp['plannedOffsetX']=plannedTipOffset[0]
+		elec_temp['plannedOffsetY']=plannedTipOffset[1]
+		elec_temp['plannedOffsetZ']=plannedTipOffset[2]
+		
+# 		elec_temp['plannedOffsetX']=elec_temp['plannedTipX']
+# 		elec_temp['plannedOffsetY']=elec_temp['plannedTipY']
+# 		elec_temp['plannedOffsetZ']=elec_temp['plannedTipZ']
 		
 		xyz_planned_entry = np.array([elec_temp['plannedEntryX'], elec_temp['plannedEntryY'], elec_temp['plannedEntryZ']])
 		xyz_actual_entry = np.array([elec_temp['actualEntryX'], elec_temp['actualEntryY'], elec_temp['actualEntryZ']]).T

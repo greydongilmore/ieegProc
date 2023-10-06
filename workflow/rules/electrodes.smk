@@ -1,7 +1,7 @@
 
 rule electrode_coords:
     input:
-        seega_scene = get_electrodes_coords(expand(subject_id,subject=subjects),coords_type='SEEGA'),
+        seega_scene = get_electrodes_coords(subject_id,coords_type='SEEGA'),
     params:
         sub=subject_id
     output:
@@ -14,7 +14,7 @@ final_outputs.extend(expand(f'{sep}'.join([config['out_dir'], config['seeg_conta
 
 rule warp_contact_coords:
     input: 
-        fcsv = get_electrodes_coords(expand(subject_id,subject=subjects),coords_space='native', coords_type='SEEGA'),
+        fcsv = get_electrodes_coords(subject_id,coords_space='native', coords_type='SEEGA'),
         xfm_composite = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,suffix='InverseComposite.h5',from_='subject',to=get_age_appropriate_template_name(subject_id,'space')),
     output:
         fcsv_fname_warped = f'{sep}'.join([config['out_dir'], config['seeg_contacts']['space_coords'].format(subject=subject_id, coords_space=get_age_appropriate_template_name(subject_id,'space'), coords_type='SEEGA')])
@@ -23,7 +23,7 @@ rule warp_contact_coords:
 
 rule label_electrodes_atlas:
     input: 
-        fcsv = get_electrodes_coords(expand(subject_id,subject=subjects),coords_space='native', coords_type='SEEGA'),
+        fcsv = get_electrodes_coords(subject_id,coords_space='native', coords_type='SEEGA'),
         dseg_tsv = get_age_appropriate_template_name(subject_id,'atlas_dseg_tsv'),
         dseg_nii = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,suffix='dseg.nii.gz', atlas='{atlas}',from_=get_age_appropriate_template_name(subject_id,'space'),desc='nonlin',label='dilated'),
         tissue_seg = expand(bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,suffix='probseg.nii.gz',label='{tissue}',desc='atropos3seg'),
@@ -39,7 +39,7 @@ rule label_electrodes_atlas:
 
 rule contact_landmarks:
     input: 
-        fcsv = get_electrodes_coords(expand(subject_id,subject=subjects),coords_space='native', coords_type='SEEGA'),
+        fcsv = get_electrodes_coords(subject_id,coords_space='native', coords_type='SEEGA'),
     output:
         txt = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,suffix='landmarks.txt',space='ct'),    
     group: 'preproc'
@@ -74,7 +74,7 @@ rule vis_contacts:
 
 rule vis_electrodes:
     input: 
-        fcsv = get_electrodes_coords(expand(subject_id,subject=subjects),coords_space='native',coords_type='SEEGA'),
+        fcsv = get_electrodes_coords(subject_id,coords_space='native',coords_type='SEEGA'),
         t1w = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,desc='n4', suffix='T1w.nii.gz'),
         xfm_ras = bids(root=join(config['out_dir'],'derivatives', 'atlasreg'),subject=subject_id,suffix='xfm.txt',from_='subject',to=get_age_appropriate_template_name(subject_id,'space'),desc='affine',type_='ras'),
     params:
