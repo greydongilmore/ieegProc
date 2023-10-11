@@ -146,7 +146,7 @@ fmriprep:
 
 hippunfold_config:
     modality: T1w
-    atlas_labels_tsv: resources/desc-subfields_atlas-bigbrain_dseg.tsv
+    atlas_labels_tsv: resources/desc-subfields_atlas-multihist7_dseg.tsv
     path_T1w: _ses-pre_run-01_T1w.nii.gz
 
 #

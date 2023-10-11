@@ -10,7 +10,7 @@ import os
 import matplotlib.pyplot as plt
 
 
-def determineFCSVCoordSystem(input_fcsv):
+def determineFCSVCoordSystem(input_fcsv,overwrite_fcsv=False):
 	# need to determine if file is in RAS or LPS
 	# loop through header to find coordinate system
 	coordFlag = re.compile('# CoordinateSystem')
@@ -19,6 +19,7 @@ def determineFCSVCoordSystem(input_fcsv):
 	coord_sys=None
 	headFin=None
 	ver_fin=None
+	
 	with open(input_fcsv, 'r+') as fid:
 		rdr = csv.DictReader(filter(lambda row: row[0]=='#', fid))
 		row_cnt=0
@@ -40,28 +41,30 @@ def determineFCSVCoordSystem(input_fcsv):
 				headFin=['id']+cleaned_dict[headString[0]]
 			row_cnt +=1
 	
-	if headFin is not None:
-		headFin=dict(ChainMap(*[{i:x} for i,x in enumerate(headFin)]))
-	
 	if any(x in coord_sys for x in {'LPS','1'}):
 		df = pd.read_csv(input_fcsv, skiprows=3, header=None)
+		
+		if df.shape[1] != 13:
+			df=df.iloc[:,:14]
+		
 		df[1] = -1 * df[1] # flip orientation in x
 		df[2] = -1 * df[2] # flip orientation in y
 		
-		with open(input_fcsv, 'w') as fid:
-			fid.write("# Markups fiducial file version = 4.11\n")
-			fid.write("# CoordinateSystem = 0\n")
-			fid.write("# columns = id,x,y,z,ow,ox,oy,oz,vis,sel,lock,label,desc,associatedNodeID\n")
-		
-		df.rename(columns={0:'node_id', 1:'x', 2:'y', 3:'z', 4:'ow', 5:'ox',
-							6:'oy', 7:'oz', 8:'vis', 9:'sel', 10:'lock',
-							11:'label', 12:'description', 13:'associatedNodeID'}, inplace=True)
-		
-		df['associatedNodeID']= pd.Series(np.repeat('',df.shape[0]))
-		df.to_csv(input_fcsv, sep=',', index=False, lineterminator="", mode='a', header=False, float_format='%.3f')
-		
-		print(f"Converted LPS to RAS: {os.path.dirname(input_fcsv)}/{os.path.basename(input_fcsv)}")
-	return ver_fin,headFin
+		if overwrite_fcsv:
+			with open(input_fcsv, 'w') as fid:
+				fid.write("# Markups fiducial file version = 4.11\n")
+				fid.write("# CoordinateSystem = 0\n")
+				fid.write("# columns = id,x,y,z,ow,ox,oy,oz,vis,sel,lock,label,desc,associatedNodeID\n")
+			
+			df.rename(columns={0:'node_id', 1:'x', 2:'y', 3:'z', 4:'ow', 5:'ox',
+								6:'oy', 7:'oz', 8:'vis', 9:'sel', 10:'lock',
+								11:'label', 12:'description', 13:'associatedNodeID'}, inplace=True)
+			
+			df['associatedNodeID']= pd.Series(np.repeat('',df.shape[0]))
+			df.round(3).to_csv(input_fcsv, sep=',', index=False, lineterminator="", mode='a', header=False)
+			
+			print(f"Converted LPS to RAS: {os.path.dirname(input_fcsv)}/{os.path.basename(input_fcsv)}")
+	return coord_sys,headFin
 
 def determine_groups(iterable, numbered_labels=False):
 	values = []
