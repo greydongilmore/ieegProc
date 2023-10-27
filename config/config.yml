@@ -23,6 +23,12 @@ fastsurfer:
 hippunfold:
     run: False
 
+fastsurfer_vol:
+    ses: 'post'
+    acq: null           #use 'null' to ignore key
+    desc: null          #use 'null' to ignore key
+    run: '01'
+    suffix: 'T1w.nii.gz'
 #
 #--- imaging volumes
 #
@@ -36,13 +42,13 @@ noncontrast_t1:
     algo: reg_aladin
 
 post_ct:
-    present: False
-    position: -1
+    present: True
+    position: 0
     algo: greedy
 
 pet:
-    present: False
-    position: 1
+    present: True
+    position: 0
     task: rest
     algo: reg_aladin
 
@@ -50,7 +56,7 @@ other_vol:
     present: False
     session: 'pre'
     datatype: 'anat'
-    acq: 'Cor'
+    acq: null
     run: '01'
     suffix: 'FLAIR.nii.gz'
     algo: reg_aladin

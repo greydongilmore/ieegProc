@@ -102,9 +102,9 @@ if debug:
 		def __init__(self, **kwargs):
 			self.__dict__.update(kwargs)
 
-	isub = 'sub-P132'
+	isub = 'sub-P017'
 	#data_dir = r'/media/greydon/lhsc_data/SEEG_rerun/derivatives'
-	data_dir = r'/home/greydon/Documents/data/SEEG_rerun/derivatives'
+	data_dir = r'/home/greydon/Documents/data/SEEG_peds/derivatives'
 
 	input = dotdict({
 			'shopping_list': f'{data_dir}/seeg_scenes/{isub}/*shopping_list.xlsx',
@@ -123,8 +123,13 @@ for idx,ilabel in [(i,x) for i,x in enumerate(updated_colnames) if x in list(rem
 	updated_colnames[idx]=remap_dict[ilabel]
 
 df_elec.columns=updated_colnames
-df_elec.drop(np.nan, axis = 1, inplace = True)
+df_elec=df_elec[df_elec['Electrode label']!='aborted']
 df_elec=df_elec.iloc[0:df_elec.loc[:,'Target'].isnull().idxmax()]
+df_elec=df_elec[~df_elec['No.'].isnull()]
+df_elec=df_elec[~df_elec['Target'].isnull()]
+
+if any(x==np.nan for x in list(df_elec)):
+	df_elec.drop(np.nan, axis = 1, inplace = True)
 
 if all(~df_elec.loc[:,'Ord.'].isnull()):
 	df_elec=df_elec.sort_values(by=['Ord.']).reset_index(drop=True)

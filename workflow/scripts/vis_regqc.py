@@ -112,8 +112,8 @@ def clean_svg(fg_svgs, bg_svgs, ref=0):
 			2,
 			"""\
 <style type="text/css">
-@keyframes flickerAnimation%s { 0%% {opacity: 1;} 100%% { opacity:0; }}
-.foreground-svg { animation: 1s ease-in-out 0s alternate none infinite running flickerAnimation%s;}
+@keyframes flickerAnimation%s { 0%% {opacity: 2;} 100%% { opacity:0; }}
+.foreground-svg { animation: 2s ease-in-out 0s alternate none infinite running flickerAnimation%s;}
 .foreground-svg:hover { animation-play-state: running;}
 </style>"""
 			% tuple([uuid4()] * 2),
@@ -133,8 +133,8 @@ if debug:
 		def __init__(self, **kwargs):
 			self.__dict__.update(kwargs)
 	
-	isub="047"
-	datap=r'/home/greydon/Documents/data/clinical/derivatives/atlasreg/'
+	isub="017"
+	datap=r'/media/greydon/lhsc_data/SEEG_peds/derivatives/atlasreg/'
 	
 	input=dotdict({
 		'flo':datap+f'sub-P{isub}/sub-P{isub}_space-T1w_desc-rigid_ct.nii.gz',
@@ -152,7 +152,7 @@ if debug:
 	
 	snakemake = Namespace(output=output, input=input)
 
-	title = 'sub-P001'
+	title = 'sub-P017'
 
 
 #%%
@@ -161,59 +161,66 @@ if debug:
 ref_img=nib.load(snakemake.input.ref)
 #ref_img.header.set_data_dtype('float32')
 ref_img.set_qform(ref_img.affine,1)
+ref_img_resamp = image.resample_img(ref_img, target_affine=np.eye(3), interpolation='nearest')
 
 flo_img=nib.load(snakemake.input.flo)
 #flo_img.header.set_data_dtype('float32')
 flo_img.set_qform(flo_img.affine,1)
+flo_resamp = image.resample_to_img(flo_img, ref_img_resamp, interpolation='nearest')
 
 
-mean_mm2vox = np.linalg.inv(flo_img.affine)
-struct_vox2mean_vox = mean_mm2vox @ ref_img.affine
+mean_mm2vox = np.linalg.inv(ref_img_resamp.affine)
+struct_vox2mean_vox = mean_mm2vox @ ref_img_resamp.affine
 mat, vec = nib.affines.to_matvec(struct_vox2mean_vox)
-resampled_mean = affine_transform(flo_img.get_fdata(), mat, vec, output_shape=ref_img.shape)
-resampled_mean = nib.Nifti1Image(resampled_mean, header=flo_img.header, affine=ref_img.affine)
+resampled_mean = affine_transform(flo_resamp.get_fdata(), mat, vec, output_shape=ref_img_resamp.shape)
+resampled_mean = nib.Nifti1Image(resampled_mean, header=flo_resamp.header, affine=ref_img_resamp.affine)
 
 flo_resamp_vox_center = (np.array(resampled_mean.shape) - 1) / 2.
 flo_cut=(resampled_mean.affine.dot(list(flo_resamp_vox_center) + [1])).astype(int).tolist()
 
 
 plot_args_ref={'dim':-1, 'black_bg':True}
-if any(x in os.path.basename(snakemake.output.png) for x in ('from-subject_to-')):
+plot_args_flo={'dim':-1, 'black_bg':False}
+if any(x in os.path.basename(snakemake.output.png) for x in ['from-subject_to-']):
 	plot_args_ref={'dim':1}
 
-plot_args_flo={'dim':-1, 'black_bg':True}
-if any(x in os.path.basename(snakemake.output.png) for x in ('from-ct')):
-	plot_args_flo={'dim':1}
 
-display = plotting.plot_anat(ref_img, display_mode='ortho', cut_coords=flo_cut[:3], draw_cross=False, **plot_args_ref)
-fg_svgs = [fromstring(extract_svg(display,300))]
-display.close()
+if any(x in os.path.basename(snakemake.output.png) for x in ['from-ct']):
+	plot_args_ref={'dim':-.5}
+	plot_args_flo={'dim':.5,'vmin': 300,'vmax':1800}
 
+final_svg=[]
+for icut in (-40,-20,0,20,40):
+	display = plotting.plot_anat(ref_img_resamp, display_mode='ortho', cut_coords=[0,icut,icut], draw_cross=False, **plot_args_ref)
+	fg_svgs = [fromstring(extract_svg(display,300))]
+	display.close()
+	
+	display = plotting.plot_anat(flo_resamp, display_mode='ortho', draw_cross=False,cut_coords=[0,icut,icut], **plot_args_flo)
+	bg_svgs = [fromstring(extract_svg(display,300))]
+	display.close()
+	
+	final_svg.append(clean_svg(fg_svgs, bg_svgs))
 
-display = plotting.plot_anat(resampled_mean, display_mode='ortho', draw_cross=False,cut_coords=flo_cut[:3], **plot_args_flo)
-bg_svgs = [fromstring(extract_svg(display,300))]
-display.close()
-
-final_svg="\n".join(clean_svg(fg_svgs, bg_svgs))
+final_svg="\n".join(sum(final_svg,[]))
 
 
 # make figure of thalamic contours
-display = plotting.plot_anat(ref_img, display_mode='ortho',draw_cross=False,cut_coords=[0,0,40],**plot_args_ref)
-display.add_contours(resampled_mean,alpha=0.6,colors='r',linewidths=0.5)
-display.savefig(snakemake.output.png,dpi=300)
+display = plotting.plot_anat(ref_img_resamp, display_mode='ortho',draw_cross=False,cut_coords=[0,0,20],**plot_args_ref)
+display.add_contours(flo_resamp,alpha=0.7,colors='r',linewidths=0.8)
+display.savefig(snakemake.output.png,dpi=350)
 
-tmpfile_ref = BytesIO()
-display.savefig(tmpfile_ref,dpi=300)
-display.close()
-tmpfile_ref.seek(0)
-data_uri = base64.b64encode(tmpfile_ref.getvalue()).decode('utf-8')
-img_tag = '<center><img src="data:image/png;base64,{0}"/></center>'.format(data_uri)
+# tmpfile_ref = BytesIO()
+# display.savefig(tmpfile_ref,dpi=300)
+# display.close()
+# tmpfile_ref.seek(0)
+# data_uri = base64.b64encode(tmpfile_ref.getvalue()).decode('utf-8')
+# img_tag = '<center><img src="data:image/png;base64,{0}"/></center>'.format(data_uri)
 
 
 htmlbase='<!DOCTYPE html> <html lang="en"> <head> <title>Slice viewer</title>  <meta charset="UTF-8" /> </head> <body>'
 htmlend='</body> </html>'
 
-htmlfull=htmlbase + final_svg + img_tag + htmlend
+htmlfull=htmlbase + final_svg  + htmlend
 
 # Write HTML String to file.html
 with open(snakemake.output.html, "w") as file:

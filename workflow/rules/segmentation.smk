@@ -12,7 +12,7 @@ def get_k_tissue_classes(wildcards):
 rule tissue_seg_kmeans_init:
     input:
         t1 = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'), subject=subject_id,desc='n4', suffix='T1w.nii.gz'),
-        mask = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,suffix='mask.nii.gz',from_=get_age_appropriate_template_name(subject_id,'space'),desc='affine',label='brain'),
+        mask = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,suffix='mask.nii.gz',from_=get_age_appropriate_template_name(expand(subject_id,subject=subjects),'space'),desc='affine',label='brain'),
     params:
         k = get_k_tissue_classes,
         m = config['atropos_smoothing_factor'],
@@ -33,7 +33,7 @@ rule tissue_seg_kmeans_init:
 
 rule map_channels_to_tissue:
     input:
-        tissue_priors = expand(bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,suffix='probseg.nii.gz',label='{tissue}',from_=get_age_appropriate_template_name(subject_id,'space'),desc='affine'),
+        tissue_priors = expand(bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,suffix='probseg.nii.gz',label='{tissue}',from_=get_age_appropriate_template_name(expand(subject_id,subject=subjects),'space'),desc='affine'),
                             tissue=config['tissue_labels'],allow_missing=True),
         seg_channels_4d = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,suffix='probseg.nii.gz',desc='atroposKseg'),
     output:
@@ -69,26 +69,26 @@ rule brainmask_from_tissue:
 
 rule tissue_warp_to_nrrd:
     input:
-        segs = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,suffix='dseg.nii.gz',atlas='{atlas}',from_=get_age_appropriate_template_name(subject_id,'space'),desc='nonlin'),
+        segs = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,suffix='dseg.nii.gz',atlas='{atlas}',from_=get_age_appropriate_template_name(expand(subject_id,subject=subjects),'space'),desc='nonlin'),
     params:
-        atlas_labels= get_age_appropriate_template_name(subject_id,'atlas_dseg_tsv'),
+        atlas_labels= get_age_appropriate_template_name(expand(subject_id,subject=subjects),'atlas_dseg_tsv'),
         atlas_colors= config['generic_colors'],
-        orien= get_age_appropriate_template_name(subject_id,'orien'),
+        orien= get_age_appropriate_template_name(expand(subject_id,subject=subjects),'orien'),
     output:
-        seg_nrrd = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,suffix='dseg.seg.nrrd',atlas='{atlas}',from_=get_age_appropriate_template_name(subject_id,'space'),desc='nonlin'),
+        seg_nrrd = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,suffix='dseg.seg.nrrd',atlas='{atlas}',from_=get_age_appropriate_template_name(expand(subject_id,subject=subjects),'space'),desc='nonlin'),
     group: 'preproc'
     #container: config['singularity']['neuroglia']
     script: '../scripts/working/niiTonrrd.py' 
 
 rule tissue_4d_to_nrrd:
     input:
-        segs = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,suffix='dseg.nii.gz',atlas='{atlas}',from_=get_age_appropriate_template_name(subject_id,'space'),desc='nonlin',label='dilated')
+        segs = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,suffix='dseg.nii.gz',atlas='{atlas}',from_=get_age_appropriate_template_name(expand(subject_id,subject=subjects),'space'),desc='nonlin',label='dilated')
     params:
-        atlas_labels= get_age_appropriate_template_name(subject_id,'atlas_dseg_tsv'),
+        atlas_labels= get_age_appropriate_template_name(expand(subject_id,subject=subjects),'atlas_dseg_tsv'),
         atlas_colors= config['generic_colors'],
-        orien= get_age_appropriate_template_name(subject_id,'orien'),
+        orien= get_age_appropriate_template_name(expand(subject_id,subject=subjects),'orien'),
     output:
-        seg_nrrd = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,suffix='dseg.seg.nrrd',atlas='{atlas}',from_=get_age_appropriate_template_name(subject_id,'space'),desc='nonlin',label='dilated')
+        seg_nrrd = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,suffix='dseg.seg.nrrd',atlas='{atlas}',from_=get_age_appropriate_template_name(expand(subject_id,subject=subjects),'space'),desc='nonlin',label='dilated')
     group: 'preproc'
     #container: config['singularity']['neuroglia']
     script: '../scripts/working/niiTonrrd.py'
@@ -125,7 +125,7 @@ rule tissue_4d_to_nrrd:
 #final_outputs.extend(expand(bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id, desc='intensity', suffix='T1w.nii.gz'), 
 #                        subject=subjects))
 
-final_outputs.extend(expand(bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,suffix='dseg.seg.nrrd',atlas='{atlas}',from_=get_age_appropriate_template_name(subject_id,'space'),desc='nonlin'),subject=subjects, atlas=get_age_appropriate_template_name(subject_id,'atlas')))
-final_outputs.extend(expand(bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,suffix='dseg.seg.nrrd',atlas='{atlas}',from_=get_age_appropriate_template_name(subject_id,'space'),desc='nonlin',label='dilated'),subject=subjects, atlas=get_age_appropriate_template_name(subject_id,'atlas')))
+final_outputs.extend(expand(bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,suffix='dseg.seg.nrrd',atlas='{atlas}',from_=get_age_appropriate_template_name(expand(subject_id,subject=subjects),'space'),desc='nonlin'),subject=subjects, atlas=get_age_appropriate_template_name(subject_id,'atlas')))
+final_outputs.extend(expand(bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,suffix='dseg.seg.nrrd',atlas='{atlas}',from_=get_age_appropriate_template_name(expand(subject_id,subject=subjects),'space'),desc='nonlin',label='dilated'),subject=subjects, atlas=get_age_appropriate_template_name(subject_id,'atlas')))
 
 #TODO: make lesion mask from the holes in the brainmask (instead of just filling them..) -- could be a nice way to exclude contrast enhanced vessels

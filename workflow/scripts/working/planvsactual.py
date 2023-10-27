@@ -182,9 +182,9 @@ if debug:
 		def __init__(self, **kwargs):
 			self.__dict__.update(kwargs)
 	
-	isub='sub-P132'
+	isub='sub-P017'
 	#data_dir=r'/media/greydon/lhsc_data/SEEG_rerun/derivatives/seeg_scenes'
-	data_dir=r'/home/greydon/Documents/data/SEEG_rerun/derivatives/seeg_scenes'
+	data_dir=r'/home/greydon/Documents/data/SEEG_peds/derivatives/seeg_scenes'
 	
 	input=dotdict({
 				'isub': isub,
@@ -209,7 +209,7 @@ if write_lines:
 isub = snakemake.input.isub
 data_dir = snakemake.input.data_dir
 
-patient_files = glob.glob(f"{os.path.join(data_dir,isub)}/*csv")
+patient_files = [x for x in glob.glob(f"{os.path.join(data_dir,isub)}/*csv") if 'space-world' not in os.path.basename(x)]
 
 file_data={}
 for ifile in [x for x in patient_files if not x.endswith('empty.csv')]:
@@ -233,6 +233,8 @@ label_set=sorted(set(groupsPlanned), key=groupsPlanned.index)
 if 'actual' in list(file_data):
 	groupsActual, actual_all = determine_groups(np.array(file_data['actual']['label'].values))
 	label_set=sorted(set(groupsActual).intersection(groupsPlanned), key=groupsActual.index)
+	if not label_set:
+		label_set=sorted(set(groupsActual), key=groupsActual.index)
 
 if 'seega' in list(file_data):
 	groupsSeega, seega_all = determine_groups(np.array(file_data['seega']['label'].values), True)
@@ -249,8 +251,13 @@ if shopping_list:
 		updated_colnames[idx]=remap_dict[ilabel]
 	
 	df_shopping_list.columns=updated_colnames
-	df_shopping_list.drop(np.nan, axis = 1, inplace = True)
+	df_shopping_list=df_shopping_list[df_shopping_list['Electrode label']!='aborted']
 	df_shopping_list=df_shopping_list.iloc[0:df_shopping_list.loc[:,'Target'].isnull().idxmax()]
+	df_shopping_list=df_shopping_list[~df_shopping_list['No.'].isnull()]
+	df_shopping_list=df_shopping_list[~df_shopping_list['Target'].isnull()]
+	
+	if any(x==np.nan for x in list(df_shopping_list)):
+		df_shopping_list.drop(np.nan, axis = 1, inplace = True)
 	
 	if all(~df_shopping_list.loc[:,'Ord.'].isnull()):
 		df_shopping_list=df_shopping_list.sort_values(by=['Ord.']).reset_index(drop=True)

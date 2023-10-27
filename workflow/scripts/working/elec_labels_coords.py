@@ -182,17 +182,23 @@ def determineFCSVCoordSystem(input_fcsv):
 	# need to determine if file is in RAS or LPS
 	# loop through header to find coordinate system
 	coordFlag = re.compile('# CoordinateSystem')
+	headFlag = re.compile('# columns')
 	coord_sys=None
-	with open(input_fcsv, 'r+') as fid:
-		rdr = csv.DictReader(filter(lambda row: row[0]=='#', fid))
-		row_cnt=0
-		for row in rdr:
-			cleaned_dict={k:v for k,v in row.items() if k is not None}
-			if any(coordFlag.match(x) for x in list(cleaned_dict.values())):
-				coordString = list(filter(coordFlag.match,  list(cleaned_dict.values())))
-				assert len(coordString)==1
-				coord_sys = coordString[0].split('=')[-1].strip()
-			row_cnt +=1
+	headFin=None
+	ver_fin=None
+	
+	with open(input_fcsv, 'r') as myfile:
+		firstNlines=myfile.readlines()[0:3]
+	
+	for row in firstNlines:
+		row=re.sub("[\s\,]+[\,]","",row).replace("\n","")
+		cleaned_dict={row.split('=')[0].strip():row.split('=')[1].strip()}
+		if None in list(cleaned_dict):
+			cleaned_dict['# columns'] = cleaned_dict.pop(None)
+		if any(coordFlag.match(x) for x in list(cleaned_dict)):
+			coord_sys = list(cleaned_dict.values())[0]
+		if any(headFlag.match(x) for x in list(cleaned_dict)):
+			headFin=list(cleaned_dict.values())[0].split(',')
 	
 	if any(x in coord_sys for x in {'LPS','1'}):
 		df = pd.read_csv(input_fcsv, skiprows=3, header=None)

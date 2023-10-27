@@ -8,13 +8,13 @@ def get_reference_t1(wildcards):
 
 rule qc_reg_t1:
     input:
-        ref = get_age_appropriate_template_name(expand(subject_id,subject=subjects),'t1w'),
+        ref = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),prefix='sub-'+subject_id+"/tpl-"+get_age_appropriate_template_name(expand(subject_id,subject=subjects),'space'),suffix='T1w.nii.gz', include_subject_dir=False),
         flo = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,suffix='T1w.nii.gz', space=get_age_appropriate_template_name(expand(subject_id,subject=subjects),'space'),desc='{desc}'),
     output:
         png = report(bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),prefix='sub-'+subject_id+'/qc/sub-'+subject_id,suffix='regqc.png',from_='subject', to=get_age_appropriate_template_name(expand(subject_id,subject=subjects),'space'),desc='{desc}',include_subject_dir=False),
                 caption='../reports/regqc.rst',
                 category='Registration QC',
-                subcategory=lambda wildcards, input: f"{get_age_appropriate_template_name(input,'space')}"),
+                subcategory=f"{get_age_appropriate_template_name(expand(subject_id,subject=subjects),'space')}"),
         html = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),prefix='sub-'+subject_id+'/qc/sub-'+subject_id,suffix='regqc.html',from_='subject', to=get_age_appropriate_template_name(expand(subject_id,subject=subjects),'space'), desc='{desc}', include_subject_dir=False),
 #        html = report(bids(root='qc',subject=subject_id,suffix='regqc.html',from_='subject', to=get_age_appropriate_template_name(expand(subject_id,subject=subjects),'space'), desc='{desc}'),
 #                caption='../reports/regqc.rst',
@@ -33,14 +33,14 @@ else:
 if config['contrast_t1']['present'] and config['noncontrast_t1']['present']:
     rule qc_reg_noncontrast:
         input:
-            flo = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,acq='contrast',suffix='T1w.nii.gz'),
-            ref = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,acq='noncontrast',space='T1w',desc='rigid',suffix='T1w.nii.gz'),
+            ref = get_reference_t1,
+            flo = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,acq='noncontrast',suffix='T1w.nii.gz',space='T1w',desc='rigid'),
         output:
-            png = report(bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),prefix='sub-'+subject_id+'/qc/sub-'+subject_id,suffix='regqc.png',from_='contrast', to='noncontrast',include_subject_dir=False),
+            png = report(bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),prefix='sub-'+subject_id+'/qc/sub-'+subject_id,suffix='regqc.png',from_='noncontrast', to='contrast',include_subject_dir=False),
                     caption='../reports/regqc.rst',
                     category='Registration QC',
                     subcategory='{desc} T1w'),
-            html = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),prefix='sub-'+subject_id+'/qc/sub-'+subject_id,suffix='regqc.html',from_='contrast', to='noncontrast', include_subject_dir=False),
+            html = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),prefix='sub-'+subject_id+'/qc/sub-'+subject_id,suffix='regqc.html',from_='noncontrast', to='contrast', include_subject_dir=False),
     #        html = report(bids(root='qc',subject=subject_id,suffix='regqc.html',from_='subject', to=get_age_appropriate_template_name(expand(subject_id,subject=subjects),'space'), desc='{desc}'),
     #                caption='../reports/regqc.rst',
     #                category='Registration QC',
@@ -48,7 +48,7 @@ if config['contrast_t1']['present'] and config['noncontrast_t1']['present']:
         group: 'preproc'
         script: '../scripts/vis_regqc.py'
 
-    final_outputs.extend(expand(bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),prefix='sub-'+subject_id+'/qc/sub-'+subject_id,suffix='regqc.png',from_='contrast', to='noncontrast',include_subject_dir=False), 
+    final_outputs.extend(expand(bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),prefix='sub-'+subject_id+'/qc/sub-'+subject_id,suffix='regqc.png',from_='noncontrast', to='contrast',include_subject_dir=False), 
                         subject=subjects))
 
 if config['post_ct']['present']:
