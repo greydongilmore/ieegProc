@@ -180,7 +180,7 @@ flo_cut=(resampled_mean.affine.dot(list(flo_resamp_vox_center) + [1])).astype(in
 
 
 plot_args_ref={'dim':-1, 'black_bg':True}
-plot_args_flo={'dim':-1, 'black_bg':False}
+plot_args_flo={'dim':0, 'black_bg':False}
 if any(x in os.path.basename(snakemake.output.png) for x in ['from-subject_to-']):
 	plot_args_ref={'dim':1}
 

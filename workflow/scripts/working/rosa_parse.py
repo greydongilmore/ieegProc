@@ -78,11 +78,11 @@ def getTrajectoriesList(textfile):
 			trajectory[pos] = np.round(trajectory[pos] * np.array([-1, -1, 1]),3) # LPS to RAS
 	return trajectories
 
-def writeFCSV(coords,labels,output_fcsv):
+def writeFCSV(coords,labels,output_fcsv,coordsys='0'):
 	
 	with open(output_fcsv, 'w') as fid:
 		fid.write("# Markups fiducial file version = 4.11\n")
-		fid.write("# CoordinateSystem = 0\n")
+		fid.write(f"# CoordinateSystem = {coordsys}\n")
 		fid.write("# columns = id,x,y,z,ow,ox,oy,oz,vis,sel,lock,label,desc,associatedNodeID\n")
 	
 	out_df={'node_id':[],'x':[],'y':[],'z':[],'ow':[],'ox':[],'oy':[],'oz':[],
@@ -110,33 +110,36 @@ def writeFCSV(coords,labels,output_fcsv):
 
 
 #%%
-
+import SimpleITK as sitk
 
 ros_file_path=r'/home/greydon/Documents/data/SEEG_peds/derivatives/seeg_scenes'
-isub='sub-P017'
+isub='sub-P018'
 
 nii_fname=glob.glob(f"{ros_file_path}/{isub}/*-contrast*_T1w.nii.gz")
-ros_fname=glob.glob(f"{ros_file_path}/{isub}/**/*.ros")
+ros_fname=glob.glob(f"{ros_file_path}/{isub}/*.ros")
 out_fcsv=os.path.join(ros_file_path,isub,f'{isub}_planned.fcsv')
 out_world_fcsv=os.path.join(ros_file_path,isub,f'{isub}_space-world_planned.fcsv')
 out_tfm=os.path.join(ros_file_path,isub,f'{isub}_from-subject_to-world_planned.tfm')
 out_inv_tfm=os.path.join(ros_file_path,isub,f'{isub}_from-world_to-subject_planned.tfm')
 
 if nii_fname and ros_fname and not os.path.exists(out_fcsv):
-	#centering transform
-	orig_nifti=nb.load(nii_fname[0])
-	center_coordinates=np.array([x/ 2 for x in orig_nifti.header["dim"][1:4]-1.0])
-	homogeneous_coord = np.concatenate((center_coordinates, np.array([1])), axis=0)
-	centering_transform_raw=np.c_[np.r_[np.eye(3),np.zeros((1,3))], np.round(np.dot(orig_nifti.affine,homogeneous_coord),3)]
-	
 	lps2ras=np.diag([-1, -1, 1, 1])
 	ras2lps=np.diag([-1, -1, 1, 1])
+	#centering transform
+	lung_image = sitk.ReadImage(nii_fname[0])
+	orig_nifti=nb.load(nii_fname[0])
+	orig_affine=orig_nifti.affine
+	center_coordinates=np.array([x/ 2 for x in orig_nifti.header["dim"][1:4]-1.0])
+	homogeneous_coord = np.concatenate((center_coordinates, np.array([1])), axis=0)
+	centering_transform_raw=np.c_[np.r_[np.eye(3),np.zeros((1,3))], np.round(np.dot(orig_affine,homogeneous_coord),3)]
 	
 	for itype,ifcsv in zip(['world','t1w'],[out_inv_tfm,out_tfm]):
-		if itype=='world':
-			centering_transform=np.dot(ras2lps,np.dot(np.linalg.inv(centering_transform_raw),lps2ras))
-		else:
+		if itype=='t1w':
 			centering_transform=np.linalg.inv(np.dot(ras2lps,np.dot(np.linalg.inv(centering_transform_raw),lps2ras)))
+			coordsys='0'
+		else:
+			centering_transform=np.dot(ras2lps,np.dot(np.linalg.inv(centering_transform_raw),lps2ras))
+			coordsys='0'
 		
 		Parameters = " ".join([str(x) for x in np.concatenate((centering_transform[0:3,0:3].reshape(9), centering_transform[0:3,3]))])
 		
@@ -149,6 +152,10 @@ if nii_fname and ros_fname and not os.path.exists(out_fcsv):
 	
 	rosa_parsed=parseROSAfile(ros_fname[0])
 	
+	if rosa_parsed['ac'] and rosa_parsed['pc']:
+		vecT = centering_transform_raw @ np.hstack([rosa_parsed['ac'],1])
+		vecE = centering_transform_raw @ np.hstack([rosa_parsed['pc'],1])
+		
 	for itype,ifcsv in zip(['world','t1w'],[out_world_fcsv,out_fcsv]):
 		coords=[]
 		labels=[]
@@ -160,9 +167,11 @@ if nii_fname and ros_fname and not os.path.exists(out_fcsv):
 			if itype == 'world':
 				tvecT = vecT.T
 				tvecE = vecE.T
+				coordsys='0'
 			else:
 				tvecT = centering_transform_raw @ vecT.T
 				tvecE = centering_transform_raw @ vecE.T
+				coordsys='0'
 			
 			traj['target_t']=np.round(tvecT,3).tolist()[:3]
 			coords.append(traj['target_t'])
@@ -174,7 +183,7 @@ if nii_fname and ros_fname and not os.path.exists(out_fcsv):
 			
 			rosa_parsed['trajectories'][idx]=traj
 		
-		writeFCSV(coords,labels,ifcsv)
+		writeFCSV(coords,labels,ifcsv,coordsys)
 	
 	print(f"Done {isub}")
 	

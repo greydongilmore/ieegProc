@@ -2,7 +2,7 @@
 #--- filepaths
 #
 
-bids_dir: /home/greydon/Documents/data/SEEG_rerun
+bids_dir: /home/greydon/Documents/data/ecog
 
 #work computer
 #bids_dir: /home/greydon/Documents/data/cingulate_seizures
@@ -13,18 +13,18 @@ bids_dir: /home/greydon/Documents/data/SEEG_rerun
 subject_prefix: 'P'
 
 registration:
-    run: False
+    run: True
 segmentation:
-    run: False
+    run: True
 visqc:
-    run: False
+    run: True
 fastsurfer:
     run: True
 hippunfold:
     run: False
 
 fastsurfer_vol:
-    ses: 'post'
+    ses: 'pre'
     acq: null           #use 'null' to ignore key
     desc: null          #use 'null' to ignore key
     run: '01'
@@ -47,22 +47,22 @@ post_ct:
     algo: greedy
 
 pet:
-    present: True
+    present: False
     position: 0
     task: rest
     algo: reg_aladin
 
 other_vol:
-    present: False
+    present: True
     session: 'pre'
     datatype: 'anat'
-    acq: null
+    acq: 'Sag'
     run: '01'
     suffix: 'FLAIR.nii.gz'
     algo: reg_aladin
 
 seeg_contacts:
-    present: False
+    present: True
     space_coords: &space_coords derivatives/seeg_coordinates/sub-{subject}/sub-{subject}_space-{coords_space}_{coords_type}.fcsv
     scene_coords: &scene_coords derivatives/seeg_scenes/sub-{subject}/sub-{subject}_{coords_type}.fcsv
 
