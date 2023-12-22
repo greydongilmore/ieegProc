@@ -196,9 +196,9 @@ def get_noncontrast_filename(wildcards):
 
 def get_noncontrast_filename_fs(wildcards):
     ses=config['fastsurfer_vol']['ses']
-    files=glob(bids(root=join(config['out_dir'], 'bids','sub-'+config['subject_prefix']+f'{wildcards.subject}'), prefix='sub-'+config['subject_prefix']+f'{wildcards.subject}', datatype='anat', session=ses, acq=config['fastsurfer_vol']['acq'], desc=config['fastsurfer_vol']['desc'], run='*', suffix=config['fastsurfer_vol']['suffix']))
+    files=glob(bids(root=join(config['out_dir'], 'bids','sub-'+config['subject_prefix']+f'{wildcards.subject}'), prefix='sub-'+config['subject_prefix']+f'{wildcards.subject}', datatype='anat', session=ses, acq=config['fastsurfer_vol']['acq'], desc=config['fastsurfer_vol']['desc'], run='*', suffix=config['fastsurfer_vol']['suffix']+config['fastsurfer_vol']['ext']))
     if len(files) <1:
-        file=expand(bids(root=join(config['out_dir'], 'bids','sub-'+config['subject_prefix']+'{subject}'), prefix='sub-'+config['subject_prefix']+'{subject}', datatype='anat', session=ses, acq=config['fastsurfer_vol']['acq'], desc=config['fastsurfer_vol']['desc'], run=config['fastsurfer_vol']['run'], suffix=config['fastsurfer_vol']['suffix']),subject=wildcards.subject)
+        file=expand(bids(root=join(config['out_dir'], 'bids','sub-'+config['subject_prefix']+'{subject}'), prefix='sub-'+config['subject_prefix']+'{subject}', datatype='anat', session=ses, acq=config['fastsurfer_vol']['acq'], desc=config['fastsurfer_vol']['desc'], run=config['fastsurfer_vol']['run'], suffix=config['fastsurfer_vol']['suffix']+config['fastsurfer_vol']['ext']),subject=wildcards.subject)
         print(file)
     
     files.sort(key=lambda f: int(re.sub('\D', '', f)))

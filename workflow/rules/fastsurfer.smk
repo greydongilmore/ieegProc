@@ -13,7 +13,6 @@ if config['fastsurfer_config']['version'] =='dev':
     rule fastsurfer_seg:
         input: 
             t1 = get_noncontrast_filename_fs,
-            
         params:
             fastsurfer_run = config['fastsurfer_config']['home'],
             sid = config['fastsurfer_config']['sid'],

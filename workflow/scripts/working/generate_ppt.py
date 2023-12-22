@@ -83,7 +83,8 @@ aborted_lang={
 	}
 
 remap_dict={
-	'Electrode label ("aborted" if skipped)':'Electrode label'
+	'Electrode label ("aborted" if skipped)':'Electrode label',
+	'Label                  (6 characters)':'Label'
 }
 
 #%%
@@ -102,9 +103,9 @@ if debug:
 		def __init__(self, **kwargs):
 			self.__dict__.update(kwargs)
 
-	isub = 'sub-P017'
+	isub = 'sub-D158'
 	#data_dir = r'/media/greydon/lhsc_data/SEEG_rerun/derivatives'
-	data_dir = r'/home/greydon/Documents/data/SEEG_peds/derivatives'
+	data_dir = r'/home/greydon/Documents/data/SEEG/derivatives'
 
 	input = dotdict({
 			'shopping_list': f'{data_dir}/seeg_scenes/{isub}/*shopping_list.xlsx',
@@ -128,7 +129,7 @@ df_elec=df_elec.iloc[0:df_elec.loc[:,'Target'].isnull().idxmax()]
 df_elec=df_elec[~df_elec['No.'].isnull()]
 df_elec=df_elec[~df_elec['Target'].isnull()]
 
-if any(x==np.nan for x in list(df_elec)):
+if any(pd.isna(x) for x in list(df_elec)):
 	df_elec.drop(np.nan, axis = 1, inplace = True)
 
 if all(~df_elec.loc[:,'Ord.'].isnull()):

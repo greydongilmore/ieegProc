@@ -2,13 +2,13 @@
 #--- filepaths
 #
 
-bids_dir: /home/greydon/Documents/data/ecog
+bids_dir: /home/greydon/Documents/datasets/single
 
 #work computer
 #bids_dir: /home/greydon/Documents/data/cingulate_seizures
 
 #external drive
-#bids_dir: /media/greydon/lhsc_data/SEEG_rerun
+#bids_dir: /media/greydon/lhsc_data/datasets/SEEG_rerun
 
 subject_prefix: 'P'
 
@@ -19,7 +19,7 @@ segmentation:
 visqc:
     run: True
 fastsurfer:
-    run: True
+    run: False
 hippunfold:
     run: False
 
@@ -28,7 +28,8 @@ fastsurfer_vol:
     acq: null           #use 'null' to ignore key
     desc: null          #use 'null' to ignore key
     run: '01'
-    suffix: 'T1w.nii.gz'
+    suffix: 'T1w'
+    ext: '.nii.gz'
 #
 #--- imaging volumes
 #
@@ -43,26 +44,27 @@ noncontrast_t1:
 
 post_ct:
     present: True
-    position: 0
+    position: -1
     algo: greedy
 
 pet:
-    present: False
-    position: 0
+    present: True
+    position: -1
     task: rest
     algo: reg_aladin
 
 other_vol:
-    present: True
+    present: False
     session: 'pre'
     datatype: 'anat'
-    acq: 'Sag'
+    acq: null
     run: '01'
-    suffix: 'FLAIR.nii.gz'
+    suffix: 'FLAIR'
+    ext: '.nii.gz'
     algo: reg_aladin
 
 seeg_contacts:
-    present: True
+    present: False
     space_coords: &space_coords derivatives/seeg_coordinates/sub-{subject}/sub-{subject}_space-{coords_space}_{coords_type}.fcsv
     scene_coords: &scene_coords derivatives/seeg_scenes/sub-{subject}/sub-{subject}_{coords_type}.fcsv
 
@@ -70,41 +72,43 @@ seeg_contacts:
 #--- registration paramters
 #
 
-linear_reg:
-    reg_aladin:
-        dof: "-rigOnly" # use "-rigOnly" for 6 DOF and "" for 12 DOF
-    greedy:
-        n_iterations_affine: 100x50x10
-        dof: 6
+subject_reg:
+    affine_reg:
+        reg_aladin:
+            dof: "-rigOnly" # use "-rigOnly" for 6 DOF and "" for 12 DOF
+        greedy:
+            n_iterations_linear: 100x50x20
+            dof: 6
 
-affine_reg:
-    algo: reg_aladin
-    reg_aladin:
-        dof: "" # use "-rigOnly" for 6 DOF and "" for 12 DOF
-    greedy:
-        n_iterations_affine: 100x50x10
-
-nonlin_reg:
-    algo: ants
-    ants:
-        dim: 3
-        intensity_opts: '-u 1 -w [0.01,0.99] -z 1'
-        linear:
-            reg_iterations: '1000x500x250x0'
-            shrink_factors: '6x4x2x1'
-            smoothing_factors: '4x2x1x0'
-        deform:
-            shrink_factors: '12x6x4x2x1'  # default in antsMVTC2: 6x4x2x1
-            smoothing_factors: '6x3x2x1x0vox' # default in antsMVTC2: 3x2x1x0
-            reg_iterations: '100x100x70x50x10' # default in antsMVTC2: 100x100x70x20
-            transform_model: 'SyN[0.1,3,0]'
-            sim_metric: CC
-        shape_update:
-            gradient_step: 0.25
-    greedy:
-        n_iterations_deform: 100x40x20
-        grad_sigma: 4.0vox
-        warp_sigma: 1.4vox
+template_reg:
+    affine_reg:
+        algo: reg_aladin
+        reg_aladin:
+            dof: "" # use "-rigOnly" for 6 DOF and "" for 12 DOF
+        greedy:
+            n_iterations_affine: 100x50x10
+    nlin_reg:
+        algo: ants
+        ants:
+            dim: 3
+            intensity_opts: '-u 1 -w [0.01,0.99] -z 1'
+            linear:
+                reg_iterations: '1000x500x250x0'
+                shrink_factors: '6x4x2x1'
+                smoothing_factors: '4x2x1x0'
+            deform:
+                shrink_factors: '12x6x4x2x1'  # default in antsMVTC2: 6x4x2x1
+                smoothing_factors: '6x3x2x1x0vox' # default in antsMVTC2: 3x2x1x0
+                reg_iterations: '100x100x70x50x10' # default in antsMVTC2: 100x100x70x20
+                transform_model: 'SyN[0.1,3,0]'
+                sim_metric: CC
+            shape_update:
+                gradient_step: 0.25
+        greedy:
+            n_iterations_deform: 100x40x20
+            grad_sigma: 4.0vox
+            warp_sigma: 1.4vox
+    
 
 #
 #--- segmentation

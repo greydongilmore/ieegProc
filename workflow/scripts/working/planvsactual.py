@@ -161,7 +161,8 @@ controlpoints_dict={
 
 
 remap_dict={
-	'Electrode label ("aborted" if skipped)':'Electrode label'
+	'Electrode label ("aborted" if skipped)':'Electrode label',
+	'Label                  (6 characters)':'Label'
 }
 
 
@@ -182,9 +183,9 @@ if debug:
 		def __init__(self, **kwargs):
 			self.__dict__.update(kwargs)
 	
-	isub='sub-P017'
+	isub='sub-D158'
 	#data_dir=r'/media/greydon/lhsc_data/SEEG_rerun/derivatives/seeg_scenes'
-	data_dir=r'/home/greydon/Documents/data/SEEG_peds/derivatives/seeg_scenes'
+	data_dir=r'/home/greydon/Documents/data/SEEG/derivatives/seeg_scenes'
 	
 	input=dotdict({
 				'isub': isub,
@@ -256,7 +257,7 @@ if shopping_list:
 	df_shopping_list=df_shopping_list[~df_shopping_list['No.'].isnull()]
 	df_shopping_list=df_shopping_list[~df_shopping_list['Target'].isnull()]
 	
-	if any(x==np.nan for x in list(df_shopping_list)):
+	if any(pd.isna(x) for x in list(df_shopping_list)):
 		df_shopping_list.drop(np.nan, axis = 1, inplace = True)
 	
 	if all(~df_shopping_list.loc[:,'Ord.'].isnull()):

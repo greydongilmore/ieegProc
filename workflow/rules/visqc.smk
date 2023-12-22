@@ -23,7 +23,7 @@ rule qc_reg_t1:
     group: 'preproc'
     script: '../scripts/vis_regqc.py'
 
-if config['nonlin_reg']['algo']=='greedy':
+if config['template_reg']['nlin_reg']['algo']=='greedy':
     final_outputs.extend(expand(bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),prefix='sub-'+subject_id+'/qc/sub-'+subject_id,suffix='regqc.png',from_='subject', to=get_age_appropriate_template_name(expand(subject_id,subject=subjects),'space'),desc='{desc}',include_subject_dir=False),
                             subject=subjects, desc=['affine','nonlin']))
 else:
@@ -97,13 +97,13 @@ if config['other_vol']['present']:
     rule qc_reg_other:
         input:
             ref = get_reference_t1,
-            flo = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,session=config['other_vol']['session'], suffix=config['other_vol']['suffix'],acq=config['other_vol']['acq'],space='T1w',desc='rigid',include_session_dir=False),
+            flo = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,session=config['other_vol']['session'], suffix=config['other_vol']['suffix']+config['other_vol']['ext'],acq=config['other_vol']['acq'],space='T1w',desc='rigid',include_session_dir=False),
         output:
-            png = report(bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),prefix='sub-'+subject_id+'/qc/sub-'+subject_id,suffix='regqc.png',from_='other', to='T1w',desc='rigid',include_subject_dir=False),
+            png = report(bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),prefix='sub-'+subject_id+'/qc/sub-'+subject_id,suffix='regqc.png',from_=config['other_vol']['suffix'], to='T1w',desc='rigid',include_subject_dir=False),
                     caption='../reports/regqc.rst',
                     category='Registration QC',
                     subcategory='{desc} T1w'),
-            html = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),prefix='sub-'+subject_id+'/qc/sub-'+subject_id,suffix='regqc.html',from_='other', to='T1w', desc='rigid',include_subject_dir=False),
+            html = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),prefix='sub-'+subject_id+'/qc/sub-'+subject_id,suffix='regqc.html',from_=config['other_vol']['suffix'], to='T1w', desc='rigid',include_subject_dir=False),
     #        html = report(bids(root='qc',subject=subject_id,suffix='regqc.html',from_='subject', to=get_age_appropriate_template_name(expand(subject_id,subject=subjects),'space'), desc='{desc}'),
     #                caption='../reports/regqc.rst',
     #                category='Registration QC',
@@ -111,7 +111,7 @@ if config['other_vol']['present']:
         group: 'preproc'
         script: '../scripts/vis_regqc.py'
 
-    final_outputs.extend(expand(bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),prefix='sub-'+subject_id+'/qc/sub-'+subject_id,suffix='regqc.png',from_='other', to='T1w',desc='rigid',include_subject_dir=False), 
+    final_outputs.extend(expand(bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),prefix='sub-'+subject_id+'/qc/sub-'+subject_id,suffix='regqc.png',from_=config['other_vol']['suffix'], to='T1w',desc='rigid',include_subject_dir=False), 
                         subject=subjects))
 
 rule qc_probseg:
