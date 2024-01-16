@@ -2,7 +2,8 @@
 #--- filepaths
 #
 
-bids_dir: /home/greydon/Documents/datasets/single
+bids_dir: /home/greydon/Documents/datasets/DBS_rerun
+#bids_dir: /home/greydon/Documents/data/SEEG_rerun
 
 #work computer
 #bids_dir: /home/greydon/Documents/data/cingulate_seizures
@@ -38,28 +39,44 @@ contrast_t1:
     present: True
 
 noncontrast_t1:
-    present: True
+    present: False
     acq: null #use 'null' if you want to ignore
     algo: reg_aladin
 
-post_ct:
+post_image:
     present: True
+    session: 'post'
+    datatype: 'anat'
+    acq: 'Electrode3D'
+    run: '01'
+    suffix: 'T1w'
+    ext: '.nii.gz'
     position: -1
-    algo: greedy
+    algo: reg_aladin
 
 pet:
-    present: True
+    present: False
     position: -1
     task: rest
     algo: reg_aladin
 
+#other_vol:
+#    present: True
+#    session: 'pre'
+#    datatype: 'anat'
+#    acq: 'Tra'
+#    run: '01'
+#    suffix: 'T2w'
+#    ext: '.nii.gz'
+#    algo: reg_aladin
+
 other_vol:
-    present: False
-    session: 'pre'
-    datatype: 'anat'
-    acq: null
+    present: True
+    session: 'peri'
+    datatype: 'ct'
+    acq: 'Frame'
     run: '01'
-    suffix: 'FLAIR'
+    suffix: 'ct'
     ext: '.nii.gz'
     algo: reg_aladin
 

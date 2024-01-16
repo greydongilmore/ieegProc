@@ -84,7 +84,7 @@ aborted_lang={
 
 remap_dict={
 	'Electrode label ("aborted" if skipped)':'Electrode label',
-	'Label                  (6 characters)':'Label'
+	'Label (6 characters)':'Label'
 }
 
 #%%
@@ -103,9 +103,9 @@ if debug:
 		def __init__(self, **kwargs):
 			self.__dict__.update(kwargs)
 
-	isub = 'sub-D158'
+	isub = 'sub-P019'
 	#data_dir = r'/media/greydon/lhsc_data/SEEG_rerun/derivatives'
-	data_dir = r'/home/greydon/Documents/data/SEEG/derivatives'
+	data_dir = r'/home/greydon/Documents/datasets/SEEG_peds/derivatives'
 
 	input = dotdict({
 			'shopping_list': f'{data_dir}/seeg_scenes/{isub}/*shopping_list.xlsx',

@@ -2,12 +2,13 @@
 
 
 def get_postop_filename(wildcards):
-    files=glob(bids(root=join(config['out_dir'], 'bids'), subject=config['subject_prefix']+f'{wildcards.subject}', datatype='ct', session='post', acq='Electrode', run='*', suffix='ct.nii.gz'))
+    files=glob(bids(root=join(config['out_dir'], 'bids'), subject=config['subject_prefix']+f'{wildcards.subject}', datatype=config['post_image']['datatype'], session=config['post_image']['session'], acq=config['post_image']['acq'], run=config['post_image']['run'], suffix=config['post_image']['suffix']+config['post_image']['ext']))
     if len(files) <=1:
-        file=expand(bids(root=join(config['out_dir'], 'bids'), subject=config['subject_prefix']+'{subject}', datatype='ct', session='post', acq='Electrode', run='01', suffix='ct.nii.gz'),subject=wildcards.subject)
+        file=expand(bids(root=join(config['out_dir'], 'bids'), subject=config['subject_prefix']+'{subject}', datatype=config['post_image']['datatype'], session=config['post_image']['session'], acq=config['post_image']['acq'], run=config['post_image']['run'], suffix=config['post_image']['suffix']+config['post_image']['ext']),subject=wildcards.subject)
     else:
         files.sort(key=lambda f: int(re.sub('\D', '', f)))
-        file=files[config['post_ct']['position']]
+        file=files[config['post_image']['position']]
+    
     return file
 
 def get_pet_filename(wildcards):
@@ -118,68 +119,68 @@ elif config['contrast_t1']['present'] and config['noncontrast_t1']['present']:
     final_outputs.extend(expand(bids(root=join(config['out_dir'],'derivatives', 'atlasreg'),subject=subject_id,suffix='xfm.tfm',from_='noncontrast',to='contrast',desc='rigid',type_='ras'),
                         subject=subjects))
 
-if config['post_ct']['present']:
-    rule import_subj_ct:
+if config['post_image']['present']:
+    rule import_subj_post:
         input: get_postop_filename,
-        output: bids(root=join(config['out_dir'],'derivatives', 'atlasreg'),subject=subject_id,suffix='ct.nii.gz')
+        output: bids(root=join(config['out_dir'],'derivatives', 'atlasreg'),subject=subject_id,suffix=config['post_image']['suffix']+config['post_image']['ext'],ses='post',include_session_dir=False)
         group: 'preproc'
         shell: 'cp {input} {output}'
 
-    if config['post_ct']['algo'] =='reg_aladin':
-        rule rigonly_aladin_ct:
+    if config['post_image']['algo'] =='reg_aladin':
+        rule rigonly_aladin_post:
             input: 
-                flo = bids(root=join(config['out_dir'],'derivatives', 'atlasreg'),subject=subject_id,suffix='ct.nii.gz'),
+                flo = bids(root=join(config['out_dir'],'derivatives', 'atlasreg'),subject=subject_id,suffix=config['post_image']['suffix']+config['post_image']['ext'],ses='post',include_session_dir=False),
                 ref = get_reference_t1,
             params:
                 dof=config['subject_reg']['affine_reg']['reg_aladin']['dof']
             output: 
-                warped_subj = bids(root=join(config['out_dir'],'derivatives', 'atlasreg'),subject=subject_id,suffix='ct.nii.gz',space='T1w',desc='rigidInterp'),
-                xfm_ras = bids(root=join(config['out_dir'],'derivatives', 'atlasreg'),subject=subject_id,suffix='xfm.txt',from_='ct',to='T1w',desc='rigid',type_='ras'),
-                xfm_ras_inv = bids(root=join(config['out_dir'],'derivatives', 'atlasreg'),subject=subject_id,suffix='xfm.txt',to='ct',from_='T1w',desc='rigid',type_='ras'),
+                warped_subj = bids(root=join(config['out_dir'],'derivatives', 'atlasreg'),subject=subject_id,suffix=config['post_image']['suffix']+config['post_image']['ext'],space='T1w',desc='rigidInterp',ses='post',include_session_dir=False),
+                xfm_ras = bids(root=join(config['out_dir'],'derivatives', 'atlasreg'),subject=subject_id,suffix='xfm.txt',from_=config['post_image']['suffix'],to='T1w',desc='rigid',type_='ras',ses='post',include_session_dir=False),
+                xfm_ras_inv = bids(root=join(config['out_dir'],'derivatives', 'atlasreg'),subject=subject_id,suffix='xfm.txt',to=config['post_image']['suffix'],from_='T1w',desc='rigid',type_='ras',ses='post',include_session_dir=False),
             #container: config['singularity']['neuroglia']
             group: 'preproc'
             shell:
                 'reg_aladin -flo {input.flo} -ref {input.ref} {params.dof} -interp 0 -res {output.warped_subj} -aff {output.xfm_ras_inv} -speeeeed&&'
                 'c3d_affine_tool {output.xfm_ras_inv} -inv -o {output.xfm_ras}'
                 #'flirt -in {input.flo} -ref {input.ref} -out {output.warped_subj} -omat {output.xfm_ras} -dof 6'
-    elif config['post_ct']['algo'] =='greedy':
-        rule rigonly_greedy_ct:
+    elif config['post_image']['algo'] =='greedy':
+        rule rigonly_greedy_post:
             input: 
-                flo = bids(root=join(config['out_dir'],'derivatives', 'atlasreg'),subject=subject_id,suffix='ct.nii.gz'),
+                flo = bids(root=join(config['out_dir'],'derivatives', 'atlasreg'),subject=subject_id,suffix=config['post_image']['suffix']+config['post_image']['ext'],ses='post',include_session_dir=False),
                 ref = get_reference_t1,
             params:
                 n_iterations_linear=config['subject_reg']['affine_reg']['greedy']['n_iterations_linear'],
                 dof=config['subject_reg']['affine_reg']['greedy']['dof'],
             output: 
-                warped_subj = bids(root=join(config['out_dir'],'derivatives', 'atlasreg'),subject=subject_id,suffix='ct.nii.gz',space='T1w',desc='rigidInterp'),
-                xfm_ras = bids(root=join(config['out_dir'],'derivatives', 'atlasreg'),subject=subject_id,suffix='xfm.txt',from_='ct',to='T1w',desc='rigid',type_='ras'),
-                xfm_ras_inv = bids(root=join(config['out_dir'],'derivatives', 'atlasreg'),subject=subject_id,suffix='xfm.txt',to='ct',from_='T1w',desc='rigid',type_='ras'),
+                warped_subj = bids(root=join(config['out_dir'],'derivatives', 'atlasreg'),subject=subject_id,suffix=config['post_image']['suffix']+config['post_image']['ext'],space='T1w',desc='rigidInterp',ses='post',include_session_dir=False),
+                xfm_ras = bids(root=join(config['out_dir'],'derivatives', 'atlasreg'),subject=subject_id,suffix='xfm.txt',from_=config['post_image']['suffix'],to='T1w',desc='rigid',type_='ras',ses='post',include_session_dir=False),
+                xfm_ras_inv = bids(root=join(config['out_dir'],'derivatives', 'atlasreg'),subject=subject_id,suffix='xfm.txt',to=config['post_image']['suffix'],from_='T1w',desc='rigid',type_='ras',ses='post',include_session_dir=False),
             group: 'preproc'
             shell:
                 'greedy -d 3 -threads 4 -a -ia-image-centers -m MI -dof {params.dof} -i {input.ref} {input.flo} -o {output.xfm_ras_inv} -n {params.n_iterations_linear} &&'
                 'greedy -d 3 -threads 4 -rf {input.ref} -rm {input.flo} {output.warped_subj} -r {output.xfm_ras_inv}&&'
                 'c3d_affine_tool {output.xfm_ras_inv} -inv -o {output.xfm_ras}'
 
-    rule apply_noninterp_transform_ct:
+    rule apply_noninterp_transform_post:
         input:
-            xfm=bids(root=join(config['out_dir'],'derivatives', 'atlasreg'),subject=subject_id,suffix='xfm.txt',from_='ct',to='T1w',desc='rigid',type_='ras'),
-            flo = bids(root=join(config['out_dir'],'derivatives', 'atlasreg'),subject=subject_id,suffix='ct.nii.gz'),
+            xfm=bids(root=join(config['out_dir'],'derivatives', 'atlasreg'),subject=subject_id,suffix='xfm.txt',from_=config['post_image']['suffix'],to='T1w',desc='rigid',type_='ras',ses='post',include_session_dir=False),
+            flo = bids(root=join(config['out_dir'],'derivatives', 'atlasreg'),subject=subject_id,suffix=config['post_image']['suffix']+config['post_image']['ext'],ses='post',include_session_dir=False),
         output:
-            warped_subj = bids(root=join(config['out_dir'],'derivatives', 'atlasreg'),subject=subject_id,suffix='ct.nii.gz',space='T1w',desc='rigid'),
+            warped_subj = bids(root=join(config['out_dir'],'derivatives', 'atlasreg'),subject=subject_id,suffix=config['post_image']['suffix']+config['post_image']['ext'],space='T1w',desc='rigid',ses='post',include_session_dir=False),
         group: 'preproc'
         script: 
             '../scripts/apply_transform_noninterp.py'
 
-    rule convert_ct_xfm_tfm:
+    rule convert_post_xfm_tfm:
         input:
-            xfm=bids(root=join(config['out_dir'],'derivatives', 'atlasreg'),subject=subject_id,suffix='xfm.txt',from_='ct',to='T1w',desc='rigid',type_='ras'),
+            xfm=bids(root=join(config['out_dir'],'derivatives', 'atlasreg'),subject=subject_id,suffix='xfm.txt',from_=config['post_image']['suffix'],to='T1w',desc='rigid',type_='ras',ses='post',include_session_dir=False),
         output:
-            tfm=bids(root=join(config['out_dir'],'derivatives', 'atlasreg'),subject=subject_id,suffix='xfm.tfm',from_='ct',to='T1w',desc='rigid',type_='ras'),
+            tfm=bids(root=join(config['out_dir'],'derivatives', 'atlasreg'),subject=subject_id,suffix='xfm.tfm',from_=config['post_image']['suffix'],to='T1w',desc='rigid',type_='ras',ses='post',include_session_dir=False),
         group: 'preproc'
         script: 
             '../scripts/convert_xfm_tfm.py'
 
-    final_outputs.extend(expand(bids(root=join(config['out_dir'],'derivatives', 'atlasreg'),subject=subject_id,suffix='xfm.tfm',from_='ct',to='T1w',desc='rigid',type_='ras'),
+    final_outputs.extend(expand(bids(root=join(config['out_dir'],'derivatives', 'atlasreg'),subject=subject_id,suffix='xfm.tfm',from_=config['post_image']['suffix'],to='T1w',desc='rigid',type_='ras',ses='post',include_session_dir=False),
                         subject=subjects))
 
 if config['pet']['present']:
@@ -439,13 +440,13 @@ rule mask_subject_t1w:
     shell:
         'fslmaths {input.t1} -mas {input.mask} {output}'
 
-if config['post_ct']['present']:
+if config['post_image']['present']:
     rule mask_subject_ct:
         input:
-            ct = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,desc='rigid',space='T1w', suffix='ct.nii.gz'),
+            ct = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,desc='rigid',space='T1w', suffix=config['post_image']['suffix']+config['post_image']['ext']),
             mask = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,suffix='mask.nii.gz',from_='atropos3seg',desc='brain')
         output:
-            ct = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,suffix='ct.nii.gz',from_='atropos3seg',desc='masked'),
+            ct = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,suffix=config['post_image']['suffix']+config['post_image']['ext'],from_='atropos3seg',desc='masked'),
         #container: config['singularity']['neuroglia']
         group: 'preproc'
         shell:
