@@ -46,13 +46,24 @@ noncontrast_t1:
 post_image:
     present: True
     session: 'post'
-    datatype: 'anat'
-    acq: 'Electrode3D'
+    datatype: 'ct'
+    acq: 'Electrode'
     run: '01'
-    suffix: 'T1w'
+    suffix: 'ct'
     ext: '.nii.gz'
     position: -1
-    algo: reg_aladin
+    algo: greedy
+
+#post_image:
+#    present: True
+#    session: 'post'
+#    datatype: 'anat'
+#    acq: 'Electrode'
+#    run: '01'
+#    suffix: 'T1w'
+#    ext: '.nii.gz'
+#    position: -1
+#    algo: greedy
 
 pet:
     present: False
@@ -60,25 +71,25 @@ pet:
     task: rest
     algo: reg_aladin
 
-#other_vol:
-#    present: True
-#    session: 'pre'
-#    datatype: 'anat'
-#    acq: 'Tra'
-#    run: '01'
-#    suffix: 'T2w'
-#    ext: '.nii.gz'
-#    algo: reg_aladin
-
 other_vol:
     present: True
-    session: 'peri'
-    datatype: 'ct'
-    acq: 'Frame'
+    session: 'pre'
+    datatype: 'anat'
+    acq: 'Tra'
     run: '01'
-    suffix: 'ct'
+    suffix: 'T2w'
     ext: '.nii.gz'
     algo: reg_aladin
+
+#other_vol:
+#    present: True
+#    session: 'peri'
+#    datatype: 'ct'
+#    acq: 'Frame'
+#    run: '01'
+#    suffix: 'ct'
+#    ext: '.nii.gz'
+#    algo: reg_aladin
 
 seeg_contacts:
     present: False
