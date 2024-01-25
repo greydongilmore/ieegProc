@@ -20,7 +20,7 @@ segmentation:
 visqc:
     run: True
 fastsurfer:
-    run: False
+    run: True
 hippunfold:
     run: False
 
@@ -92,7 +92,7 @@ other_vol:
 #    algo: reg_aladin
 
 seeg_contacts:
-    present: False
+    present: True
     space_coords: &space_coords derivatives/seeg_coordinates/sub-{subject}/sub-{subject}_space-{coords_space}_{coords_type}.fcsv
     scene_coords: &scene_coords derivatives/seeg_scenes/sub-{subject}/sub-{subject}_{coords_type}.fcsv
 
@@ -168,7 +168,7 @@ fastsurfer_config:
     ses: 'pre'
     home: "/home/greydon/Documents/GitHub/FastSurfer"
     colors: resources/FreeSurferColorLUT.tsv
-    py: "python3"
+    py: "python"
     sid: 'fastsurfer'
     batch: 8
     threads: 4

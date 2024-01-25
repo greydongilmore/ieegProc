@@ -166,9 +166,8 @@ else:
 
 data_obj=nb.load('/home/greydon/Documents/GitHub/ieegProc/resources/tpl-MNI152NLin2009cSym/tpl-MNI152NLin2009cSym_res-1_atlas-CerebrA_dseg.nii.gz')
 
-write_nrrd(data_obj, seg_nrrd, atlas_labels, snakemake.params.orien)
+write_nrrd(data_obj, snakemake.output.seg_nrrd, atlas_labels, snakemake.params.orien)
 
-out_file='/home/greydon/Documents/GitHub/ieegProc/resources/tpl-MNI152NLin2009cSym/tpl-MNI152NLin2009cSym_res-1_atlas-CerebrA_dseg.seg.nrrd'
 #%%
 
 
