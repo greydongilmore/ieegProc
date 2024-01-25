@@ -114,7 +114,7 @@ def writeFCSV(coords,labels,output_fcsv,coordsys='0'):
 import SimpleITK as sitk
 
 ros_file_path=r'/home/greydon/Documents/datasets/SEEG_peds/derivatives/seeg_scenes'
-isub='sub-P019'
+isub='sub-P020'
 
 nii_fname=glob.glob(f"{ros_file_path}/{isub}/*-contrast*_T1w.nii.gz")
 ros_fname=glob.glob(f"{ros_file_path}/{isub}/*.ros")
@@ -126,8 +126,8 @@ out_inv_tfm=os.path.join(ros_file_path,isub,f'{isub}_from-world_to-subject_plann
 if nii_fname and ros_fname and not os.path.exists(out_fcsv):
 	lps2ras=np.diag([-1, -1, 1, 1])
 	ras2lps=np.diag([-1, -1, 1, 1])
+	
 	#centering transform
-	lung_image = sitk.ReadImage(nii_fname[0])
 	orig_nifti=nb.load(nii_fname[0])
 	orig_affine=orig_nifti.affine
 	center_coordinates=np.array([x/ 2 for x in orig_nifti.header["dim"][1:4]-1.0])

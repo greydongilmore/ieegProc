@@ -2,7 +2,7 @@
 #--- filepaths
 #
 
-bids_dir: /home/greydon/Documents/datasets/DBS_rerun
+bids_dir: /home/greydon/Documents/datasets/SEEG_peds
 #bids_dir: /home/greydon/Documents/data/SEEG_rerun
 
 #work computer
@@ -39,7 +39,7 @@ contrast_t1:
     present: True
 
 noncontrast_t1:
-    present: False
+    present: True
     acq: null #use 'null' if you want to ignore
     algo: reg_aladin
 
@@ -66,13 +66,13 @@ post_image:
 #    algo: greedy
 
 pet:
-    present: False
+    present: True
     position: -1
     task: rest
-    algo: reg_aladin
+    algo: greedy
 
 other_vol:
-    present: True
+    present: False
     session: 'pre'
     datatype: 'anat'
     acq: 'Tra'

@@ -148,7 +148,7 @@ if debug:
 	snakemake = Namespace(output=output, input=input,params=params)
 
 
-atlas_labels = pd.read_table(snakemake.params.atlas_labels)
+atlas_labels = pd.read_table('/home/greydon/Documents/GitHub/ieegProc/resources/tpl-MNI152NLin2009cSym/tpl-MNI152NLin2009cSym_atlas-CerebrA_dseg.tsv')
 atlas_labels.columns=atlas_labels.columns.str.lower()
 
 if not all(x in list(atlas_labels) for x in {'r','g','b'}):
@@ -164,11 +164,11 @@ if not all(x in list(atlas_labels) for x in {'r','g','b'}):
 else:
 	atlas_labels['lut']=atlas_labels[['r','g','b']].values.tolist()
 
-data_obj=nb.load(snakemake.input.segs)
+data_obj=nb.load('/home/greydon/Documents/GitHub/ieegProc/resources/tpl-MNI152NLin2009cSym/tpl-MNI152NLin2009cSym_res-1_atlas-CerebrA_dseg.nii.gz')
 
-write_nrrd(data_obj, snakemake.output.seg_nrrd, atlas_labels, snakemake.params.orien)
+write_nrrd(data_obj, seg_nrrd, atlas_labels, snakemake.params.orien)
 
-
+out_file='/home/greydon/Documents/GitHub/ieegProc/resources/tpl-MNI152NLin2009cSym/tpl-MNI152NLin2009cSym_res-1_atlas-CerebrA_dseg.seg.nrrd'
 #%%
 
 

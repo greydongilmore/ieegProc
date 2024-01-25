@@ -9,6 +9,7 @@ from pptx.enum.text import PP_ALIGN,MSO_ANCHOR
 import pandas as pd
 from pptx.enum.text import MSO_AUTO_SIZE
 import numpy as np
+import datetime
 
 
 def add_slide(presentation, layout, title_dict):
@@ -84,7 +85,7 @@ aborted_lang={
 
 remap_dict={
 	'Electrode label ("aborted" if skipped)':'Electrode label',
-	'Label (6 characters)':'Label'
+	'Label (6 chr)':'Label'
 }
 
 #%%
@@ -103,7 +104,7 @@ if debug:
 		def __init__(self, **kwargs):
 			self.__dict__.update(kwargs)
 
-	isub = 'sub-P019'
+	isub = 'sub-P020'
 	#data_dir = r'/media/greydon/lhsc_data/SEEG_rerun/derivatives'
 	data_dir = r'/home/greydon/Documents/datasets/SEEG_peds/derivatives'
 
@@ -146,7 +147,12 @@ if pin_idx:
 sx_date = 'yyyy-mm-dd'
 sx_idx=[i for i,x in enumerate(df_elec_raw.iloc[2].values) if x =='Date']
 if sx_idx:
-	sx_date = df_elec_raw.iloc[2,sx_idx[0]+1].strftime('%Y-%m-%d')
+	if isinstance(df_elec_raw.iloc[2,sx_idx[0]+1], datetime.datetime):
+		sx_date = df_elec_raw.iloc[2,sx_idx[0]+1].strftime('%Y-%m-%d')
+	elif '_' in df_elec_raw.iloc[2,sx_idx[0]+1]:
+		sx_date = datetime.datetime.strptime(df_elec_raw.iloc[2,sx_idx[0]+1], '%Y_%m_%d').strftime('%Y-%m-%d')
+	else:
+		sx_date = datetime.datetime.strptime(df_elec_raw.iloc[2,sx_idx[0]+1], '%d/%b/%y').strftime('%Y-%m-%d')
 
 
 lastname="lastname"

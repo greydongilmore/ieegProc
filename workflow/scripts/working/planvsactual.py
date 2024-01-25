@@ -162,7 +162,7 @@ controlpoints_dict={
 
 remap_dict={
 	'Electrode label ("aborted" if skipped)':'Electrode label',
-	'Label (6 characters)':'Label'
+	'Label (6 chr)':'Label'
 }
 
 
@@ -183,9 +183,9 @@ if debug:
 		def __init__(self, **kwargs):
 			self.__dict__.update(kwargs)
 	
-	isub='sub-P310'
+	isub='sub-P020'
 	#data_dir=r'/media/greydon/lhsc_data/SEEG_rerun/derivatives/seeg_scenes'
-	data_dir=r'/home/greydon/Documents/datasets/DBS/derivatives/seeg_scenes'
+	data_dir=r'/home/greydon/Documents/datasets/SEEG_peds/derivatives/seeg_scenes'
 	
 	input=dotdict({
 				'isub': isub,

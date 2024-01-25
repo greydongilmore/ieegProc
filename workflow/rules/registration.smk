@@ -2,13 +2,13 @@
 
 
 def get_postop_filename(wildcards):
-    files=glob(bids(root=join(config['out_dir'], 'bids'), subject=config['subject_prefix']+f'{wildcards.subject}', datatype=config['post_image']['datatype'], session=config['post_image']['session'], acq=config['post_image']['acq'], run=config['post_image']['run'], suffix=config['post_image']['suffix']+config['post_image']['ext']))
-    if len(files) <=1:
+    files=glob(bids(root=join(config['out_dir'], 'bids'), subject=config['subject_prefix']+f'{wildcards.subject}', datatype=config['post_image']['datatype'], session=config['post_image']['session'], acq=config['post_image']['acq'], run='*', suffix=config['post_image']['suffix']+config['post_image']['ext']))
+    if len(files) <1:
         file=expand(bids(root=join(config['out_dir'], 'bids'), subject=config['subject_prefix']+'{subject}', datatype=config['post_image']['datatype'], session=config['post_image']['session'], acq=config['post_image']['acq'], run=config['post_image']['run'], suffix=config['post_image']['suffix']+config['post_image']['ext']),subject=wildcards.subject)
     else:
-        files.sort(key=lambda f: int(re.sub('\D', '', f)))
+        files.sort(key=lambda f: int(re.sub('\D', '', f)),reverse=False)
         file=files[config['post_image']['position']]
-    
+    print(file)
     return file
 
 def get_pet_filename(wildcards):
