@@ -132,8 +132,9 @@ if nii_fname and ros_fname and not os.path.exists(out_fcsv):
 	orig_affine=orig_nifti.affine
 	center_coordinates=np.array([x/ 2 for x in orig_nifti.header["dim"][1:4]-1.0])
 	homogeneous_coord = np.concatenate((center_coordinates, np.array([1])), axis=0)
-	centering_transform_raw=np.c_[np.r_[np.eye(3),np.zeros((1,3))], np.round(np.dot(orig_affine,homogeneous_coord),3)]
+	centering_transform_raw=np.c_[np.r_[np.eye(3),np.zeros((1,3))], np.round(np.dot(orig_affine, homogeneous_coord),3)]
 	
+	#store two transforms to file, to-world and to-t1w
 	for itype,ifcsv in zip(['world','t1w'],[out_inv_tfm,out_tfm]):
 		if itype=='t1w':
 			centering_transform=np.linalg.inv(np.dot(ras2lps,np.dot(np.linalg.inv(centering_transform_raw),lps2ras)))
@@ -151,6 +152,7 @@ if nii_fname and ros_fname and not os.path.exists(out_fcsv):
 			fid.write("Parameters: " + Parameters + "\n")
 			fid.write("FixedParameters: 0 0 0\n")
 	
+	#parse ROS file
 	rosa_parsed=parseROSAfile(ros_fname[0])
 	
 	if rosa_parsed['ac'] and rosa_parsed['pc']:
