@@ -2,7 +2,6 @@ from nilearn import plotting, image
 import matplotlib.pyplot as plt
 import matplotlib
 import nibabel as nib
-matplotlib.use('Qt5Agg')
 import numpy as np
 import base64
 import os

@@ -9,7 +9,7 @@ bids_dir: /home/greydon/Documents/datasets/SEEG_peds
 #bids_dir: /home/greydon/Documents/data/cingulate_seizures
 
 #external drive
-#bids_dir: /media/greydon/lhsc_data/datasets/SEEG_rerun
+#bids_dir: /media/greydon/lhsc_data/datasets/DBS
 
 subject_prefix: 'P'
 
@@ -20,7 +20,7 @@ segmentation:
 visqc:
     run: True
 fastsurfer:
-    run: True
+    run: False
 hippunfold:
     run: False
 
@@ -40,8 +40,14 @@ contrast_t1:
 
 noncontrast_t1:
     present: True
-    acq: null #use 'null' if you want to ignore
-    algo: reg_aladin
+    session: 'pre'
+    datatype: 'anat'
+    acq: null
+    run: '01'
+    suffix: 'T1w'
+    ext: '.nii.gz'
+    position: -1
+    algo: greedy
 
 post_image:
     present: True
@@ -58,15 +64,15 @@ post_image:
 #    present: True
 #    session: 'post'
 #    datatype: 'anat'
-#    acq: 'Electrode'
+#    acq: null
 #    run: '01'
 #    suffix: 'T1w'
 #    ext: '.nii.gz'
 #    position: -1
-#    algo: greedy
+#    algo: reg_aladin
 
 pet:
-    present: True
+    present: False
     position: -1
     task: rest
     algo: greedy
@@ -75,11 +81,11 @@ other_vol:
     present: False
     session: 'pre'
     datatype: 'anat'
-    acq: 'Tra'
+    acq: "7T"
     run: '01'
-    suffix: 'T2w'
+    suffix: 'T1w'
     ext: '.nii.gz'
-    algo: reg_aladin
+    algo: greedy
 
 #other_vol:
 #    present: True
@@ -92,7 +98,7 @@ other_vol:
 #    algo: reg_aladin
 
 seeg_contacts:
-    present: True
+    present: False
     space_coords: &space_coords derivatives/seeg_coordinates/sub-{subject}/sub-{subject}_space-{coords_space}_{coords_type}.fcsv
     scene_coords: &scene_coords derivatives/seeg_scenes/sub-{subject}/sub-{subject}_{coords_type}.fcsv
 

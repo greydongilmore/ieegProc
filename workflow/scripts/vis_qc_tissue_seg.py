@@ -7,7 +7,6 @@ import matplotlib.pyplot as plt
 import matplotlib
 import nibabel as nib
 from nibabel.affines import apply_affine
-matplotlib.use('Qt5Agg')
 import numpy as np
 import base64
 import os

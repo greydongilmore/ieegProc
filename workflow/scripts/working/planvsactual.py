@@ -183,9 +183,9 @@ if debug:
 		def __init__(self, **kwargs):
 			self.__dict__.update(kwargs)
 	
-	isub='sub-P020'
+	isub='sub-P139'
 	#data_dir=r'/media/greydon/lhsc_data/SEEG_rerun/derivatives/seeg_scenes'
-	data_dir=r'/home/greydon/Documents/datasets/SEEG_peds/derivatives/seeg_scenes'
+	data_dir=r'/home/greydon/Documents/datasets/SEEG/derivatives/seeg_scenes'
 	
 	input=dotdict({
 				'isub': isub,
@@ -397,13 +397,23 @@ for igroup in label_set:
 	elec_data.append(elec_temp)
 
 elec_data_raw=pd.DataFrame(elec_data)
-
-
 elec_table=elec_data_raw[['electrode','euclid_dist_target', 'radial_dist_target', 'euclid_dist_entry','radial_dist_entry','radial_angle','line_angle']].round(2)
-for item in list(elec_table)[1:]:
+
+float_idx=1
+if shopping_list:
+	float_idx=2
+	if 'implanter' in [x.lower() for x in list(df_shopping_list)]:
+		elec_table.insert(1,'implanter', df_shopping_list['Implanter'].values)
+	
+
+for item in list(elec_table)[float_idx:]:
 	elec_table[item]=elec_table[item].astype(float)
 
-elec_table = elec_table.set_index('electrode')
+if shopping_list:
+	elec_table = elec_table.set_index(['electrode','implanter'])
+else:
+	elec_table = elec_table.set_index(['electrode'])
+
 elec_table_styled=elec_table.style.applymap(lambda x: "background-color:#ccffcc;" if x<2 else 'background-color:#ffff00;' if x>=2 and x<3 else "background-color:#ffcccc;")\
 	.format('{0:,.2f}').set_properties(**{'text-align': 'center'})
 

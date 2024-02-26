@@ -36,7 +36,7 @@ if config['contrast_t1']['present']:
 
 if config['noncontrast_t1']['present']:
     rule import_subj_t1_noncontrast:
-        input: get_noncontrast_filename,
+        input: bids(root=join(config['out_dir'],'bids'), subject=subject_id, datatype=config['noncontrast_t1']['datatype'], session=config['noncontrast_t1']['session'], run=config['noncontrast_t1']['run'], acq=config['noncontrast_t1']['acq'], suffix=config['noncontrast_t1']['suffix']+config['noncontrast_t1']['ext']),
         output: bids(root=join(config['out_dir'],'derivatives', 'atlasreg'),subject=subject_id,acq='noncontrast',suffix='T1w.nii.gz'),
         group: 'preproc'
         shell: "echo {input} &&cp {input} {output}"
@@ -575,7 +575,7 @@ elif  config['template_reg']['nlin_reg']['algo']=='greedy':
         #container: config['singularity']['neuroglia']
         group: 'preproc'
         shell:
-            'greedy -d 3 -threads 4 -m MI -i {input.ref} {input.flo} -it {input.init_xfm}  -o {output.out_warp} -oinv {output.out_inv_warp} -n {params.n_iterations_deform} -s {params.grad_sigma} {params.warp_sigma} &&'
+            'greedy -d 3 -threads 4 -m MI -i {input.ref} {input.flo} -it {input.init_xfm}  -o {output.out_warp} -oinv {output.out_inv_warp} -sv -n {params.n_iterations_deform} -s {params.grad_sigma} {params.warp_sigma} &&'
             'greedy -d 3 -threads 4 -rf {input.ref} -rm {input.flo} {output.warped_flo} -r {output.out_warp} {input.init_xfm}'
 
     rule warp_t1w_to_template:

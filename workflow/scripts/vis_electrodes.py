@@ -6,7 +6,6 @@ import re
 import matplotlib.pyplot as plt
 from nilearn import plotting
 
-matplotlib.use('Agg')
 
 debug = False
 

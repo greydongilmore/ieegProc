@@ -114,7 +114,7 @@ def writeFCSV(coords,labels,output_fcsv,coordsys='0'):
 import SimpleITK as sitk
 
 ros_file_path=r'/home/greydon/Documents/datasets/SEEG_peds/derivatives/seeg_scenes'
-isub='sub-P020'
+isub='sub-P021'
 
 nii_fname=glob.glob(f"{ros_file_path}/{isub}/*-contrast*_T1w.nii.gz")
 ros_fname=glob.glob(f"{ros_file_path}/{isub}/*.ros")

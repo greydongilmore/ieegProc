@@ -1,5 +1,4 @@
 import matplotlib
-matplotlib.use('Agg')
 import ants
 from nilearn import plotting,image
 import nibabel as nib

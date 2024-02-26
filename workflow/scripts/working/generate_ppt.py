@@ -32,26 +32,36 @@ def add_slide(presentation, layout, title_dict):
 def write_cell(table, row, col, value):
 	table.cell(row, col).text = "%s" % value
 
-def format_table_header(tbl):
+def format_table_header(tbl_tmp):
+	
+	col_cnt=0
 	header_vals=[
-		 [(0, 0),(1, 0),'Electrode'],
-		 [(0, 1),(0, 2),'Target Error'],
-		 [(0, 3),(0, 4),'Entry Error'],
-		 [(0, 5),(1, 5),'Radial Angle'],
-		 [(0, 6),(1, 6),'Line Angle'],
-		 [(1, 1),'Euclidean'],
-		 [(1, 2),'Radial'],
-		 [(1, 3),'Euclidean'],
-		 [(1, 4),'Radial'],
-	]
+		 [(0, col_cnt),(1, 0),'Electrode']
+		 ]
+	
+	col_cnt+=1
+	if len(tbl_tmp.table.rows[1].cells)==8:
+		header_vals.extend([[(0, col_cnt),(1, 1),'Implanter']])
+		col_cnt+=1
+	
+	header_vals.extend([
+		 [(0, col_cnt),(0, col_cnt+1),'Target Error'],
+		 [(0, col_cnt+2),(0, col_cnt+3),'Entry Error'],
+		 [(0, col_cnt+4),(1, col_cnt+4),'Radial Angle'],
+		 [(0, col_cnt+5),(1, col_cnt+5),'Line Angle'],
+		 [(1, col_cnt),'Euclidean'],
+		 [(1, col_cnt+1),'Radial'],
+		 [(1, col_cnt+2),'Euclidean'],
+		 [(1, col_cnt+3),'Radial'],
+	])
 	
 	for ihead in header_vals:
 		if len(ihead)>2:
-			cell = tbl.table.cell(ihead[0][0],ihead[0][1])
-			cell.merge(tbl.table.cell(ihead[1][0],ihead[1][1]))
+			cell = tbl_tmp.table.cell(ihead[0][0],ihead[0][1])
+			cell.merge(tbl_tmp.table.cell(ihead[1][0],ihead[1][1]))
 			cell.text = ihead[2]
 		else:
-			cell = tbl.table.cell(ihead[0][0],ihead[0][1])
+			cell = tbl_tmp.table.cell(ihead[0][0],ihead[0][1])
 			cell.text = ihead[1]
 		
 		cell.vertical_anchor = MSO_ANCHOR.BOTTOM
@@ -61,7 +71,7 @@ def format_table_header(tbl):
 		cell.fill.solid()
 		cell.fill.fore_color.rgb = RGBColor(51,51,51)
 	
-	return tbl
+	return tbl_tmp
 
 
 color_map={
@@ -104,9 +114,9 @@ if debug:
 		def __init__(self, **kwargs):
 			self.__dict__.update(kwargs)
 
-	isub = 'sub-P020'
+	isub = 'sub-P139'
 	#data_dir = r'/media/greydon/lhsc_data/SEEG_rerun/derivatives'
-	data_dir = r'/home/greydon/Documents/datasets/SEEG_peds/derivatives'
+	data_dir = r'/home/greydon/Documents/datasets/SEEG/derivatives'
 
 	input = dotdict({
 			'shopping_list': f'{data_dir}/seeg_scenes/{isub}/*shopping_list.xlsx',
@@ -227,8 +237,8 @@ if os.path.exists(snakemake.input.error_metrics):
 	left = (prs.slide_width -  width) / 2
 	top = (prs.slide_height -  height) / 2
 	
-	tbl = error_slide.shapes.add_table(errors_data.shape[0]+2, 7, left,top,width, height)
-	tbl = format_table_header(tbl)
+	tbl_tmp = error_slide.shapes.add_table(errors_data.shape[0]+2, errors_data.shape[1], left,top,width, height)
+	tbl = format_table_header(tbl_tmp)
 	
 	for row in range(2,len(tbl.table.rows)):
 		for cell in range(len(tbl.table.rows[row].cells)):
@@ -294,7 +304,7 @@ for _, row_elec in df_elec.iterrows():
 				left = (prs.slide_width -  width) / 2
 				top = (prs.slide_height -  height) / 10
 				
-				tbl = elec_slide.shapes.add_table(3, 7, left,(top*9.5),width, height)
+				tbl = elec_slide.shapes.add_table(3, errors_data.shape[1], left,(top*9.5),width, height)
 				tbl = format_table_header(tbl)
 				
 				cell=0

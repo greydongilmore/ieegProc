@@ -2,7 +2,6 @@
 
 import numpy as np
 import nibabel as nib
-import SimpleITK as sitk
 
 
 debug = False
