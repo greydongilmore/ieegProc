@@ -183,9 +183,9 @@ if debug:
 		def __init__(self, **kwargs):
 			self.__dict__.update(kwargs)
 	
-	isub='sub-P139'
+	isub='sub-P021'
 	#data_dir=r'/media/greydon/lhsc_data/SEEG_rerun/derivatives/seeg_scenes'
-	data_dir=r'/home/greydon/Documents/datasets/SEEG/derivatives/seeg_scenes'
+	data_dir=r'/home/greydon/Documents/datasets/SEEG_peds/derivatives/seeg_scenes'
 	
 	input=dotdict({
 				'isub': isub,
@@ -256,9 +256,13 @@ if shopping_list:
 	df_shopping_list=df_shopping_list.iloc[0:df_shopping_list.loc[:,'Target'].isnull().idxmax()]
 	df_shopping_list=df_shopping_list[~df_shopping_list['No.'].isnull()]
 	df_shopping_list=df_shopping_list[~df_shopping_list['Target'].isnull()]
+	df_shopping_list = df_shopping_list.dropna(axis=1, how='all')
 	
 	if any(pd.isna(x) for x in list(df_shopping_list)):
 		df_shopping_list.drop(np.nan, axis = 1, inplace = True)
+	
+	if all(~df_shopping_list.loc[:,'Ord.'].isnull()):
+		df_shopping_list=df_shopping_list.sort_values(by=['Ord.']).reset_index(drop=True)
 	
 	if all(~df_shopping_list.loc[:,'Ord.'].isnull()):
 		df_shopping_list=df_shopping_list.sort_values(by=['Ord.']).reset_index(drop=True)
@@ -401,15 +405,15 @@ elec_table=elec_data_raw[['electrode','euclid_dist_target', 'radial_dist_target'
 
 float_idx=1
 if shopping_list:
-	float_idx=2
 	if 'implanter' in [x.lower() for x in list(df_shopping_list)]:
+		float_idx=2
 		elec_table.insert(1,'implanter', df_shopping_list['Implanter'].values)
 	
 
 for item in list(elec_table)[float_idx:]:
 	elec_table[item]=elec_table[item].astype(float)
 
-if shopping_list:
+if float_idx>1:
 	elec_table = elec_table.set_index(['electrode','implanter'])
 else:
 	elec_table = elec_table.set_index(['electrode'])

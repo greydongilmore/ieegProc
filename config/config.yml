@@ -20,7 +20,7 @@ segmentation:
 visqc:
     run: True
 fastsurfer:
-    run: False
+    run: True
 hippunfold:
     run: False
 
@@ -98,7 +98,7 @@ other_vol:
 #    algo: reg_aladin
 
 seeg_contacts:
-    present: False
+    present: True
     space_coords: &space_coords derivatives/seeg_coordinates/sub-{subject}/sub-{subject}_space-{coords_space}_{coords_type}.fcsv
     scene_coords: &scene_coords derivatives/seeg_scenes/sub-{subject}/sub-{subject}_{coords_type}.fcsv
 
@@ -278,6 +278,9 @@ ants:
     shape_update:
         gradient_step: 0.25
 
+ext_libs:
+    c3d_affine_tool: resources/c3d-1.4.0/bin/c3d_affine_tool
+    c3d: resources/c3d-1.4.0/bin/c3d
 singularity:
     neuroglia-core: "docker://khanlab/neuroglia-core:latest"
     fastsurfer: "docker://deepmi/fastsurfer:latest"

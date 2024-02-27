@@ -62,7 +62,8 @@ elif config['contrast_t1']['present'] and config['noncontrast_t1']['present']:
                 flo = bids(root=join(config['out_dir'],'derivatives', 'atlasreg'),subject=subject_id,acq='noncontrast',suffix='T1w.nii.gz'),
                 ref = bids(root=join(config['out_dir'],'derivatives', 'atlasreg'),subject=subject_id,acq='contrast',suffix='T1w.nii.gz'),
             params:
-                dof=config['subject_reg']['affine_reg']['reg_aladin']['dof']
+                dof=config['subject_reg']['affine_reg']['reg_aladin']['dof'],
+                c3d_affine_tool=config['ext_libs']['c3d_affine_tool'],
             output: 
                 warped_subj = bids(root=join(config['out_dir'],'derivatives', 'atlasreg'),subject=subject_id,acq='noncontrast',suffix='T1w.nii.gz',space='T1w',desc='rigidInterp'),
                 xfm_ras = bids(root=join(config['out_dir'],'derivatives', 'atlasreg'),subject=subject_id,suffix='xfm.txt',from_='noncontrast',to='contrast',desc='rigid',type_='ras'),
@@ -71,7 +72,7 @@ elif config['contrast_t1']['present'] and config['noncontrast_t1']['present']:
             group: 'preproc'
             shell:
                 'reg_aladin -flo {input.flo} -ref {input.ref} {params.dof} -interp 0 -res {output.warped_subj} -aff {output.xfm_ras_inv} -speeeeed&&'
-                'c3d_affine_tool {output.xfm_ras_inv} -inv -o {output.xfm_ras}'
+                '{params.c3d_affine_tool} {output.xfm_ras_inv} -inv -o {output.xfm_ras}'
                 #'flirt -in {input.flo} -ref {input.ref} -out {output.warped_subj} -omat {output.xfm_ras} -dof 6'
     elif config['noncontrast_t1']['algo'] =='greedy':
         rule rigonly_greedy_contrast:
@@ -81,6 +82,7 @@ elif config['contrast_t1']['present'] and config['noncontrast_t1']['present']:
             params:
                 n_iterations_linear=config['subject_reg']['affine_reg']['greedy']['n_iterations_linear'],
                 dof=config['subject_reg']['affine_reg']['greedy']['dof'],
+                c3d_affine_tool=config['ext_libs']['c3d_affine_tool'],
             output: 
                 warped_subj = bids(root=join(config['out_dir'],'derivatives', 'atlasreg'),subject=subject_id,acq='noncontrast',suffix='T1w.nii.gz',space='T1w',desc='rigidInterp'),
                 xfm_ras = bids(root=join(config['out_dir'],'derivatives', 'atlasreg'),subject=subject_id,suffix='xfm.txt',from_='noncontrast',to='contrast',desc='rigid',type_='ras'),
@@ -89,7 +91,7 @@ elif config['contrast_t1']['present'] and config['noncontrast_t1']['present']:
             shell:
                 'greedy -d 3 -threads 4 -a -ia-image-centers -m MI -dof {params.dof} -i {input.ref} {input.flo} -o {output.xfm_ras_inv} -n {params.n_iterations_linear} &&'
                 'greedy -d 3 -threads 4 -rf {input.ref} -rm {input.flo} {output.warped_subj} -r {output.xfm_ras_inv}&&'
-                'c3d_affine_tool {output.xfm_ras_inv} -inv -o {output.xfm_ras}'
+                '{params.c3d_affine_tool} {output.xfm_ras_inv} -inv -o {output.xfm_ras}'
 
     rule apply_noninterp_transform_noncontrast:
         input:
@@ -132,7 +134,8 @@ if config['post_image']['present']:
                 flo = bids(root=join(config['out_dir'],'derivatives', 'atlasreg'),subject=subject_id,suffix=config['post_image']['suffix']+config['post_image']['ext'],ses='post',include_session_dir=False),
                 ref = get_reference_t1,
             params:
-                dof=config['subject_reg']['affine_reg']['reg_aladin']['dof']
+                dof=config['subject_reg']['affine_reg']['reg_aladin']['dof'],
+                c3d_affine_tool=config['ext_libs']['c3d_affine_tool'],
             output: 
                 warped_subj = bids(root=join(config['out_dir'],'derivatives', 'atlasreg'),subject=subject_id,suffix=config['post_image']['suffix']+config['post_image']['ext'],space='T1w',desc='rigidInterp',ses='post',include_session_dir=False),
                 xfm_ras = bids(root=join(config['out_dir'],'derivatives', 'atlasreg'),subject=subject_id,suffix='xfm.txt',from_=config['post_image']['suffix'],to='T1w',desc='rigid',type_='ras',ses='post',include_session_dir=False),
@@ -141,7 +144,7 @@ if config['post_image']['present']:
             group: 'preproc'
             shell:
                 'reg_aladin -flo {input.flo} -ref {input.ref} {params.dof} -interp 0 -res {output.warped_subj} -aff {output.xfm_ras_inv} -speeeeed&&'
-                'c3d_affine_tool {output.xfm_ras_inv} -inv -o {output.xfm_ras}'
+                '{params.c3d_affine_tool} {output.xfm_ras_inv} -inv -o {output.xfm_ras}'
                 #'flirt -in {input.flo} -ref {input.ref} -out {output.warped_subj} -omat {output.xfm_ras} -dof 6'
     elif config['post_image']['algo'] =='greedy':
         rule rigonly_greedy_post:
@@ -151,6 +154,7 @@ if config['post_image']['present']:
             params:
                 n_iterations_linear=config['subject_reg']['affine_reg']['greedy']['n_iterations_linear'],
                 dof=config['subject_reg']['affine_reg']['greedy']['dof'],
+                c3d_affine_tool=config['ext_libs']['c3d_affine_tool'],
             output: 
                 warped_subj = bids(root=join(config['out_dir'],'derivatives', 'atlasreg'),subject=subject_id,suffix=config['post_image']['suffix']+config['post_image']['ext'],space='T1w',desc='rigidInterp',ses='post',include_session_dir=False),
                 xfm_ras = bids(root=join(config['out_dir'],'derivatives', 'atlasreg'),subject=subject_id,suffix='xfm.txt',from_=config['post_image']['suffix'],to='T1w',desc='rigid',type_='ras',ses='post',include_session_dir=False),
@@ -159,7 +163,7 @@ if config['post_image']['present']:
             shell:
                 'greedy -d 3 -threads 4 -a -ia-image-centers -m MI -dof {params.dof} -i {input.ref} {input.flo} -o {output.xfm_ras_inv} -n {params.n_iterations_linear} &&'
                 'greedy -d 3 -threads 4 -rf {input.ref} -rm {input.flo} {output.warped_subj} -r {output.xfm_ras_inv}&&'
-                'c3d_affine_tool {output.xfm_ras_inv} -inv -o {output.xfm_ras}'
+                '{params.c3d_affine_tool} {output.xfm_ras_inv} -inv -o {output.xfm_ras}'
 
     rule apply_noninterp_transform_post:
         input:
@@ -197,7 +201,8 @@ if config['pet']['present']:
                 flo = bids(root=join(config['out_dir'],'derivatives', 'atlasreg'),subject=subject_id,suffix='pet.nii.gz'),
                 ref = get_reference_t1,
             params:
-                dof=config['subject_reg']['affine_reg']['reg_aladin']['dof']
+                dof=config['subject_reg']['affine_reg']['reg_aladin']['dof'],
+                c3d_affine_tool=config['ext_libs']['c3d_affine_tool'],
             output: 
                 warped_subj = bids(root=join(config['out_dir'],'derivatives', 'atlasreg'),subject=subject_id,suffix='pet.nii.gz',space='T1w',desc='rigidInterp'),
                 xfm_ras = bids(root=join(config['out_dir'],'derivatives', 'atlasreg'),subject=subject_id,suffix='xfm.txt',from_='pet',to='T1w',desc='rigid',type_='ras'),
@@ -206,7 +211,7 @@ if config['pet']['present']:
             group: 'preproc'
             shell:
                 'reg_aladin -flo {input.flo} -ref {input.ref} {params.dof} -interp 0 -res {output.warped_subj} -aff {output.xfm_ras_inv} -speeeeed&&'
-                'c3d_affine_tool {output.xfm_ras_inv} -inv -o {output.xfm_ras}'
+                '{params.c3d_affine_tool} {output.xfm_ras_inv} -inv -o {output.xfm_ras}'
                 #'flirt -in {input.flo} -ref {input.ref} -out {output.warped_subj} -omat {output.xfm_ras} -dof 6'
     elif config['pet']['algo'] =='greedy':
         rule rigonly_greedy_pet:
@@ -216,6 +221,7 @@ if config['pet']['present']:
             params:
                 n_iterations_linear=config['subject_reg']['affine_reg']['greedy']['n_iterations_linear'],
                 dof=config['subject_reg']['affine_reg']['greedy']['dof'],
+                c3d_affine_tool=config['ext_libs']['c3d_affine_tool'],
             output:
                 warped_subj = bids(root=join(config['out_dir'],'derivatives', 'atlasreg'),subject=subject_id,suffix='pet.nii.gz',space='T1w',desc='rigidInterp'),
                 xfm_ras = bids(root=join(config['out_dir'],'derivatives', 'atlasreg'),subject=subject_id,suffix='xfm.txt',from_='pet',to='T1w',desc='rigid',type_='ras'),
@@ -224,7 +230,7 @@ if config['pet']['present']:
             shell:
                 'greedy -d 3 -threads 4 -a -ia-image-centers -m MI -dof {params.dof} -i {input.ref} {input.flo} -o {output.xfm_ras_inv} -n {params.n_iterations_linear} &&'
                 'greedy -d 3 -threads 4 -rf {input.ref} -rm {input.flo} {output.warped_subj} -r {output.xfm_ras_inv}&&'
-                'c3d_affine_tool {output.xfm_ras_inv} -inv -o {output.xfm_ras}'
+                '{params.c3d_affine_tool} {output.xfm_ras_inv} -inv -o {output.xfm_ras}'
 
     rule apply_noninterp_transform_pet:
         input:
@@ -261,7 +267,8 @@ if config['other_vol']['present']:
                 flo = rules.import_other_vol.output,
                 ref = get_reference_t1,
             params:
-                dof=config['subject_reg']['affine_reg']['reg_aladin']['dof']
+                dof=config['subject_reg']['affine_reg']['reg_aladin']['dof'],
+                c3d_affine_tool=config['ext_libs']['c3d_affine_tool'],
             output: 
                 warped_subj = bids(root=join(config['out_dir'],'derivatives', 'atlasreg'),subject=subject_id, session=config['other_vol']['session'], suffix=config['other_vol']['suffix']+config['other_vol']['ext'],acq=config['other_vol']['acq'],space='T1w',desc='rigidInterp',include_session_dir=False),
                 xfm_ras = bids(root=join(config['out_dir'],'derivatives', 'atlasreg'),subject=subject_id,suffix='xfm.txt',from_=config['other_vol']['suffix'],acq=config['other_vol']['acq'],to='T1w',desc='rigid',type_='ras'),
@@ -270,7 +277,7 @@ if config['other_vol']['present']:
             group: 'preproc'
             shell:
                 'reg_aladin -flo {input.flo} -ref {input.ref} {params.dof} -interp 0 -res {output.warped_subj} -aff {output.xfm_ras_inv} -speeeeed&&'
-                'c3d_affine_tool {output.xfm_ras_inv} -inv -o {output.xfm_ras}'
+                '{params.c3d_affine_tool} {output.xfm_ras_inv} -inv -o {output.xfm_ras}'
                 #'flirt -in {input.flo} -ref {input.ref} -out {output.warped_subj} -omat {output.xfm_ras} -dof 6'
 
     elif config['other_vol']['algo'] =='greedy':
@@ -281,6 +288,7 @@ if config['other_vol']['present']:
             params:
                 n_iterations_linear=config['subject_reg']['affine_reg']['greedy']['n_iterations_linear'],
                 dof=config['subject_reg']['affine_reg']['greedy']['dof'],
+                c3d_affine_tool=config['ext_libs']['c3d_affine_tool'],
             output: 
                 warped_subj = bids(root=join(config['out_dir'],'derivatives', 'atlasreg'),subject=subject_id, session=config['other_vol']['session'], suffix=config['other_vol']['suffix']+config['other_vol']['ext'],acq=config['other_vol']['acq'],space='T1w',desc='rigidInterp',include_session_dir=False),
                 xfm_ras = bids(root=join(config['out_dir'],'derivatives', 'atlasreg'),subject=subject_id,suffix='xfm.txt',from_=config['other_vol']['suffix'],acq=config['other_vol']['acq'],to='T1w',desc='rigid',type_='ras'),
@@ -289,7 +297,7 @@ if config['other_vol']['present']:
             shell:
                 'greedy -d 3 -threads 4 -a -ia-image-centers -m MI -dof {params.dof} -i {input.ref} {input.flo} -o {output.xfm_ras_inv} -n {params.n_iterations_linear} &&'
                 'greedy -d 3 -threads 4 -rf {input.ref} -rm {input.flo} {output.warped_subj} -r {output.xfm_ras_inv}&&'
-                'c3d_affine_tool {output.xfm_ras_inv} -inv -o {output.xfm_ras}'
+                '{params.c3d_affine_tool} {output.xfm_ras_inv} -inv -o {output.xfm_ras}'
 
     rule apply_noninterp_transform_other:
         input:
@@ -329,6 +337,8 @@ if config['template_reg']['affine_reg']['algo']=='reg_aladin':
         input:
             flo = bids(root=join(config['out_dir'],'derivatives', 'atlasreg'),subject=subject_id,suffix='T1w.nii.gz'),
             ref = rules.import_mni_vol.output
+        params:
+            c3d_affine_tool=config['ext_libs']['c3d_affine_tool'],
         output: 
             warped_subj = bids(root=join(config['out_dir'],'derivatives', 'atlasreg'),subject=subject_id,suffix='T1w.nii.gz',space=get_age_appropriate_template_name(expand(subject_id,subject=subjects),'space'),desc='affine'),
             affine_xfm_ras = bids(root=join(config['out_dir'],'derivatives', 'atlasreg'),subject=subject_id,suffix='xfm.txt',from_='subject',to=get_age_appropriate_template_name(expand(subject_id,subject=subjects),'space'),desc='affine',type_='ras'),
@@ -337,7 +347,7 @@ if config['template_reg']['affine_reg']['algo']=='reg_aladin':
         group: 'preproc'
         shell:
             'reg_aladin -flo {input.flo} -ref {input.ref} -interp 0 -res {output.warped_subj} -aff {output.affine_xfm_ras_inv}&&'
-            'c3d_affine_tool {output.affine_xfm_ras_inv} -inv -o {output.affine_xfm_ras}'
+            '{params.c3d_affine_tool} {output.affine_xfm_ras_inv} -inv -o {output.affine_xfm_ras}'
 
 elif config['template_reg']['affine_reg']['algo']=='greedy':
     rule greedy_affine:
@@ -350,12 +360,13 @@ elif config['template_reg']['affine_reg']['algo']=='greedy':
             affine_xfm_ras_inv = bids(root=join(config['out_dir'],'derivatives', 'atlasreg'),subject=subject_id,suffix='xfm.txt',to='subject',from_=get_age_appropriate_template_name(expand(subject_id,subject=subjects),'space'),desc='affine',type_='ras'),
         params:
             n_iterations_affine=config['template_reg']['affine_reg']['greedy']['n_iterations_affine'],
+            c3d_affine_tool=config['ext_libs']['c3d_affine_tool'],
         #container: config['singularity']['neuroglia']
         group: 'preproc'
         shell:
             'greedy -d 3 -threads 4 -a -ia-image-centers -m MI -i {input.ref} {input.flo} -o {output.affine_xfm_ras_inv} -n {params.n_iterations_affine}&&'
             'greedy -d 3 -threads 4 -rf {input.ref} -rm {input.flo} {output.warped_subj} -r {output.affine_xfm_ras_inv}&&'
-            'c3d_affine_tool {output.affine_xfm_ras_inv} -inv -o {output.affine_xfm_ras}'
+            '{params.c3d_affine_tool} {output.affine_xfm_ras_inv} -inv -o {output.affine_xfm_ras}'
 
 rule convert_affine_xfm_tfm:
     input:
@@ -371,12 +382,14 @@ final_outputs.extend(expand(bids(root=join(config['out_dir'],'derivatives', 'atl
 rule convert_xfm_ras2itk:
     input:
         xfm=bids(root=join(config['out_dir'],'derivatives', 'atlasreg'),subject=subject_id,suffix='xfm.txt',from_='subject',to=get_age_appropriate_template_name(expand(subject_id,subject=subjects),'space'),desc='affine',type_='ras'),
+    params:
+        c3d_affine_tool=config['ext_libs']['c3d_affine_tool'],
     output:
         xfm_itk=bids(root=join(config['out_dir'],'derivatives', 'atlasreg'),subject=subject_id,suffix='xfm.txt',from_='subject',to=get_age_appropriate_template_name(expand(subject_id,subject=subjects),'space'),desc='affine',type_='itk'),
     #container: config['singularity']['neuroglia']
     group: 'preproc'
     shell:
-        'c3d_affine_tool {input.xfm} -oitk {output.xfm_itk}'
+        '{params.c3d_affine_tool} {input.xfm} -oitk {output.xfm_itk}'
 
 rule warp_brainmask_from_template_affine:
     input: 

@@ -54,11 +54,13 @@ rule mask_contacts:
     input: 
         ct = bids(root=join(config['out_dir'],'derivatives', 'atlasreg'),subject=subject_id,suffix=config['post_image']['suffix']+config['post_image']['ext'],space='T1w',desc='rigid',ses='post',include_session_dir=False),
         txt = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,suffix='landmarks.txt',space=config['post_image']['suffix']),
+    params:
+        c3d=config['ext_libs']['c3d'],
     output:
         mask = bids(root=join(config['out_dir'],'derivatives', 'atlasreg'),subject=subject_id,suffix='contacts.nii.gz',space=config['post_image']['suffix'],desc='mask'),
     group: 'preproc'
     shell:
-        'c3d {input.ct} -scale 0 -landmarks-to-spheres {input.txt} 1 -o {output.mask}'
+        '{params.c3d} {input.ct} -scale 0 -landmarks-to-spheres {input.txt} 1 -o {output.mask}'
 
 rule vis_contacts:
     input:
