@@ -38,9 +38,9 @@ if debug:
 		def __init__(self, **kwargs):
 			self.__dict__.update(kwargs)
 
-	isub = 'sub-P139'
+	isub = 'sub-P021'
 	#data_dir = r'/media/greydon/lhsc_data/SEEG_rerun/derivatives'
-	data_dir = r'/home/greydon/Documents/datasets/SEEG/derivatives'
+	data_dir = r'/home/greydon/Documents/datasets/SEEG_peds/derivatives'
 
 	input = dotdict({
 			'img_dir': f'{data_dir}/trajGuide/derivatives/{isub}/summaries/*.svg',
