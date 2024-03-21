@@ -113,8 +113,8 @@ def writeFCSV(coords,labels,output_fcsv,coordsys='0'):
 #%%
 import SimpleITK as sitk
 
-ros_file_path=r'/home/greydon/Documents/datasets/SEEG_peds/derivatives/seeg_scenes'
-isub='sub-P021'
+ros_file_path=r"F:\datasets\DBS\derivatives\seeg_scenes"
+isub='sub-P300'
 
 nii_fname=glob.glob(f"{ros_file_path}/{isub}/*-contrast*_T1w.nii.gz")
 ros_fname=glob.glob(f"{ros_file_path}/{isub}/*.ros")
@@ -156,8 +156,8 @@ if nii_fname and ros_fname and not os.path.exists(out_fcsv):
 	rosa_parsed=parseROSAfile(ros_fname[0])
 	
 	if rosa_parsed['ac'] and rosa_parsed['pc']:
-		vecT = centering_transform_raw @ np.hstack([rosa_parsed['ac'],1])
-		vecE = centering_transform_raw @ np.hstack([rosa_parsed['pc'],1])
+		rosa_parsed['ac'] = (centering_transform_raw @ np.hstack([rosa_parsed['ac'],1]))[:3]
+		rosa_parsed['pc'] = (centering_transform_raw @ np.hstack([rosa_parsed['pc'],1]))[:3]
 	
 	for itype,ifcsv in zip(['world','t1w'],[out_world_fcsv,out_fcsv]):
 		coords=[]
