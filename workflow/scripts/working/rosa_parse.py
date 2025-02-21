@@ -294,12 +294,11 @@ greedy_bin=r'/opt/greedy-1.3.0/bin/greedy'
 #%%
 
 ros_file_path=r'/media/greydon/WD_EXT/emory_ROSA'
-isubpath=ros_file_path+'/uploaded'
+isubpath=ros_file_path+'/new'
 
 
 ros_file_path=r'/home/greydon/Documents/data/emory_seeg/derivatives/slicer_scene'
-
-isubpath=ros_file_path+'/sub-EMOP0367'
+isubpath=ros_file_path+'/sub-EMOP0331'
 
 
 if glob.glob(os.path.join(ros_file_path,"sub-*")):
@@ -370,7 +369,7 @@ for isubpath in sorted_nicely(glob.glob(os.path.join(ros_file_path,key_word))):
 			sub2t_xfm=np.dot(ras2lps,np.dot(np.linalg.inv(sub2t_transform),lps2ras))
 		else:
 			nii_fname=glob.glob(f"{ros_file_path}/{isub}/*-contrast*_T1w.nii.gz")
-			
+			nii_fname=glob.glob(os.path.join(isubpath, f"{isub}_ses-pre_acq-ROSA_*.nii.gz"))
 			
 		
 		rot2ras=rotation_matrix(np.deg2rad(0),np.deg2rad(0),np.deg2rad(180))
@@ -432,19 +431,19 @@ for isubpath in sorted_nicely(glob.glob(os.path.join(ros_file_path,key_word))):
 				pcT = centering_transform_raw @ (np.hstack([rosa_parsed['pc'],1])*np.array([-1,-1,1,1]))
 				ihT = centering_transform_raw @ (np.hstack([rosa_parsed['ih'],1])*np.array([-1,-1,1,1]))
 				
-				acT = sub2t_transform @ acT
-				pcT = sub2t_transform @ pcT
-				ihT = sub2t_transform @ ihT
+				if sub2t_xfm is not None:
+					acT = sub2t_xfm @ acT
+					pcT = sub2t_xfm @ pcT
+					ihT = sub2t_xfm @ ihT
 				
 				coords=[acT,pcT,ihT]
 				descs=['ac','pc','mid']
 				
 				writeFCSV(coords,descs,[],output_fcsv=out_acpc_fcsv,coordsys='0')
-			
-			if acpc_fname:
-				coord_sys,head_info=determineFCSVCoordSystem(acpc_fname[0])
+				
+				coord_sys,head_info=determineFCSVCoordSystem(out_acpc_fcsv)
 				head_info=dict(ChainMap(*[{i:x} for i,x in enumerate(head_info)]))
-				fcsv_data = pd.read_csv(acpc_fname[0], skiprows=3, header=None)
+				fcsv_data = pd.read_csv(out_acpc_fcsv, skiprows=3, header=None)
 				fcsv_data=fcsv_data.iloc[:,:].rename(columns=head_info).reset_index(drop=True)
 				if any(x in coord_sys for x in {'LPS','1'}):
 					fcsv_data['x'] = -1 * fcsv_data['x'] # flip orientation in x

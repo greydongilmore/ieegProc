@@ -116,8 +116,8 @@ if debug:
 		def __init__(self, **kwargs):
 			self.__dict__.update(kwargs)
 	
-	subject_id="sub-P111"
-	deriv_dir='/home/greydon/Documents/data/SEEG/derivatives'
+	subject_id="sub-COG11001"
+	deriv_dir='/home/greydon/Documents/data/zeke/derivatives'
 	
 	input=dotdict({
 				't1_fname':'{deriv_dir}/hippunfold/hippunfold/{subject_id}/anat/{subject_id}_desc-preproc_T1w.nii.gz',
@@ -125,41 +125,33 @@ if debug:
 	params=dotdict({
 				'deriv_dir':deriv_dir,
 				'subject_id':subject_id,
-				'dseg_labels_file':'/home/greydon/Documents/GitHub/seeg2bids-pipeline/resources/desc-subfields_atlas-bigbrain_dseg.tsv'
+				'dseg_labels_file':'/home/greydon/Documents/GitHub/ieegProc/resources/desc-subfields_atlas-multihist7_dseg.tsv'
 				})
 	
 	snakemake = Namespace(input=input,params=params)
 
-
 atlas_labels = pd.read_table(snakemake.params.dseg_labels_file)
 atlas_labels['lut']=atlas_labels[['r','g','b']].to_numpy().tolist()
 data_dir = snakemake.params.deriv_dir
-
-
-for isub in os.listdir(os.path.join(data_dir,'hippunfold','hippunfold')):
 	
-	for isurf in ('inner','midthickness','outer'):
-		for ihemi in ('L','R'):
-			base_filename=f'{isub}_hemi-{ihemi}_space-T1w_den-0p5mm_label-hipp_{isurf}'
-			gii_file_fname = f'{data_dir}/hippunfold/hippunfold/{isub}/surf/{base_filename}.surf.gii'
-			gii_out_fname = f'{data_dir}/hippunfold/hippunfold/{isub}/surf/{base_filename}.ply'
-			if not os.path.exists(gii_out_fname):
-				gii_data = nb.load(gii_file_fname)
-				vertices = gii_data.get_arrays_from_intent('NIFTI_INTENT_POINTSET')[0].data
-				faces = gii_data.get_arrays_from_intent('NIFTI_INTENT_TRIANGLE')[0].data
-				write_ply(gii_out_fname,vertices,faces,'SPACE=RAS')
-	
-	
+for isurf in ('inner','midthickness','outer'):
 	for ihemi in ('L','R'):
-		base_filename=f'{isub}_hemi-{ihemi}_space-cropT1w_desc-subfields_atlas-multihist7_dseg'
-		seg_file_fname = f'{data_dir}/hippunfold/hippunfold/{isub}/anat/{base_filename}.nii.gz'
-		seg_out_fname = f'{data_dir}/hippunfold/hippunfold/{isub}/anat/{base_filename}.seg.nrrd'
-		if not os.path.exists(seg_out_fname):
-			data_obj=nb.load(seg_file_fname)
-			
-			atlas_labels['hemi']=np.repeat(ihemi, atlas_labels.shape[0])
-			
-			write_nrrd(data_obj, seg_out_fname, atlas_labels)
+		base_filename=f'{snakemake.params.subject_id}_hemi-{ihemi}_space-T1w_den-0p5mm_label-hipp_{isurf}'
+		gii_file_fname = f'{data_dir}/hippunfold/hippunfold/{snakemake.params.subject_id}/surf/{base_filename}.surf.gii'
+		gii_out_fname = f'{data_dir}/hippunfold/hippunfold/{snakemake.params.subject_id}/surf/{base_filename}.ply'
+		if not os.path.exists(gii_out_fname):
+			gii_data = nb.load(gii_file_fname)
+			vertices = gii_data.get_arrays_from_intent('NIFTI_INTENT_POINTSET')[0].data
+			faces = gii_data.get_arrays_from_intent('NIFTI_INTENT_TRIANGLE')[0].data
+			write_ply(gii_out_fname,vertices,faces,'SPACE=RAS')
 
-
-
+for ihemi in ('L','R'):
+	base_filename=f'{snakemake.params.subject_id}_hemi-{ihemi}_space-cropT1w_desc-subfields_atlas-multihist7_dseg'
+	seg_file_fname = f'{data_dir}/hippunfold/hippunfold/{snakemake.params.subject_id}/anat/{base_filename}.nii.gz'
+	seg_out_fname = f'{data_dir}/hippunfold/hippunfold/{snakemake.params.subject_id}/anat/{base_filename}.seg.nrrd'
+	if not os.path.exists(seg_out_fname):
+		data_obj=nb.load(seg_file_fname)
+		
+		atlas_labels['hemi']=np.repeat(ihemi, atlas_labels.shape[0])
+		
+		write_nrrd(data_obj, seg_out_fname, atlas_labels)

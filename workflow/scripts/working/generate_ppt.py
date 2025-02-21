@@ -114,13 +114,13 @@ if debug:
         def __init__(self, **kwargs):
             self.__dict__.update(kwargs)
 
-    isub = 'sub-P157'
+    isub = 'sub-EMOP0482'
     # data_dir = r'/media/greydon/lhsc_data/datasets/SEEG_peds/derivatives'
-    data_dir = r'/home/greydon/Documents/data/SEEG/derivatives'
+    data_dir = r'/home/greydon/Documents/data/emory_seeg/derivatives'
 
     input = dotdict({
-                    'shopping_list': f'{data_dir}/seeg_scenes/{isub}/*shopping_list.xlsx',
-                    'error_metrics': f'{data_dir}/seeg_scenes/{isub}/{isub}_error_metrics.xlsx',
+                    'shopping_list': f'{data_dir}/slicer_scene/{isub}/*shopping_list.xlsx',
+                    'error_metrics': f'{data_dir}/slicer_scene/{isub}/{isub}_error_metrics.xlsx',
                     })
 
     snakemake = Namespace(input=input)
@@ -415,4 +415,4 @@ for _, row_elec in df_elec.iterrows():
         line.width = Inches(0.04)
 
 out_fname = f"{lastname.replace(' ','')}_{firstname}_{sx_date}_maps.pptx"
-prs.save(f'{data_dir}/seeg_scenes/{isub}/{out_fname}')
+prs.save(f'{data_dir}/slicer_scene/{isub}/{out_fname}')

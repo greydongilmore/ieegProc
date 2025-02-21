@@ -282,9 +282,9 @@ if debug:
 		def __init__(self, **kwargs):
 			self.__dict__.update(kwargs)
 	
-	isub='sub-EMOP0481'
+	isub='sub-EMOP0241'
 
-	data_dir=r'/home/greydon/Documents/data/emory_seeg/derivatives/slicer_scene'
+	data_dir=r'/media/greydon/lhsc_data/datasets/emory_seeg/derivatives/slicer_scene'
 	
 	input=dotdict({
 				'isub': isub,

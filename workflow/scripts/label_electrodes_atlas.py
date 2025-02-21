@@ -115,6 +115,6 @@ out_df['mni_y']=df_template['y']
 out_df['mni_z']=df_template['z']
 
 out_df.to_csv(snakemake.output.tsv,sep='\t',float_format='%.3f',index=False)
-out_df.to_excel(os.path.splitext(snakemake.output.tsv)[0]+'.xlsx',float_format='%.3f',index=False)
+out_df.to_excel(snakemake.output.exl,float_format='%.3f',index=False)
 
 out_df

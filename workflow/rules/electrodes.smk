@@ -31,13 +31,18 @@ if config['segmentation']['run']:
             tissue_seg = expand(bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,suffix='probseg.nii.gz',label='{tissue}',desc='atropos3seg'),
                                 tissue=config['tissue_labels'],allow_missing=True),
         output:
-            tsv = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,suffix='electrodes.tsv',atlas='{atlas}', from_=get_age_appropriate_template_name(expand(subject_id,subject=subjects),'space'),desc='nonlin'),
-    #        tsv = report(bids(root='results',subject=subject_id,suffix='electrodes.tsv',desc='{atlas}',from_='{template}'),
-    #                caption='../reports/electrodes_vis.rst',
-    #                category='Electrodes Labelled',
-    #                subcategory='Atlas: {atlas}, Template: {template}')           
+            tsv = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,suffix='electrodes.tsv',atlas='{atlas}', from_=get_age_appropriate_template_name(expand(subject_id,subject=subjects),'space'),desc='nonlin'),      
+            exl = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,suffix='electrodes.xlsx',atlas='{atlas}', from_=get_age_appropriate_template_name(expand(subject_id,subject=subjects),'space'),desc='nonlin'),
         group: 'preproc'
         script: '../scripts/label_electrodes_atlas.py'
+    
+    rule tissue_map_electrodes:
+        input: 
+            input_file = rules.label_electrodes_atlas.output.exl
+        output:
+            out_excel = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,suffix='tissue_map.xlsx',atlas='{atlas}', from_=get_age_appropriate_template_name(expand(subject_id,subject=subjects),'space'),desc='nonlin'),
+        group: 'preproc'
+        script: '../scripts/working/electrodes_tissue_mapping.py'
 
 rule contact_landmarks:
     input: 
@@ -112,11 +117,12 @@ if config['segmentation']['run']:
         )
     )
 
+    
     final_outputs.extend(
         expand(
             bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),
                 subject=subject_id,
-                suffix='electrodes.tsv',
+                suffix='tissue_map.xlsx',
                 atlas='{atlas}',
                 from_=get_age_appropriate_template_name(expand(subject_id,subject=subjects),'space'),
                 desc='nonlin'
@@ -126,5 +132,4 @@ if config['segmentation']['run']:
             template=get_age_appropriate_template_name(expand(subject_id,subject=subjects),'space')
         )
     )
-
 
