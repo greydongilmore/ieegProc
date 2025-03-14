@@ -687,7 +687,7 @@ rule mask_template_t1w:
         t1 = get_age_appropriate_template_name(expand(subject_id,subject=subjects),'t1w'),
         mask = get_age_appropriate_template_name(expand(subject_id,subject=subjects),'mask'),
     params:
-        fslmaths=join(config['ext_libs']['fsl'],'fslmaths'),
+        fslmaths=get_fsl_cmd
     output:
         t1 = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg','sub-'+subject_id),prefix=f"tpl-{get_age_appropriate_template_name(expand(subject_id,subject=subjects),'space')}",desc='masked',suffix='T1w.nii.gz')
     #container: config['singularity']['neuroglia']
@@ -701,7 +701,7 @@ if config['segmentation']['run']:
             t1 = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,desc='n4', suffix='T1w.nii.gz'),
             mask = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,suffix='mask.nii.gz',from_='atropos3seg',desc='brain')
         params:
-            fslmaths=join(config['ext_libs']['fsl'],'fslmaths'),
+            fslmaths=get_fsl_cmd
         output:
             t1 = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,suffix='T1w.nii.gz',from_='atropos3seg',desc='masked'),
         #container: config['singularity']['neuroglia']
@@ -715,7 +715,7 @@ if config['segmentation']['run']:
                 ct = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,desc='rigid',space='T1w', suffix=config['post_image']['suffix']+config['post_image']['ext']),
                 mask = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,suffix='mask.nii.gz',from_='atropos3seg',desc='brain')
             params:
-                fslmaths=join(config['ext_libs']['fsl'],'fslmaths'),
+                fslmaths=get_fsl_cmd
             output:
                 ct = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,suffix=config['post_image']['suffix']+config['post_image']['ext'],from_='atropos3seg',desc='masked'),
             #container: config['singularity']['neuroglia']
@@ -925,7 +925,7 @@ if config['segmentation']['run']:
         input:
             mask = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,suffix='mask.nii.gz',from_=get_age_appropriate_template_name(expand(subject_id,subject=subjects),'space'),desc='affine',label='brain'),
         params:
-            fslmaths=join(config['ext_libs']['fsl'],'fslmaths'),
+            fslmaths=get_fsl_cmd
         output:
             mask = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,suffix='mask.nii.gz',from_=get_age_appropriate_template_name(expand(subject_id,subject=subjects),'space'),desc='affine',label='braindilated'),
         #container: config['singularity']['neuroglia']
@@ -939,7 +939,7 @@ if config['segmentation']['run']:
             dseg = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,suffix='dseg.nii.gz',atlas='{atlas}',from_=get_age_appropriate_template_name(expand(subject_id,subject=subjects),'space'),desc='nonlin'),
         params:
             dil_opt =  ' '.join([ '-dilD' for i in range(config['n_atlas_dilate'])]),
-            fslmaths=join(config['ext_libs']['fsl'],'fslmaths'),
+            fslmaths=get_fsl_cmd
         output:
             dseg = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,suffix='dseg.nii.gz',atlas='{atlas}',from_=get_age_appropriate_template_name(expand(subject_id,subject=subjects),'space'),desc='nonlin',label='dilated'),
         #container: config['singularity']['neuroglia']

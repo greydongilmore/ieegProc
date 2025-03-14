@@ -75,8 +75,8 @@ ET.ElementTree(root).write('/home/greydon/Downloads/my_montage_update.mtg', enco
 
 #%%
 
-data_dir=r'/media/greydon/lhsc_data/datasets/emory_seeg/derivatives/montages'
-isub='new'
+data_dir=r'/home/greydon/Documents/data/emory_seeg/derivatives'
+isub='montage'
 
 
 for isub in [x for x in os.listdir(data_dir) if os.path.isdir(os.path.join(data_dir,x))]:

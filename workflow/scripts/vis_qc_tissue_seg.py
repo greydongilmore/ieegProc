@@ -164,7 +164,7 @@ if debug:
 
 ref_img=nib.load(snakemake.input.img)
 ref_resamp = nib.nifti1.Nifti1Image(ref_img.get_fdata(), affine=ref_img.affine,header=ref_img.header)
-ref_resamp = image.resample_img(ref_img, target_affine=np.eye(3), interpolation='continuous')
+ref_resamp = image.resample_img(ref_img, target_affine=np.eye(3), interpolation='continuous',force_resample=True)
 
 coords = plotting.find_xyz_cut_coords(ref_resamp)
 

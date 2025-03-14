@@ -160,12 +160,12 @@ if debug:
 ref_img=nib.load(snakemake.input.ref)
 #ref_img.header.set_data_dtype('float32')
 ref_img.set_qform(ref_img.affine,1)
-ref_img_resamp = image.resample_img(ref_img, target_affine=np.eye(3), interpolation='linear')
+ref_img_resamp = image.resample_img(ref_img, target_affine=np.eye(3), interpolation='linear',force_resample=True)
 
 flo_img=nib.load(snakemake.input.flo)
 #flo_img.header.set_data_dtype('float32')
 flo_img.set_qform(flo_img.affine,1)
-flo_resamp = image.resample_to_img(flo_img, ref_img_resamp, interpolation='linear')
+flo_resamp = image.resample_to_img(flo_img, ref_img_resamp, interpolation='linear',force_resample=True)
 
 
 #mean_mm2vox = np.linalg.inv(ref_img_resamp.affine)

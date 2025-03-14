@@ -2,6 +2,7 @@ import numpy as np
 import pandas as pd
 from scipy.io import loadmat
 
+import snakemake
 
 # filen=r'/home/greydon/Documents/data/SEEG_peds/derivatives/atlasreg/sub-P010/sub-P010_acq-noncontrast_desc-rigid_from-noncontrast_to-contrast_type-ras_xfm.mat'
 # filen_out=r'/home/greydon/Documents/data/SEEG_peds/derivatives/atlasreg/sub-P010/sub-P010_acq-noncontrast_desc-rigid_from-noncontrast_to-contrast_type-ras_xfm_1.txt'

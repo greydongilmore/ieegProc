@@ -50,11 +50,11 @@ if debug:
 
 ref_img=nib.load(snakemake.input.img)
 ref_resamp = nib.nifti1.Nifti1Image(ref_img.get_fdata(), affine=ref_img.affine,header=ref_img.header)
-ref_resamp = image.resample_img(ref_img, target_affine=np.eye(3), interpolation='continuous')
+ref_resamp = image.resample_img(ref_img, target_affine=np.eye(3), interpolation='continuous',force_resample=True,copy_header=True)
 
 flo_img=nib.load(snakemake.input.seg4d)
 flo_resamp = nib.nifti1.Nifti1Image(flo_img.get_fdata(), affine=flo_img.affine,header=flo_img.header)
-flo_resamp = image.resample_img(flo_img, target_affine=np.eye(3), interpolation='continuous')
+flo_resamp = image.resample_img(flo_img, target_affine=np.eye(3), interpolation='continuous',force_resample=True,copy_header=True)
 
 
 with open(snakemake.input.mapping, "r+") as fid:

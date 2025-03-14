@@ -160,6 +160,30 @@ def get_electrodes_coords(subject_id,coords_space=None,coords_type=None):
     print(file)
     return file
 
+def get_fsl_cmd(subject_id):
+    import platform
+    if platform.system().lower() == 'linux':
+        fsl=join(config['ext_libs']['fsl'],'fslmaths.glnxa64'),
+    elif platform.system() == 'Windows':
+        fsl=join(config['ext_libs']['fsl'],'fslmaths.exe'),
+    elif platform.system() == 'Darwin':
+        fsl=join(config['ext_libs']['fsl'],'fslmaths.maci64'),
+    print(fsl)
+    return fsl
+
+def get_fslmerge_cmd(subject_id):
+    import platform
+    if platform.system().lower() == 'linux':
+        fsl=join(config['ext_libs']['fsl'],'fslmerge.glnxa64'),
+    elif platform.system() == 'Windows':
+        fsl=join(config['ext_libs']['fsl'],'fslmerge.exe'),
+    elif platform.system() == 'Darwin':
+        fsl=join(config['ext_libs']['fsl'],'fslmerge.maci64'),
+    print(fsl)
+    return fsl
+    
+
+
 def get_age_appropriate_template_name(subject=None, key='t1w'):
     subject=subject[0]
     if not exists(join(config['bids_dir'], 'bids','participants.tsv')):

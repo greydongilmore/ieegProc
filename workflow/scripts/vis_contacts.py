@@ -1,5 +1,6 @@
 import matplotlib
 import ants
+from ants import from_numpy
 from nilearn import plotting,image
 import nibabel as nib
 import numpy as np
