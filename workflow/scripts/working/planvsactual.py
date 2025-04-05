@@ -282,9 +282,9 @@ if debug:
 		def __init__(self, **kwargs):
 			self.__dict__.update(kwargs)
 	
-	isub='sub-EMOP0241'
+	isub='sub-EMOP0183'
 
-	data_dir=r'/media/greydon/lhsc_data/datasets/emory_seeg/derivatives/slicer_scene'
+	data_dir=r'/home/greydon/Documents/data/emory_seeg/derivatives/slicer_scene'
 	
 	input=dotdict({
 				'isub': isub,
@@ -354,7 +354,7 @@ if 'seega' in list(file_data):
 
 shopping_list = glob.glob(f"{os.path.join(data_dir,isub)}/*shopping_list.xlsx")
 if shopping_list:
-	df_shopping_raw = pd.read_excel(shopping_list[0],header=None)
+	df_shopping_raw = pd.read_excel(shopping_list[0],header=None,converters={3:str})
 	df_shopping_list=df_shopping_raw.iloc[4:,:].reset_index(drop=True)
 	
 	# need to update the column names
@@ -381,20 +381,20 @@ if shopping_list:
 			df_shopping_list=df_shopping_list.sort_values(by=['Ord.']).reset_index(drop=True)
 	
 	if any([x.lower()=='label' for x in list(df_shopping_list.keys())]):
-		df_shopping_list['Label']=[x.strip() for x in df_shopping_list['Label']]
+		df_shopping_list['Label']=[x.strip() for x in df_shopping_list['Label'].str.replace("’","'")]
 	
 	error_idx=[]
 	for _,row_elec in df_shopping_list.iterrows():
 		if any([x.lower()=='label' for x in list(row_elec.keys())]):
-			error_idx.append([i for i,x in enumerate(label_set) if x == row_elec["Label"].strip()][0])
+			if [i for i,x in enumerate(label_set) if x == row_elec["Label"].strip()]:
+				error_idx.append([i for i,x in enumerate(label_set) if x == row_elec["Label"].strip()])
 		else:
 			if [i for i,x in enumerate(label_set) if f"({x.lower()})" in row_elec['Target'].lower().strip()]:
 				error_idx.append([i for i,x in enumerate(label_set) if f"({x.lower()})" in row_elec['Target'].lower().strip()][0])
 			elif [i for i,x in enumerate(label_set) if f"{x.lower()}" in row_elec['Target'].lower().strip()]:
 				error_idx.append([i for i,x in enumerate(label_set) if f"{x.lower()}" in row_elec['Target'].lower().strip()][0])
 	
-	label_set=[label_set[x] for x in error_idx]
-
+	label_set=[label_set[x[0]] for x in error_idx]
 
 mcp_point=None
 

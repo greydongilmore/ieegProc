@@ -1,27 +1,19 @@
 #
 #--- filepaths
-#
 
-bids_dir: /home/greydon/Documents/data/zeke
-
-#work computer
-#bids_dir: /home/greydon/Documents/data/cingulate_seizures
-
-#external drive
-#bids_dir: /media/greydon/lhsc_data/datasets/emory_seeg
-
+bids_dir: /home/greydon/Documents/data/emory_seeg
 subject_prefix: 'P'
 
 registration:
-    run: False
-segmentation:
-    run: False
-visqc:
-    run: False
-fastsurfer:
-    run: False
-hippunfold:
     run: True
+segmentation:
+    run: True
+visqc:
+    run: True
+fastsurfer:
+    run: True
+hippunfold:
+    run: False
 
 fastsurfer_vol:
     present: True
@@ -34,20 +26,19 @@ fastsurfer_vol:
     position: 0
 #
 #--- imaging volumes
-#
 contrast_t1:
     present: True
     session: 'pre'
     datatype: 'anat'
     acq: null
-    run: null
+    run: '02'
     suffix: 'T1w'
     ext: '.nii.gz'
     position: -1
     algo: ants
 
 noncontrast_t1:
-    present: False
+    present: True
     session: 'pre'
     datatype: 'anat'
     acq: null
@@ -58,7 +49,7 @@ noncontrast_t1:
     algo: ants
 
 post_image:
-    present: False
+    present: True
     session: 'post'
     datatype: 'ct'
     acq: 'Electrode'
@@ -69,7 +60,7 @@ post_image:
     algo: ants
 
 pet:
-    present: False
+    present: True
     session: 'pre'
     datatype: 'pet'
     acq: Null
@@ -91,7 +82,7 @@ other_vol:
     algo: ants
 
 other_vol2:
-    present: False
+    present: True
     session: 'pre'
     datatype: 'ct'
     acq: 'ROSA'
@@ -101,7 +92,7 @@ other_vol2:
     algo: ants
 
 seeg_contacts:
-    present: False
+    present: True
     space_coords: &space_coords derivatives/seeg_coordinates/sub-{subject}/sub-{subject}_space-{coords_space}_{coords_type}.fcsv
     scene_coords: &scene_coords derivatives/slicer_scene/sub-{subject}/sub-{subject}_{coords_type}.fcsv
 
@@ -283,9 +274,9 @@ ants:
         gradient_step: 0.25
 
 ext_libs:
-    c3d_affine_tool: resources/c3d-1.4.0/bin/c3d_affine_tool
-    c3d: resources/c3d-1.4.0/bin/c3d
-    fsl: /home/greydon/software/fsl/share/fsl/bin
+    c3d_affine_tool: /opt/itksnap-4.2.2/bin/c3d_affine_tool
+    c3d: /opt/itksnap-4.2.2/bin/c3d
+    fsl: /home/greydon/fsl/bin
 singularity:
     neuroglia-core: "docker://khanlab/neuroglia-core:latest"
     fastsurfer: "docker://deepmi/fastsurfer:latest"

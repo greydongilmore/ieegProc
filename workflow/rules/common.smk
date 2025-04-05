@@ -162,27 +162,31 @@ def get_electrodes_coords(subject_id,coords_space=None,coords_type=None):
 
 def get_fsl_cmd(subject_id):
     import platform
-    if platform.system().lower() == 'linux':
-        fsl=join(config['ext_libs']['fsl'],'fslmaths.glnxa64'),
-    elif platform.system() == 'Windows':
-        fsl=join(config['ext_libs']['fsl'],'fslmaths.exe'),
-    elif platform.system() == 'Darwin':
-        fsl=join(config['ext_libs']['fsl'],'fslmaths.maci64'),
+    if 'resources' in config['ext_libs']['fsl']:
+        if platform.system().lower() == 'linux':
+            fsl=join(config['ext_libs']['fsl'],'fslmaths.glnxa64'),
+        elif platform.system() == 'Windows':
+            fsl=join(config['ext_libs']['fsl'],'fslmaths.exe'),
+        elif platform.system() == 'Darwin':
+            fsl=join(config['ext_libs']['fsl'],'fslmaths.maci64'),
+    else:
+        fsl=join(config['ext_libs']['fsl'],'fslmaths')
     print(fsl)
     return fsl
 
 def get_fslmerge_cmd(subject_id):
     import platform
-    if platform.system().lower() == 'linux':
-        fsl=join(config['ext_libs']['fsl'],'fslmerge.glnxa64'),
-    elif platform.system() == 'Windows':
-        fsl=join(config['ext_libs']['fsl'],'fslmerge.exe'),
-    elif platform.system() == 'Darwin':
-        fsl=join(config['ext_libs']['fsl'],'fslmerge.maci64'),
+    if 'resources' in config['ext_libs']['fsl']:
+        if platform.system().lower() == 'linux':
+            fsl=join(config['ext_libs']['fsl'],'fslmerge.glnxa64'),
+        elif platform.system() == 'Windows':
+            fsl=join(config['ext_libs']['fsl'],'fslmerge.exe'),
+        elif platform.system() == 'Darwin':
+            fsl=join(config['ext_libs']['fsl'],'fslmerge.maci64'),
+    else:
+        fsl=join(config['ext_libs']['fsl'],'fslmerge')
     print(fsl)
     return fsl
-    
-
 
 def get_age_appropriate_template_name(subject=None, key='t1w'):
     subject=subject[0]

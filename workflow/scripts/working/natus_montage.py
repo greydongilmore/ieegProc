@@ -15,11 +15,42 @@ import os
 import shutil
 
 
-def get_montage(fname):
+
+def determine_groups(iterable, numbered_labels=False):
+	values = []
+	pattern = re.compile(r'^(\d+[A-Za-z]+)')
+	
+	for item in iterable:
+		item=str(item).strip()
+		temp=None
+		if pattern.match(item):
+			temp = "".join(pattern.match(item)[0])
+		elif '-' in item:
+			temp=item.split('-')[0]
+		else:
+			if numbered_labels:
+				temp=''.join([x for x in item if not x.isdigit()])
+				for sub in ("T1","T2"):
+					if sub in item:
+						temp=item.split(sub)[0] + sub
+			else:
+				temp=item
+		if temp is None:
+			temp=item
+		
+		values.append(temp)
+	
+	vals,indexes,count = np.unique(values, return_index=True, return_counts=True)
+	vals=vals[indexes.argsort()]
+	count=count[indexes.argsort()]
+	
+	return vals,count
+
+def get_montage(ifile):
 	
 	ignore_keys={'IChannelId','IInputId','ISiteId','ITypeId','OChannelId','OTypeId','GroupId'}
 	
-	mtg_file = np.fromfile(fname, dtype='uint8')
+	mtg_file = np.fromfile(ifile, dtype='uint8')
 	mtg_file_tmp = "".join([struct.unpack('s', x)[0].decode('ISO-8859-1') for x in mtg_file])
 	mtg_file_tmp = re.findall(r'\(.\(..*?\)\)', mtg_file_tmp)
 	
@@ -32,11 +63,26 @@ def get_montage(fname):
 		chan_info.append({key: value for (key, value) in chan_info_tmp})
 		
 	chan_info=pd.DataFrame(chan_info)
+	chan_info=chan_info.loc[chan_info["From_Name"].isin([0])].reset_index(drop=True)
+	chan_info['ChanIndex']=list(chan_info.index+1)
+	
+	groups, n_members = determine_groups(np.array(chan_info['To_Name'].values),numbered_labels=True)
+	
+	group_lbl=[]
+	zero_idx=None
+	for igroup,imember in zip(groups,n_members):
+		if igroup == '0' or igroup == '':
+			zero_idx=[i for i,x in enumerate(chan_info['To_Name'].values) if x==0]
+		else:
+			group_lbl.extend(np.repeat(igroup,imember))
+	
+	if zero_idx is not None:
+		[group_lbl.insert(x, 0) for x in zero_idx]
+	
+	chan_info['Group']=group_lbl
 	
 	return chan_info
 
-import xml.etree.ElementTree as ET
-import pandas as pd
 
 def padtrim(buf, num):
 	num -= len(buf)
@@ -49,44 +95,25 @@ def padtrim(buf, num):
 	
 	return buffer
 
-
 #%%
 
-new_labels=pd.read_csv(r'/home/greydon/Downloads/sub-P019.txt',sep='\t',header=None)
-new_labels=new_labels.set_index(0).T.to_dict('records')[0]
 
-tree = ET.parse('/home/greydon/Downloads/my_montage.mtg')
-root = tree.getroot()
-for label in root.findall('./signalcomposition/signal/label'):
-	if label.text.strip() in list(new_labels):
-		new_lbl=padtrim(new_labels[label.text.strip()], len(label.text))
-		del new_labels[label.text.strip()]
-		
-		label.text=new_lbl
-
-for alias in root.findall('./signalcomposition/alias'):
-	if label.text.strip() in list(new_labels):
-		new_lbl=padtrim(new_labels[label.text.strip()], len(label.text))
-		del new_labels[label.text.strip()]
-		
-		alias.text=''
-
-ET.ElementTree(root).write('/home/greydon/Downloads/my_montage_update.mtg', encoding="UTF-8", xml_declaration=False)
-
-#%%
-
-data_dir=r'/home/greydon/Documents/data/emory_seeg/derivatives'
-isub='montage'
+data_dir=r'/media/greydon/lhsc_data/datasets/emory_seeg/derivatives/montages'
+isub='new'
 
 
 for isub in [x for x in os.listdir(data_dir) if os.path.isdir(os.path.join(data_dir,x))]:
 	
 	files=glob.glob(os.path.join(data_dir,isub,'*.mtg'))
-	#files=glob.glob(r'/media/stereotaxy/3E7CE0407CDFF11F/data/iEEG/resources/montage/'+f'{isub}/*.mtg')
 	
 	for ifile in files:
 		out_info=get_montage(ifile)
 		out_info.to_csv(os.path.splitext(ifile)[0]+'.tsv',sep='\t',float_format='%.3f',index=False)
+
+
+
+#%%
+
 
 subs=np.unique([x.split('_')[0] for x in os.listdir(data_dir) if os.path.isfile(os.path.join(data_dir,x))])
 
