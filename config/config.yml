@@ -11,7 +11,7 @@ segmentation:
 visqc:
     run: True
 fastsurfer:
-    run: True
+    run: False
 hippunfold:
     run: False
 
@@ -49,7 +49,7 @@ noncontrast_t1:
     algo: ants
 
 post_image:
-    present: True
+    present: False
     session: 'post'
     datatype: 'ct'
     acq: 'Electrode'
@@ -60,7 +60,7 @@ post_image:
     algo: ants
 
 pet:
-    present: True
+    present: False
     session: 'pre'
     datatype: 'pet'
     acq: Null
@@ -82,7 +82,7 @@ other_vol:
     algo: ants
 
 other_vol2:
-    present: True
+    present: False
     session: 'pre'
     datatype: 'ct'
     acq: 'ROSA'
@@ -92,7 +92,7 @@ other_vol2:
     algo: ants
 
 seeg_contacts:
-    present: True
+    present: False
     space_coords: &space_coords derivatives/seeg_coordinates/sub-{subject}/sub-{subject}_space-{coords_space}_{coords_type}.fcsv
     scene_coords: &scene_coords derivatives/slicer_scene/sub-{subject}/sub-{subject}_{coords_type}.fcsv
 

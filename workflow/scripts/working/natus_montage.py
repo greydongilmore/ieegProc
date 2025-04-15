@@ -62,26 +62,31 @@ def get_montage(ifile):
 		chan_info_tmp=[eval(re.findall(r'\(.*?\)',chans_info[ichan])[0].replace('((','('))]+[eval(x) for x in re.findall(r'\(.*?\)',chans_info[ichan])[2:] if not any( y in x for y in ignore_keys)]
 		chan_info.append({key: value for (key, value) in chan_info_tmp})
 		
-	chan_info=pd.DataFrame(chan_info)
-	chan_info=chan_info.loc[chan_info["From_Name"].isin([0])].reset_index(drop=True)
-	chan_info['ChanIndex']=list(chan_info.index+1)
+	chan_info_df=pd.DataFrame(chan_info)
+	chan_info_df=chan_info_df.loc[chan_info_df["From_Name"].isin([0])].reset_index(drop=True)
+	chan_info_df["From_Name"]=[str(x) for x in chan_info_df["From_Name"].values]
+	chan_info_df["To_Name"]=[str(x) for x in chan_info_df["To_Name"].values]
 	
-	groups, n_members = determine_groups(np.array(chan_info['To_Name'].values),numbered_labels=True)
+	groups, n_members = determine_groups(np.array(chan_info_df['To_Name'].values),numbered_labels=True)
 	
 	group_lbl=[]
 	zero_idx=None
 	for igroup,imember in zip(groups,n_members):
 		if igroup == '0' or igroup == '':
-			zero_idx=[i for i,x in enumerate(chan_info['To_Name'].values) if x==0]
+			zero_idx=[i for i,x in enumerate(chan_info_df['To_Name'].values) if x=='0']
 		else:
-			group_lbl.extend(np.repeat(igroup,imember))
+			group_lbl.append(np.repeat(igroup,imember))
+	
+	group_lbl=[str(x) for x in  np.concatenate(group_lbl).tolist()]
 	
 	if zero_idx is not None:
-		[group_lbl.insert(x, 0) for x in zero_idx]
+		[group_lbl.insert(x, '0') for x in zero_idx]
 	
-	chan_info['Group']=group_lbl
+	chan_info_df['Group']=group_lbl
+	chan_info_df=chan_info_df[~(chan_info_df["Group"].isin(['0']))].reset_index(drop=True)
+	chan_info_df['ChanIndex']=list(chan_info_df.index+1)
 	
-	return chan_info
+	return chan_info_df
 
 
 def padtrim(buf, num):
@@ -98,8 +103,8 @@ def padtrim(buf, num):
 #%%
 
 
-data_dir=r'/media/greydon/lhsc_data/datasets/emory_seeg/derivatives/montages'
-isub='new'
+data_dir=r'/media/greydon/lhsc_data/datasets/emory_seeg/derivatives'
+isub='montages'
 
 
 for isub in [x for x in os.listdir(data_dir) if os.path.isdir(os.path.join(data_dir,x))]:
