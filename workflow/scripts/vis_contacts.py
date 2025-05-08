@@ -4,10 +4,24 @@ from ants import from_numpy
 from nilearn import plotting,image
 import nibabel as nib
 import numpy as np
+from tempfile import mkstemp
+import os
+
 
 # snakemake.input.
 # snakemake.output.
 # html_view.open_in_browser()
+
+def to_nibabel(image):
+	"""
+	Convert an ANTsImage to a Nibabel image
+	"""
+	fd, tmpfile = mkstemp(suffix=".nii.gz")
+	image.to_filename(tmpfile)
+	new_img = nib.load(tmpfile)
+	os.close(fd)
+	# os.remove(tmpfile) ## Don't remove tmpfile as nibabel lazy loads the data.
+	return new_img
 
 template = ants.image_read(ants.get_ants_data('mni'))
 
@@ -21,10 +35,10 @@ mask_ants = ants.image_read(snakemake.input.mask)
 
 ct_ants_reg = ants.registration(template, ct_ants, type_of_transform='QuickRigid')
 ct_ants_reg_applied=ants.apply_transforms(template, ct_ants, transformlist=ct_ants_reg['fwdtransforms'])
-ct_resample = ants.to_nibabel(ct_ants_reg_applied)
+ct_resample = to_nibabel(ct_ants_reg_applied)
 
 mask_ants_reg_applied = ants.apply_transforms(ct_ants, mask_ants, transformlist=ct_ants_reg['fwdtransforms'])
-mask_resample = ants.to_nibabel(mask_ants_reg_applied)
+mask_resample = to_nibabel(mask_ants_reg_applied)
 
 mask_params = {
 			'symmetric_cmap': True,

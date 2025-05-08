@@ -77,13 +77,13 @@ if config['pet']['present']:
     rule qc_reg_pet:
         input:
             ref = get_reference_t1,
-            flo = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,suffix='pet.nii.gz',space='T1w', desc='rigid'),
+            flo = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,acq=config['pet']['acq'],suffix='pet.nii.gz',space='T1w', desc='rigid'),
         output:
-            png = report(bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),prefix='sub-'+subject_id+'/qc/sub-'+subject_id,suffix='regqc.png',from_='pet', to='T1w',desc='rigid',include_subject_dir=False),
+            png = report(bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),prefix='sub-'+subject_id+'/qc/sub-'+subject_id,acq=config['pet']['acq'],suffix='regqc.png',from_='pet', to='T1w',desc='rigid',include_subject_dir=False),
                     caption='../reports/regqc.rst',
                     category='Registration QC',
                     subcategory='{desc} T1w'),
-            html = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),prefix='sub-'+subject_id+'/qc/sub-'+subject_id,suffix='regqc.html',from_='pet', to='T1w', desc='rigid',include_subject_dir=False),
+            html = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),prefix='sub-'+subject_id+'/qc/sub-'+subject_id,acq=config['pet']['acq'],suffix='regqc.html',from_='pet', to='T1w', desc='rigid',include_subject_dir=False),
     #        html = report(bids(root='qc',subject=subject_id,suffix='regqc.html',from_='subject', to=get_age_appropriate_template_name(expand(subject_id,subject=subjects),'space'), desc='{desc}'),
     #                caption='../reports/regqc.rst',
     #                category='Registration QC',
@@ -91,7 +91,7 @@ if config['pet']['present']:
         group: 'preproc'
         script: '../scripts/vis_regqc.py'
 
-    final_outputs.extend(expand(bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),prefix='sub-'+subject_id+'/qc/sub-'+subject_id,suffix='regqc.png',from_='pet', to='T1w',desc='rigid',include_subject_dir=False), 
+    final_outputs.extend(expand(bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),prefix='sub-'+subject_id+'/qc/sub-'+subject_id,acq=config['pet']['acq'],suffix='regqc.png',from_='pet', to='T1w',desc='rigid',include_subject_dir=False), 
                         subject=subjects))
 
 if config['other_vol']['present']:

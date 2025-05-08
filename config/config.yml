@@ -49,7 +49,7 @@ noncontrast_t1:
     algo: ants
 
 post_image:
-    present: False
+    present: True
     session: 'post'
     datatype: 'ct'
     acq: 'Electrode'
@@ -60,19 +60,19 @@ post_image:
     algo: ants
 
 pet:
-    present: False
+    present: True
     session: 'pre'
     datatype: 'pet'
-    acq: Null
+    acq: 'nac'
     run: '01'
     suffix: 'pet'
-    task: 'rest'
+    task: Null
     ext: '.nii.gz'
     position: 0
     algo: ants
 
 other_vol:
-    present: False
+    present: True
     session: 'pre'
     datatype: 'anat'
     acq: 'ROSA'
