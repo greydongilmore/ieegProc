@@ -1,2 +1,10 @@
 *.smk linguist-language=Python
 Snakefile linguist-language=Python
+<<<<<<< HEAD
+*.sif filter=lfs diff=lfs merge=lfs -text
+*.hdf5 filter=lfs diff=lfs merge=lfs -text
+*.nii.gz filter=lfs diff=lfs merge=lfs -text
+*..glnxa64 filter=lfs diff=lfs merge=lfs -text
+=======
+>>>>>>> parent of 9dfed2d (meld)
+*.glnxa64 filter=lfs diff=lfs merge=lfs -text
