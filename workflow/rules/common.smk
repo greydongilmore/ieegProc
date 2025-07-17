@@ -247,3 +247,22 @@ def get_pre_t1_filename(wildcards):
         print(f'Pre T1w contrast file: {basename(file)}')
     return file
 
+def get_pet1_filename(wildcards):
+    if config['pet1']['run'].isnumeric() and not isinstance(config['pet1']['position'],int):
+        file=expand(bids(root=join(config['out_dir'], 'bids'), subject='{subject}', datatype=config['pet1']['datatype'], session=config['pet1']['session'], task=config['pet1']['task'], acq=config['pet1']['acq'], run=config['pet1']['run'], suffix=config['pet1']['suffix']+config['pet1']['ext']),subject=wildcards.subject)
+    else:
+        files=glob(bids(root=join(config['out_dir'], 'bids'), subject=f'{wildcards.subject}', datatype=config['pet1']['datatype'], session=config['pet1']['session'], task=config['pet1']['task'], acq=config['pet1']['acq'], run='*', suffix=config['pet1']['suffix']+config['pet1']['ext']))
+        files.sort(key=lambda f: int(re.sub('\D', '', f)),reverse=False)
+        file=files[config['pet1']['position']]
+    print(file)
+    return file
+
+def get_pet2_filename(wildcards):
+    if config['pet2']['run'].isnumeric() and not isinstance(config['pet2']['position'],int):
+        file=expand(bids(root=join(config['out_dir'], 'bids'), subject='{subject}', datatype=config['pet2']['datatype'], session=config['pet2']['session'], task=config['pet2']['task'], acq=config['pet2']['acq'], run=config['pet2']['run'], suffix=config['pet2']['suffix']+config['pet2']['ext']),subject=wildcards.subject)
+    else:
+        files=glob(bids(root=join(config['out_dir'], 'bids'), subject=f'{wildcards.subject}', datatype=config['pet2']['datatype'], session=config['pet2']['session'], task=config['pet2']['task'], acq=config['pet2']['acq'], run='*', suffix=config['pet2']['suffix']+config['pet2']['ext']))
+        files.sort(key=lambda f: int(re.sub('\D', '', f)),reverse=False)
+        file=files[config['pet2']['position']]
+    print(file)
+    return file

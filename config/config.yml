@@ -1,7 +1,7 @@
 #
 #--- filepaths
 
-bids_dir: /home/greydon/Documents/data/emory_seeg
+bids_dir: /home/greydon/Documents/data/lhsc_seeg
 subject_prefix: 'P'
 
 registration:
@@ -59,7 +59,19 @@ post_image:
     position: -1
     algo: ants
 
-pet:
+pet1:
+    present: True
+    session: 'pre'
+    datatype: 'pet'
+    acq: 'ac'
+    run: '01'
+    suffix: 'pet'
+    task: Null
+    ext: '.nii.gz'
+    position: 0
+    algo: ants
+
+pet2:
     present: True
     session: 'pre'
     datatype: 'pet'
@@ -72,7 +84,7 @@ pet:
     algo: ants
 
 other_vol:
-    present: True
+    present: False
     session: 'pre'
     datatype: 'anat'
     acq: 'ROSA'
