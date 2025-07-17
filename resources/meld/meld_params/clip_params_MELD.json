@@ -1,0 +1,46 @@
+{
+    ".on_lh.thickness.mgh": {
+        "min_percentile": "0",
+        "max_percentile": "6.0"
+    },
+    ".on_lh.w-g.pct.mgh": {
+        "min_percentile": "-30",
+        "max_percentile": "130"
+    },
+    ".on_lh.pial.K_filtered.sm20.mgh": {
+        "min_percentile": "0",
+        "max_percentile": "5"
+    },
+    ".on_lh.sulc.mgh": {
+        "min_percentile": "-2.5",
+        "max_percentile": "2.5"
+    },
+    ".on_lh.curv.mgh": {
+        "min_percentile": "-1",
+        "max_percentile": "1"
+    },
+    ".on_lh.gm_FLAIR_0.25.mgh": {
+        "min_percentile": "0",
+        "max_percentile": "300"
+    },
+    ".on_lh.gm_FLAIR_0.5.mgh": {
+        "min_percentile": "0",
+        "max_percentile": "300"
+    },
+    ".on_lh.gm_FLAIR_0.75.mgh": {
+        "min_percentile": "0",
+        "max_percentile": "300"
+    },
+    ".on_lh.gm_FLAIR_0.mgh": {
+        "min_percentile": "0",
+        "max_percentile": "300"
+    },
+    ".on_lh.wm_FLAIR_0.5.mgh": {
+        "min_percentile": "0",
+        "max_percentile": "300"
+    },
+    ".on_lh.wm_FLAIR_1.mgh": {
+        "min_percentile": "0",
+        "max_percentile": "300"
+    }
+}

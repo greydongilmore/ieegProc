@@ -1,0 +1,124 @@
+{
+    "model_parameters": {
+        "activation_fn": "leaky_relu",
+        "conv_type": "SpiralConv",
+        "dim": 2,
+        "distance_head": false,
+        "kernel_size": 3,
+        "layer_sizes": [
+            [
+                32,
+                32,
+                32
+            ],
+            [
+                32,
+                32,
+                32
+            ],
+            [
+                64,
+                64,
+                64
+            ],
+            [
+                64,
+                64,
+                64
+            ],
+            [
+                128,
+                128,
+                128
+            ],
+            [
+                128,
+                128,
+                128
+            ],
+            [
+                256,
+                256,
+                256
+            ]
+        ],
+        "norm": null,
+        "spiral_len": 7
+    },
+    "name": "23-10-30_LVHZ_dcp",
+    "network_type": "MoNetUnet",
+    "training_parameters": {
+        "batch_size": 8,
+        "deep_supervision": {
+            "levels": [
+                6,
+                5,
+                4,
+                3,
+                2,
+                1
+            ],
+            "weight": [
+                0.5,
+                0.25,
+                0.125,
+                0.0625,
+                0.03125,
+                0.0150765
+            ]
+        },
+        "init_weights": null,
+        "loss_dictionary": {
+            "cross_entropy": {
+                "weight": 1
+            },
+            "dice": {
+                "class_weights": [
+                    0.0,
+                    1.0
+                ],
+                "weight": 1
+            },
+            "distance_regression": {
+                "loss": "mae",
+                "weigh_by_gt": true,
+                "weight": 1
+            },
+            "lesion_classification": {
+                "apply_to_bottleneck": true,
+                "weight": 1
+            }
+        },
+        "lr_decay": 0.9,
+        "max_epochs_lr_decay": 1000,
+        "max_patience": 1000,
+        "metric_smoothing": false,
+        "metrics": [
+            "dice_lesion",
+            "dice_nonlesion",
+            "precision",
+            "recall",
+            "tp",
+            "fp",
+            "fn",
+            "auroc",
+            "cl_precision",
+            "cl_recall",
+            "sub_auroc"
+        ],
+        "num_epochs": 1000,
+        "optimiser": "sgd",
+        "optimiser_parameters": {
+            "lr": 0.0001,
+            "momentum": 0.99,
+            "nesterov": true
+        },
+        "oversampling": true,
+        "shuffle_each_epoch": true,
+        "start_epoch": 0,
+        "stopping_metric": {
+            "name": "loss",
+            "sign": 1
+        }
+    }
+}

@@ -1,0 +1,2 @@
+ID,"Harmo code (harmonisation code, put “noHarmo” if not using harmonisation)",Group (“patient” or “control”),Age at preoperative (in years),Sex (“female” or “male”),Scanner (“3T” for 3Tesla or “15T” for 1.5T)
+sub-test001,TEST,patient,25,male,3T

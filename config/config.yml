@@ -203,7 +203,7 @@ adult_template:
     MNI152NLin2009cSym:
         name: 'adult_template'
         space: 'MNI152NLin2009cSym'
-        atlas: 'CerebrA'
+        atlas: 'CerebrAThomasMiddle'
         orien: 'ras'
         t1w: resources/tpl-MNI152NLin2009cSym/tpl-MNI152NLin2009cSym_res-1_T1w.nii.gz
         mask: resources/tpl-MNI152NLin2009cSym/tpl-MNI152NLin2009cSym_res-1_desc-brain_mask.nii.gz
@@ -211,7 +211,7 @@ adult_template:
         tissue_probseg_gm: resources/tpl-MNI152NLin2009cSym/tpl-MNI152NLin2009cSym_res-1_label-GM_probseg.nii.gz
         tissue_probseg_csf: resources/tpl-MNI152NLin2009cSym/tpl-MNI152NLin2009cSym_res-1_label-CSF_probseg.nii.gz
         atlas_dseg_nii: resources/tpl-MNI152NLin2009cSym/tpl-MNI152NLin2009cSym_res-1_atlas-{atlas}_dseg.nii.gz
-        atlas_dseg_tsv: resources/tpl-MNI152NLin2009cSym/tpl-MNI152NLin2009cSym_atlas-{atlas}_dseg.tsv
+        atlas_dseg_tsv: resources/tpl-MNI152NLin2009cSym/tpl-MNI152NLin2009cSym_res-1_atlas-{atlas}_dseg.tsv
     MNI152NLin2009aAsym:
         name: 'adult_template'
         space: 'MNI152NLin2009aAsym'

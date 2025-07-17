@@ -1,0 +1,134 @@
+label	name	hemi	r	g	b
+1	Rostral Middle Frontal	R	0	90	255
+2	Vermal lobules VI-VII	R	255	82	0
+3	Inferior temporal	R	0	255	146
+4	Accumbens Area	R	189	0	255
+5	Inferior Lateral Ventricle	R	142	255	0
+6	Pericalcarine	R	255	0	141
+7	Lateral Orbitofrontal	R	255	238	0
+8	Rostral Anterior Cingulate	R	3	255	2
+9	Superior Parietal	R	0	207	255
+10	Inferior Parietal	R	106	0	255
+11	Brainstem	R	255	0	47
+12	Lingual	R	255	135	0
+13	Postcentral	R	3	2	255
+14	Transverse Temporal	R	0	255	228
+15	Medial Orbitofrontal	R	0	255	90
+16	Paracentral	R	198	255	0
+17	Optic Chiasm	R	255	0	229
+18	Parahippocampal	R	51	255	0
+19	Amygdala	R	255	35	0
+20	Vermal lobules VIII-X	R	162	0	255
+21	Putamen	R	0	152	255
+22	Pars Triangularis	R	255	0	91
+23	Insula	R	255	185	0
+24	Fusiform	R	0	255	40
+25	Basal Forebrain	R	59	0	255
+26	Ventral Diencephalon	R	0	46	255
+27	Pallidum	R	224	255	0
+28	Middle Temporal	R	0	255	190
+29	Third Ventricle	R	80	255	0
+30	Caudal Anterior Cingulate	R	255	0	203
+31	Precuneus	R	255	1	7
+32	Pars Opercularis	R	255	211	0
+33	Isthmus Cingulate	R	233	0	255
+34	Lateral Occipital	R	0	251	251
+35	Precentral	R	133	0	255
+36	Entorhinal	R	0	255	119
+37	Fourth Ventricle	R	0	178	255
+38	Superior Frontal	R	255	0	182
+39	Cerebellum White Matter	R	103	255	0
+40	Thalamus	R	0	255	63
+41	Lateral Ventricle	R	168	255	0
+42	Caudal Middle Frontal	R	0	22	255
+43	Cuneus	R	255	161	0
+44	Pars Orbitalis	R	255	108	0
+45	Superior Temporal	R	255	0	67
+46	Cerebellum Gray Matter	R	21	0	255
+47	Posterior Cingulate	R	24	255	0
+48	Hippocampus	R	0	255	19
+49	Caudate	R	0	128	255
+50	Vermal lobules I-V	R	251	0	252
+51	Supramarginal	R	255	0	114
+52	Rostral Middle Frontal	L	0	90	255
+53	Vermal lobules VI-VII	L	255	82	0
+54	Inferior temporal	L	0	255	146
+55	Accumbens Area	L	189	0	255
+56	Inferior Lateral Ventricle	L	142	255	0
+57	Pericalcarine	L	255	0	141
+58	Lateral Orbitofrontal	L	255	238	0
+59	Rostral Anterior Cingulate	L	3	255	2
+60	Superior Parietal	L	0	207	255
+61	Inferior Parietal	L	106	0	255
+62	Brainstem	L	255	0	47
+63	Lingual	L	255	135	0
+64	Postcentral	L	3	2	255
+65	Transverse Temporal	L	0	255	228
+66	Medial Orbitofrontal	L	0	255	90
+67	Paracentral	L	198	255	0
+68	Optic Chiasm	L	255	0	229
+69	Parahippocampal	L	51	255	0
+70	Amygdala	L	255	35	0
+71	Vermal lobules VIII-X	L	162	0	255
+72	Putamen	L	0	152	255
+73	Pars Triangularis	L	255	0	91
+74	Insula	L	255	185	0
+75	Fusiform	L	0	255	40
+76	Basal Forebrain	L	59	0	255
+77	Ventral Diencephalon	L	0	46	255
+78	Pallidum	L	224	255	0
+79	Middle Temporal	L	0	255	190
+80	Third Ventricle	L	80	255	0
+81	Caudal Anterior Cingulate	L	255	0	203
+82	Precuneus	L	255	1	7
+83	Pars Opercularis	L	255	211	0
+84	Isthmus Cingulate	L	233	0	255
+85	Lateral Occipital	L	0	251	251
+86	Precentral	L	133	0	255
+87	Entorhinal	L	0	255	119
+88	Fourth Ventricle	L	0	178	255
+89	Superior Frontal	L	255	0	182
+90	Cerebellum White Matter	L	103	255	0
+91	Thalamus	L	0	255	63
+92	Lateral Ventricle	L	168	255	0
+93	Caudal Middle Frontal	L	0	22	255
+94	Cuneus	L	255	161	0
+95	Pars Orbitalis	L	255	108	0
+96	Superior Temporal	L	255	0	67
+97	Cerebellum Gray Matter	L	21	0	255
+98	Posterior Cingulate	L	24	255	0
+99	Hippocampus	L	0	255	19
+100	Caudate	L	0	128	255
+101	Vermal lobules I-V	L	251	0	252
+102	Supramarginal	L	255	0	114
+103	ANT	L	128	174	128
+104	ANT	R	241	214	145
+124	CM	L	177	122	101
+125	CM	R	111	184	210
+145	Hb	L	216	101	79
+146	Hb	R	221	130	101
+166	LGN	L	144	238	144
+167	LGN	R	192	104	88
+187	MD-Pf	L	220	245	20
+188	MD-Pf	R	78	63	0
+208	MGN	L	255	250	220
+209	MGN	R	100	100	130
+229	MTT	L	200	200	235
+230	MTT	R	100	41	72
+250	Pul	L	132	59	82
+251	Pul	R	105	44	104
+272	VA	L	244	214	49
+273	VA	R	0	151	206
+293	VLPd	L	216	101	79
+294	VLPd	R	183	156	220
+314	VLPv	L	183	214	211
+315	VLPv	R	152	189	207
+335	VLa	L	111	184	210
+336	VLa	R	178	212	242
+356	VPL	L	68	172	100
+357	VPL	R	111	197	131
+377	Mmt	L	85	188	255
+378	Mmt	R	0	145	30
+			214	230	130
+			78	63	0
+			218	255	255
