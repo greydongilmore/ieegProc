@@ -235,6 +235,18 @@ def get_noncontrast_filename_fs(wildcards):
 
     return file
 
+def get_meld_filename(wildcards):
+    files=expand(bids(root=join(config['out_dir'], 'bids'), subject='{subject}', datatype=config['meld_vol']['datatype'], session=config['meld_vol']['session'], acq=config['meld_vol']['acq'], run=config['meld_vol']['run'], suffix=config['meld_vol']['suffix']+config['meld_vol']['ext']),subject=wildcards.subject)
+    if not files:
+        files=glob(bids(root=join(config['out_dir'], 'bids'), subject=f'{wildcards.subject}', datatype=config['meld_vol']['datatype'], session=config['meld_vol']['session'], acq=config['meld_vol']['acq'], run='*', suffix=config['meld_vol']['suffix']+config['meld_vol']['ext']))
+        files.sort(key=lambda f: int(re.sub('\D', '', f)),reverse=False)
+        file=files[config['meld_vol']['position']]
+    else:
+        file=files[0]
+    if file:
+        print(f'MELD file: {basename(file)}')
+    return file
+
 def get_pre_t1_filename(wildcards):
     files=expand(bids(root=join(config['out_dir'], 'bids'), subject='{subject}', datatype=config['contrast_t1']['datatype'], session=config['contrast_t1']['session'], acq=config['contrast_t1']['acq'], run=config['contrast_t1']['run'], suffix=config['contrast_t1']['suffix']+config['contrast_t1']['ext']),subject=wildcards.subject)
     if not files:

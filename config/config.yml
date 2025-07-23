@@ -24,6 +24,16 @@ fastsurfer_vol:
     suffix: 'T1w'
     ext: '.nii.gz'
     position: 0
+
+meld_vol:
+    present: True
+    session: 'pre'
+    datatype: 'anat'
+    acq: null
+    run: '01'
+    suffix: 'T1w'
+    ext: '.nii.gz'
+    position: 0
 #
 #--- imaging volumes
 contrast_t1:
@@ -190,6 +200,9 @@ hippunfold_config:
     atlas_labels_tsv: resources/desc-subfields_atlas-multihist7_dseg.tsv
     path_T1w: _ses-pre_run-01_T1w.nii.gz
 
+meld_config:
+    demographics_file: resources/meld/demographics_file.csv
+    freesurfer_license: resources/meld/freesurfer_license.txt
 #
 #--- template space/atlases
 #
