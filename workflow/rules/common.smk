@@ -196,11 +196,7 @@ def get_age_appropriate_template_name(subject=None, key='t1w'):
         df = pd.read_table(join(config['bids_dir'], 'bids','participants.tsv'), dtype = str, header=0)
         if f'sub-{subject}' in df.participant_id.to_list():
             age=int(df[df['participant_id']==f'sub-{subject}']['age'].values)
-            if age <18 and age > 13:
-                return config['MNIPediatricAsymCohort6'][key]
-            elif age <=13 and age > 7:
-                return config['MNIPediatricAsymCohort4'][key]
-            elif age <=7:
+            if age <=7:
                 return config['MNIPediatricAsymCohort2'][key]
             else:
                 return config['adult_template'][config['adult_template']['active_space']][key]
