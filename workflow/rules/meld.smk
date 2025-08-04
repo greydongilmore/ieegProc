@@ -47,7 +47,7 @@ if config['meld']['run']:
 		group: 'preproc'
 		threads: 8
 		shell:
-			'export SINGULARITY_BINDPATH={params.meld_in}:/data,{params.freesurfer_lic}.txt:/license.txt:ro&&export SINGULARITYENV_FS_LICENSE=/license.txt&&'
+			'export SINGULARITY_BINDPATH={params.meld_in}:/data,{params.freesurfer_lic}:/license.txt:ro&&export SINGULARITYENV_FS_LICENSE=/license.txt&&'
 			'singularity exec {params.meld_container} /bin/bash -c "cd /app && source \$FREESURFER_HOME/FreeSurferEnv.sh && python scripts/new_patient_pipeline/new_pt_pipeline.py -id {params.subjid} -demos {params.demographics_file} --fastsurfer --parallelise"'
 
 	final_outputs.extend(expand(bids(root=join(config['out_dir'],'derivatives', 'meld_in','input'),subject=subject_id, datatype=config['meld_vol']['datatype'], suffix=config['meld_vol']['suffix']+config['meld_vol']['ext'], include_session_dir=False),subject=subjects))
