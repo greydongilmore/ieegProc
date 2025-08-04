@@ -211,6 +211,8 @@ meld_config:
     freesurfer_license: resources/meld/freesurfer_license.txt
     meld_params: resources/meld/meld_params
     meld_models: resources/meld/models
+    dataset_description: resources/meld/input/dataset_description.json
+    meld_bids_config: resources/meld/input/meld_bids_config.json
 #
 #--- template space/atlases
 #

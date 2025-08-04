@@ -1,0 +1,12 @@
+{
+"T1": {
+	"session": null, 
+	"datatype": "anat",
+	"suffix": "T1w"
+	},
+"FLAIR": {
+	"session": null, 
+	"datatype": "anat",
+	"suffix": "FLAIR"
+	}
+}

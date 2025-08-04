@@ -7,12 +7,16 @@ if config['meld']['run']:
 			meld_params = config['meld_config']['meld_params'],
 			meld_models = config['meld_config']['meld_models'],
 			freesurfer_lic = config['meld_config']['freesurfer_license'],
+			dataset_description = config['meld_config']['dataset_description'],
+			meld_bids_config = config['meld_config']['meld_bids_config'],
 		params:
 			subjid='sub-' +subject_id,
 			demographics_out= join(config['out_dir'],'derivatives', 'meld_in','demographics_file.csv'),
 			meld_params_out=join(config['out_dir'],'derivatives', 'meld_in', 'meld_params'),
 			meld_models_out=join(config['out_dir'],'derivatives', 'meld_in', 'models'),
 			freesurfer_lic_out=join(config['out_dir'],'derivatives', 'meld_in', 'license.txt'),
+			dataset_description_out=join(config['out_dir'],'derivatives', 'meld_in', 'input','dataset_description.json'),
+			meld_bids_config_out=join(config['out_dir'],'derivatives', 'meld_in', 'input', 'meld_bids_config.json'),
 		output:
 			img_out=bids(root=join(config['out_dir'],'derivatives', 'meld_in','input'),subject=subject_id, datatype=config['meld_vol']['datatype'], suffix=config['meld_vol']['suffix']+config['meld_vol']['ext'], include_session_dir=False),
 		run:
@@ -33,6 +37,10 @@ if config['meld']['run']:
 				shutil.copytree(input.meld_models, params.meld_models_out)
 			if not os.path.exists(params.freesurfer_lic_out):
 				shutil.copy2(input.freesurfer_lic, params.freesurfer_lic_out)
+			if not os.path.exists(params.dataset_description_out):
+				shutil.copy2(input.dataset_description, params.dataset_description_out)
+			if not os.path.exists(params.meld_bids_config_out):
+				shutil.copy2(input.meld_bids_config, params.meld_bids_config_out)
 	rule meld_run:
 		input:
 			img_in=rules.import_meld.output.img_out,
