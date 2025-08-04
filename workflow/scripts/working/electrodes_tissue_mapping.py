@@ -58,7 +58,7 @@ if debug:
 		def __init__(self, **kwargs):
 			self.__dict__.update(kwargs)
 	
-	input_file=r"/home/greydon/Documents/data/emory_seeg/derivatives/atlasreg/sub-EMOP0249/sub-EMOP0249_desc-nonlin_atlas-CerebrA_from-MNI152NLin2009cSym_electrodes.xlsx"
+	input_file=r"/home/neurophys/Documents/data/emory_seeg/derivatives/atlasreg/sub-EMOP0249/sub-EMOP0249_desc-nonlin_atlas-CerebrA_from-MNI152NLin2009cSym_electrodes.xlsx"
 	
 	input=dotdict({
 				'input_file': input_file,

@@ -1,7 +1,9 @@
 #
 #--- filepaths
 
-bids_dir: /home/greydon/Documents/data/single
+
+bids_dir: /home/neurophys/Documents/data/emory_peds
+
 subject_prefix: 'P'
 
 registration:
@@ -43,7 +45,7 @@ noncontrast_t1:
     algo: ants
 
 post_image:
-    present: True
+    present: False
     session: 'post'
     datatype: 'ct'
     acq: 'Electrode'
@@ -78,12 +80,12 @@ pet2:
     algo: ants
 
 other_vol:
-    present: True
+    present: False
     session: 'pre'
     datatype: 'anat'
-    acq: null
-    run: '01'
-    suffix: 'FGATIR'
+    acq: 'ROSA'
+    run: '02'
+    suffix: 'T1w'
     ext: '.nii.gz'
     algo: ants
 
@@ -98,7 +100,7 @@ other_vol2:
     algo: ants
 
 seeg_contacts:
-    present: True
+    present: False
     space_coords: &space_coords derivatives/seeg_coordinates/sub-{subject}/sub-{subject}_space-{coords_space}_{coords_type}.fcsv
     scene_coords: &scene_coords derivatives/slicer_scene/sub-{subject}/sub-{subject}_{coords_type}.fcsv
 
@@ -185,7 +187,7 @@ tissue_labels:
 
 fastsurfer_config:
     ses: 'pre'
-    home: "/home/greydon/Documents/GitHub/FastSurfer"
+    home: "/home/neurophys/Documents/GitHub/FastSurfer"
     colors: resources/FreeSurferColorLUT.tsv
     py: "python3.10"
     sid: 'fastsurfer'
@@ -309,9 +311,9 @@ ants:
         gradient_step: 0.25
 
 ext_libs:
-    c3d_affine_tool: /opt/itksnap-4.2.2/bin/c3d_affine_tool
-    c3d: /opt/itksnap-4.2.2/bin/c3d
-    fsl: /home/greydon/fsl/bin
+    c3d_affine_tool: /home/neurophys/Documents/GitHub/ieegProc/resources/c3d-1.4.0/bin/c3d_affine_tool
+    c3d: /home/neurophys/Documents/GitHub/ieegProc/resources/c3d-1.4.0/bin/c3d
+    fsl: /home/neurophys/Documents/GitHub/ieegProc/resources/fsl
 singularity:
     neuroglia-core: "docker://khanlab/neuroglia-core:latest"
     fastsurfer: "docker://deepmi/fastsurfer:latest"
