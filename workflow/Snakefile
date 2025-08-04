@@ -51,6 +51,9 @@ if config['seeg_contacts']['present']:
 if config['fastsurfer']['run']:
     include: 'rules/fastsurfer.smk'
 
+if config['meld']['run']:
+    include: 'rules/meld.smk'
+
 if config['visqc']['run']:
     include: "rules/visqc.smk"
 

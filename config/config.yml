@@ -1,7 +1,7 @@
 #
 #--- filepaths
 
-bids_dir: /home/greydon/Documents/data/lhsc_seeg
+bids_dir: /home/greydon/Documents/data/single
 subject_prefix: 'P'
 
 registration:
@@ -14,28 +14,12 @@ fastsurfer:
     run: False
 hippunfold:
     run: False
+meld:
+    run: True
 
-fastsurfer_vol:
-    present: True
-    session: 'pre'
-    datatype: 'anat'
-    acq: null
-    run: '01'
-    suffix: 'T1w'
-    ext: '.nii.gz'
-    position: 0
-
-meld_vol:
-    present: True
-    session: 'pre'
-    datatype: 'anat'
-    acq: null
-    run: '01'
-    suffix: 'T1w'
-    ext: '.nii.gz'
-    position: 0
 #
 #--- imaging volumes
+#
 contrast_t1:
     present: True
     session: 'pre'
@@ -70,7 +54,7 @@ post_image:
     algo: ants
 
 pet1:
-    present: True
+    present: False
     session: 'pre'
     datatype: 'pet'
     acq: 'ac'
@@ -82,7 +66,7 @@ pet1:
     algo: ants
 
 pet2:
-    present: True
+    present: False
     session: 'pre'
     datatype: 'pet'
     acq: 'nac'
@@ -94,12 +78,12 @@ pet2:
     algo: ants
 
 other_vol:
-    present: False
+    present: True
     session: 'pre'
     datatype: 'anat'
-    acq: 'ROSA'
+    acq: null
     run: '01'
-    suffix: 'T1w'
+    suffix: 'FGATIR'
     ext: '.nii.gz'
     algo: ants
 
@@ -114,14 +98,36 @@ other_vol2:
     algo: ants
 
 seeg_contacts:
-    present: False
+    present: True
     space_coords: &space_coords derivatives/seeg_coordinates/sub-{subject}/sub-{subject}_space-{coords_space}_{coords_type}.fcsv
     scene_coords: &scene_coords derivatives/slicer_scene/sub-{subject}/sub-{subject}_{coords_type}.fcsv
 
 #
+#--- pipeline volumes
+#
+fastsurfer_vol:
+    present: True
+    session: 'pre'
+    datatype: 'anat'
+    acq: null
+    run: '01'
+    suffix: 'T1w'
+    ext: '.nii.gz'
+    position: 0
+
+meld_vol:
+    present: True
+    session: 'pre'
+    datatype: 'anat'
+    acq: null
+    run: '01'
+    suffix: 'T1w'
+    ext: '.nii.gz'
+    position: 0
+
+#
 #--- registration paramters
 #
-
 subject_reg:
     affine_reg:
         reg_aladin:
@@ -203,6 +209,8 @@ hippunfold_config:
 meld_config:
     demographics_file: resources/meld/demographics_file.csv
     freesurfer_license: resources/meld/freesurfer_license.txt
+    meld_params: resources/meld/meld_params
+    meld_models: resources/meld/models
 #
 #--- template space/atlases
 #
@@ -309,3 +317,4 @@ singularity:
     fmriprep: resources/fmriprep-21.0.0.simg
     neuroglia: docker://khanlab/neuroglia-core:latest
     hippunfold: docker://khanlab/hippunfold:latest
+    meld: docker://meldproject/meld_graph:latest
