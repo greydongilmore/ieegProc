@@ -19,10 +19,10 @@ from pptx.util import Inches
 from collections import ChainMap
 
 if sys.platform=='linux':
-	if os.path.exists(os.path.join('/home','greydon','Documents','GitHub','seeg2bids-pipeline')):
-		root_dir=os.path.join('/home','greydon','Documents','GitHub','seeg2bids-pipeline')
+	if os.path.exists(os.path.join('/home','neurophys','Documents','GitHub','seeg2bids-pipeline')):
+		root_dir=os.path.join('/home','neurophys','Documents','GitHub','seeg2bids-pipeline')
 	else:
-		root_dir=os.path.join('/home','greydon','Documents','GitHub','ieegProc')
+		root_dir=os.path.join('/home','neurophys','Documents','GitHub','ieegProc')
 elif sys.platform=='win32':
 	if os.path.exists(os.path.join('C','Users','greydon','Documents','GitHub','seeg2bids-pipeline')):
 		root_dir=os.path.join('C','Users','greydon','Documents','GitHub','seeg2bids-pipeline')
