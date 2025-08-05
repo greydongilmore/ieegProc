@@ -1,0 +1,134 @@
+{
+    ".combat.on_lh.curv.sm5.mgh": {
+        "mean": "-0.026472108",
+        "std": "0.117822655"
+    },
+    ".combat.on_lh.gm_FLAIR_0.25.sm10.mgh": {
+        "mean": "43.90746",
+        "std": "63.312073"
+    },
+    ".combat.on_lh.gm_FLAIR_0.5.sm10.mgh": {
+        "mean": "44.951527",
+        "std": "64.89869"
+    },
+    ".combat.on_lh.gm_FLAIR_0.75.sm10.mgh": {
+        "mean": "43.926914",
+        "std": "63.451965"
+    },
+    ".combat.on_lh.gm_FLAIR_0.sm10.mgh": {
+        "mean": "41.456078",
+        "std": "59.67408"
+    },
+    ".combat.on_lh.pial.K_filtered.sm20.mgh": {
+        "mean": "0.44171628",
+        "std": "0.2341958"
+    },
+    ".combat.on_lh.sulc.sm5.mgh": {
+        "mean": "0.054370545",
+        "std": "0.54415625"
+    },
+    ".combat.on_lh.thickness.sm10.mgh": {
+        "mean": "2.6341841",
+        "std": "0.5177031"
+    },
+    ".combat.on_lh.w-g.pct.sm10.mgh": {
+        "mean": "26.442478",
+        "std": "6.336205"
+    },
+    ".combat.on_lh.wm_FLAIR_0.5.sm10.mgh": {
+        "mean": "39.175938",
+        "std": "56.330368"
+    },
+    ".combat.on_lh.wm_FLAIR_1.sm10.mgh": {
+        "mean": "37.755623",
+        "std": "54.25842"
+    },
+    ".inter_z.asym.intra_z.combat.on_lh.curv.sm5.mgh": {
+        "mean": "-3.1064352e-11",
+        "std": "1.0186744"
+    },
+    ".inter_z.asym.intra_z.combat.on_lh.gm_FLAIR_0.25.sm10.mgh": {
+        "mean": "2.136635e-10",
+        "std": "0.6625333"
+    },
+    ".inter_z.asym.intra_z.combat.on_lh.gm_FLAIR_0.5.sm10.mgh": {
+        "mean": "2.6719327e-10",
+        "std": "0.6673124"
+    },
+    ".inter_z.asym.intra_z.combat.on_lh.gm_FLAIR_0.75.sm10.mgh": {
+        "mean": "-1.6514504e-10",
+        "std": "0.65529895"
+    },
+    ".inter_z.asym.intra_z.combat.on_lh.gm_FLAIR_0.sm10.mgh": {
+        "mean": "3.8723663e-11",
+        "std": "0.64825815"
+    },
+    ".inter_z.asym.intra_z.combat.on_lh.pial.K_filtered.sm20.mgh": {
+        "mean": "3.5990228e-11",
+        "std": "1.0207891"
+    },
+    ".inter_z.asym.intra_z.combat.on_lh.sulc.sm5.mgh": {
+        "mean": "-6.833588e-11",
+        "std": "1.0249853"
+    },
+    ".inter_z.asym.intra_z.combat.on_lh.thickness.sm10.mgh": {
+        "mean": "-1.740287e-10",
+        "std": "1.0041375"
+    },
+    ".inter_z.asym.intra_z.combat.on_lh.w-g.pct.sm10.mgh": {
+        "mean": "-1.9042931e-10",
+        "std": "1.0140727"
+    },
+    ".inter_z.asym.intra_z.combat.on_lh.wm_FLAIR_0.5.sm10.mgh": {
+        "mean": "-1.1423481e-10",
+        "std": "0.6365333"
+    },
+    ".inter_z.asym.intra_z.combat.on_lh.wm_FLAIR_1.sm10.mgh": {
+        "mean": "-5.7857708e-11",
+        "std": "0.62248856"
+    },
+    ".inter_z.intra_z.combat.on_lh.curv.sm5.mgh": {
+        "mean": "-0.0014320837",
+        "std": "1.0156097"
+    },
+    ".inter_z.intra_z.combat.on_lh.gm_FLAIR_0.25.sm10.mgh": {
+        "mean": "0.0035190564",
+        "std": "0.68240863"
+    },
+    ".inter_z.intra_z.combat.on_lh.gm_FLAIR_0.5.sm10.mgh": {
+        "mean": "0.00095380587",
+        "std": "0.6831699"
+    },
+    ".inter_z.intra_z.combat.on_lh.gm_FLAIR_0.75.sm10.mgh": {
+        "mean": "-0.002386875",
+        "std": "0.6726801"
+    },
+    ".inter_z.intra_z.combat.on_lh.gm_FLAIR_0.sm10.mgh": {
+        "mean": "0.004100033",
+        "std": "0.66619253"
+    },
+    ".inter_z.intra_z.combat.on_lh.pial.K_filtered.sm20.mgh": {
+        "mean": "0.0042606965",
+        "std": "1.0221932"
+    },
+    ".inter_z.intra_z.combat.on_lh.sulc.sm5.mgh": {
+        "mean": "0.0010753947",
+        "std": "1.0195484"
+    },
+    ".inter_z.intra_z.combat.on_lh.thickness.sm10.mgh": {
+        "mean": "0.0018376786",
+        "std": "1.013917"
+    },
+    ".inter_z.intra_z.combat.on_lh.w-g.pct.sm10.mgh": {
+        "mean": "0.0037631958",
+        "std": "1.035872"
+    },
+    ".inter_z.intra_z.combat.on_lh.wm_FLAIR_0.5.sm10.mgh": {
+        "mean": "0.004348663",
+        "std": "0.65083146"
+    },
+    ".inter_z.intra_z.combat.on_lh.wm_FLAIR_1.sm10.mgh": {
+        "mean": "0.005014568",
+        "std": "0.6372303"
+    }
+}
