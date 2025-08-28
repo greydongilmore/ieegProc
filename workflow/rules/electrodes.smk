@@ -13,10 +13,36 @@ final_outputs.extend(expand(f'{sep}'.join([config['out_dir'], config['seeg_conta
         subject=subjects))
 
 if config['segmentation']['run']:
-    rule warp_contact_coords:
+    rule warp_contact_coords_planned:
+        input: 
+            fcsv = get_electrodes_coords(subject_id,coords_type='planned'),
+            xfm_composite = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,suffix='InverseComposite.h5',from_='subject',to=get_age_appropriate_template_name(expand(subject_id,subject=subjects),'space')),
+        params:
+            ants= get_antsApplyTransformsToPoints_cmd
+        output:
+            fcsv_fname_warped = f'{sep}'.join([config['out_dir'], config['seeg_contacts']['space_coords'].format(subject=subject_id, coords_space=get_age_appropriate_template_name(expand(subject_id,subject=subjects),'space'), coords_type='planned')])
+        group: 'preproc'
+        script: '../scripts/working/apply_warp_to_points.py'
+
+    rule warp_contact_coords_actual:
+        input: 
+            fcsv = get_electrodes_coords(subject_id,coords_type='actual'),
+            xfm_composite = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,suffix='InverseComposite.h5',from_='subject',to=get_age_appropriate_template_name(expand(subject_id,subject=subjects),'space')),
+        params:
+            ants= get_antsApplyTransformsToPoints_cmd
+        output:
+            fcsv_fname_warped = f'{sep}'.join([config['out_dir'], config['seeg_contacts']['space_coords'].format(subject=subject_id, coords_space=get_age_appropriate_template_name(expand(subject_id,subject=subjects),'space'), coords_type='actual')])
+        group: 'preproc'
+        script: '../scripts/working/apply_warp_to_points.py'
+
+    rule warp_contact_coords_seeg:
         input: 
             fcsv = get_electrodes_coords(subject_id,coords_space='native', coords_type='SEEGA'),
+            fsv_planned=rules.warp_contact_coords_planned.output.fcsv_fname_warped,
+            fsv_actual=rules.warp_contact_coords_actual.output.fcsv_fname_warped,
             xfm_composite = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,suffix='InverseComposite.h5',from_='subject',to=get_age_appropriate_template_name(expand(subject_id,subject=subjects),'space')),
+        params:
+            ants= get_antsApplyTransformsToPoints_cmd
         output:
             fcsv_fname_warped = f'{sep}'.join([config['out_dir'], config['seeg_contacts']['space_coords'].format(subject=subject_id, coords_space=get_age_appropriate_template_name(expand(subject_id,subject=subjects),'space'), coords_type='SEEGA')])
         group: 'preproc'
@@ -112,7 +138,7 @@ final_outputs.extend(expand(bids(root=join(config['out_dir'], 'derivatives', 'at
 if config['segmentation']['run']:
     final_outputs.extend(
         expand(
-            rules.warp_contact_coords.output.fcsv_fname_warped,
+            rules.warp_contact_coords_seeg.output.fcsv_fname_warped,
             subject=subjects
         )
     )

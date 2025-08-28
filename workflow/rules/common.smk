@@ -160,6 +160,16 @@ def get_electrodes_coords(subject_id,coords_space=None,coords_type=None):
     print(file)
     return file
 
+def get_antsApplyTransformsToPoints_cmd(subject_id):
+    import platform
+    if platform.system().lower() == 'linux':
+        ants_cmd=join(config['ext_libs']['ants'],'antsApplyTransformsToPoints.glnxa64')
+    elif platform.system() == 'Windows':
+        ants_cmd=join(config['ext_libs']['ants'],'antsApplyTransformsToPoints.exe')
+    elif platform.system() == 'Darwin':
+        ants_cmd=join(config['ext_libs']['ants'],'antsApplyTransformsToPoints.maci64')
+    return ants_cmd
+
 def get_fsl_cmd(subject_id):
     import platform
     if 'resources' in config['ext_libs']['fsl']:
@@ -200,6 +210,23 @@ def get_age_appropriate_template_name(subject=None, key='t1w'):
                 return config['adult_template'][config['adult_template']['active_space']][key]
         else:
             return config['adult_template'][config['adult_template']['active_space']][key]
+
+def get_postop_filename(wildcards):
+    if config['post_image']['run'].isnumeric() and not isinstance(config['post_image']['position'],int):
+        file=expand(bids(root=join(config['out_dir'], 'bids'), subject='{subject}', datatype=config['post_image']['datatype'], session=config['post_image']['session'], acq=config['post_image']['acq'], run=config['post_image']['run'], suffix=config['post_image']['suffix']+config['post_image']['ext']),subject=wildcards.subject)
+    else:
+        files=glob(bids(root=join(config['out_dir'], 'bids'), subject=f'{wildcards.subject}', datatype=config['post_image']['datatype'], session=config['post_image']['session'], acq=config['post_image']['acq'], run='*', suffix=config['post_image']['suffix']+config['post_image']['ext']))
+        files.sort(key=lambda f: int(re.sub('\D', '', f)),reverse=False)
+        file=files[config['post_image']['position']]
+    print(file)
+    return file
+
+def get_reference_t1(wildcards):
+    if config['contrast_t1']['present']:
+        ref_file=expand(bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'), subject='{subject}', acq='contrast', suffix='T1w.nii.gz'),subject=wildcards.subject)
+    elif not config['contrast_t1']['present'] and config['noncontrast_t1']['present']:
+        ref_file=expand(bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'), subject='{subject}', acq='noncontrast', suffix='T1w.nii.gz'),subject=wildcards.subject)
+    return ref_file[0]
 
 def get_noncontrast_filename(wildcards):
     files=glob(bids(root=join(config['out_dir'], 'bids','sub-'+f'{wildcards.subject}'), prefix='sub-'+f'{wildcards.subject}', datatype='anat', session='pre', acq=config['noncontrast_t1']['acq'], run='*', suffix='T1w.nii.gz'))

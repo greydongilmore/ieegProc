@@ -11,28 +11,36 @@ import csv
 def run_command(cmdLineArguments):
 	subprocess.run(cmdLineArguments, stdout=subprocess.PIPE,stderr=subprocess.STDOUT, shell=True)
 
-
 def determineFCSVCoordSystem(input_fcsv):
 	# need to determine if file is in RAS or LPS
 	# loop through header to find coordinate system
 	coordFlag = re.compile('# CoordinateSystem')
+	verFlag = re.compile('# Markups fiducial file version')
+	headFlag = re.compile('# columns')
 	coord_sys=None
-	with open(input_fcsv, 'r+') as fid:
-		rdr = csv.DictReader(filter(lambda row: row[0]=='#', fid))
-		row_cnt=0
-		for row in rdr:
-			cleaned_dict={k:v for k,v in row.items() if k is not None}
-			if any(coordFlag.match(x) for x in list(cleaned_dict.values())):
-				coordString = list(filter(coordFlag.match,  list(cleaned_dict.values())))
-				assert len(coordString)==1
-				coord_sys = coordString[0].split('=')[-1].strip()
-			row_cnt +=1
-	return coord_sys
+	headFin=None
+	ver_fin=None
+	
+	with open(input_fcsv, 'r') as myfile:
+		firstNlines=myfile.readlines()[0:3]
+	
+	for row in firstNlines:
+		row=re.sub("[\s\,]+[\,]","",row).replace("\n","")
+		cleaned_dict={row.split('=')[0].strip():row.split('=')[1].strip()}
+		if None in list(cleaned_dict):
+			cleaned_dict['# columns'] = cleaned_dict.pop(None)
+		if any(coordFlag.match(x) for x in list(cleaned_dict)):
+			coord_sys = list(cleaned_dict.values())[0]
+		if any(verFlag.match(x) for x in list(cleaned_dict)):
+			verString = list(filter(verFlag.match,  list(cleaned_dict)))
+			assert len(verString)==1
+			ver_fin = verString[0].split('=')[-1].strip()
+		if any(headFlag.match(x) for x in list(cleaned_dict)):
+			headFin=list(cleaned_dict.values())[0].split(',')
+	
+	return coord_sys,headFin
 
 def convertSlicerRASFCSVtoAntsLPSCSV( input_fcsv, output_csv, coord_system):
-	# convert Slicer RAS oriented FCSV (default) to Ants LPS oriented format (expected orientation)
-	# use with CAUTION: orientation flips here
-	
 	df = pd.read_csv(input_fcsv, skiprows=2, usecols=['x','y','z']) # first 2 rows of fcsv not necessary for header
 	if any(x in coord_system for x in {'RAS','0'}):
 		df['x'] = -1 * df['x'] # flip orientation in x
@@ -43,10 +51,6 @@ def convertSlicerRASFCSVtoAntsLPSCSV( input_fcsv, output_csv, coord_system):
 	df.to_csv( output_csv, index=False )
 
 def convertAntsLPSCSVtoSlicerRASFCSV( input_csv, output_fcsv, ref_fcsv, coord_system):
-	# convert Ants LPS oriented format (ants expected orientation) to Slicer RAS oriented FCSV (for viewing in Slicer)
-	# use with CAUTION: orientation flips here
-
-	# extract Slicer header
 	f = open( ref_fcsv, 'r' )
 	lines = f.readlines()
 	f.close()
@@ -95,15 +99,15 @@ if debug:
 	})
 	
 	snakemake = Namespace(output=output, input=input)
-	
 
-tmp_slicer_to_LPS_csv = os.path.join(os.path.dirname(snakemake.output.fcsv_fname_warped), "tmp_slicer_to_LPS.csv")
-tmp_slicer_to_LPS_transformed_csv = os.path.join(os.path.dirname(snakemake.output.fcsv_fname_warped),  "tmp_slicer_to_LPS_transformed-warp.csv")
+fcsv_type=os.path.splitext(os.path.basename(snakemake.input.fcsv))[0].split("_")[-1]
+tmp_slicer_to_LPS_csv = os.path.join(os.path.dirname(snakemake.output.fcsv_fname_warped), f"tmp_slicer_to_LPS_{fcsv_type}.csv")
+tmp_slicer_to_LPS_transformed_csv = os.path.join(os.path.dirname(snakemake.output.fcsv_fname_warped),  f"tmp_slicer_to_LPS_transformed-warp_{fcsv_type}.csv")
 
-coordSys=determineFCSVCoordSystem(snakemake.input.fcsv)
+coordSys,headFin=determineFCSVCoordSystem(snakemake.input.fcsv)
 convertSlicerRASFCSVtoAntsLPSCSV(snakemake.input.fcsv, tmp_slicer_to_LPS_csv,coordSys)
 
-cmd = ' '.join(['/opt/ants-2.6.2/bin/antsApplyTransformsToPoints',
+cmd = ' '.join([f'{snakemake.params.ants}',
 	  '-d', str(3),
 	  '-i', '"'+tmp_slicer_to_LPS_csv+'"',
 	  '-o', '"'+tmp_slicer_to_LPS_transformed_csv+'"',

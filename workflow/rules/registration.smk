@@ -1,20 +1,4 @@
 
-def get_postop_filename(wildcards):
-    if config['post_image']['run'].isnumeric() and not isinstance(config['post_image']['position'],int):
-        file=expand(bids(root=join(config['out_dir'], 'bids'), subject='{subject}', datatype=config['post_image']['datatype'], session=config['post_image']['session'], acq=config['post_image']['acq'], run=config['post_image']['run'], suffix=config['post_image']['suffix']+config['post_image']['ext']),subject=wildcards.subject)
-    else:
-        files=glob(bids(root=join(config['out_dir'], 'bids'), subject=f'{wildcards.subject}', datatype=config['post_image']['datatype'], session=config['post_image']['session'], acq=config['post_image']['acq'], run='*', suffix=config['post_image']['suffix']+config['post_image']['ext']))
-        files.sort(key=lambda f: int(re.sub('\D', '', f)),reverse=False)
-        file=files[config['post_image']['position']]
-    print(file)
-    return file
-
-def get_reference_t1(wildcards):
-    if config['contrast_t1']['present']:
-        ref_file=expand(bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'), subject='{subject}', acq='contrast', suffix='T1w.nii.gz'),subject=wildcards.subject)
-    elif not config['contrast_t1']['present'] and config['noncontrast_t1']['present']:
-        ref_file=expand(bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'), subject='{subject}', acq='noncontrast', suffix='T1w.nii.gz'),subject=wildcards.subject)
-    return ref_file
 
 if config['contrast_t1']['present']:
     rule import_subj_t1:

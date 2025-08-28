@@ -1,10 +1,4 @@
 
-def get_reference_t1(wildcards):
-    if config['contrast_t1']['present']:
-        ref_file=expand(bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'), subject='{subject}', acq='contrast', suffix='T1w.nii.gz'),subject=wildcards.subject)
-    elif not config['contrast_t1']['present'] and config['noncontrast_t1']['present']:
-        ref_file=expand(bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'), subject='{subject}', acq='noncontrast', suffix='T1w.nii.gz'),subject=wildcards.subject)
-    return ref_file[0]
 
 if config['segmentation']['run']:
     rule qc_reg_t1:
