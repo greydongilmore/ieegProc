@@ -107,7 +107,7 @@ tmp_slicer_to_LPS_transformed_csv = os.path.join(os.path.dirname(snakemake.outpu
 coordSys,headFin=determineFCSVCoordSystem(snakemake.input.fcsv)
 convertSlicerRASFCSVtoAntsLPSCSV(snakemake.input.fcsv, tmp_slicer_to_LPS_csv,coordSys)
 
-cmd = ' '.join([f'{snakemake.params.ants}',
+cmd = ' '.join([f'{snakemake.params.ants+snakemake.params.ants_ext}',
 	  '-d', str(3),
 	  '-i', '"'+tmp_slicer_to_LPS_csv+'"',
 	  '-o', '"'+tmp_slicer_to_LPS_transformed_csv+'"',

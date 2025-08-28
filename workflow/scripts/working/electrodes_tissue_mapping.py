@@ -92,7 +92,7 @@ if not os.path.exists(out_excel):
 		raise ValueError("The input file is missing required columns: label, atlas_label, GM, WM, CSF.")
 	
 	# Update atlas_label for CSF and WM
-	data['atlas_label'] = np.where(data['CSF'] > 0.7, "CSF", np.where(data['WM'] > 0.7, "WM", data['atlas_label']))
+	data['atlas_label'] = np.where(data['CSF'] > 0.8, "CSF", np.where(data['WM'] > 0.8, "WM", data['atlas_label']))
 	
 	# Extract leads and contacts
 	data['contact_number'] = data['label'].str.extract(r'-(\d+)$').astype(float)

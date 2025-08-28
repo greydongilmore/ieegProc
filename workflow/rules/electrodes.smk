@@ -18,7 +18,8 @@ if config['segmentation']['run']:
             fcsv = get_electrodes_coords(subject_id,coords_type='planned'),
             xfm_composite = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,suffix='InverseComposite.h5',from_='subject',to=get_age_appropriate_template_name(expand(subject_id,subject=subjects),'space')),
         params:
-            ants= get_antsApplyTransformsToPoints_cmd
+            ants=join(config['ext_libs']['ants'],'antsApplyTransformsToPoints'),
+            ants_ext=get_platform
         output:
             fcsv_fname_warped = f'{sep}'.join([config['out_dir'], config['seeg_contacts']['space_coords'].format(subject=subject_id, coords_space=get_age_appropriate_template_name(expand(subject_id,subject=subjects),'space'), coords_type='planned')])
         group: 'preproc'
@@ -29,7 +30,8 @@ if config['segmentation']['run']:
             fcsv = get_electrodes_coords(subject_id,coords_type='actual'),
             xfm_composite = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,suffix='InverseComposite.h5',from_='subject',to=get_age_appropriate_template_name(expand(subject_id,subject=subjects),'space')),
         params:
-            ants= get_antsApplyTransformsToPoints_cmd
+            ants=join(config['ext_libs']['ants'],'antsApplyTransformsToPoints'),
+            ants_ext=get_platform
         output:
             fcsv_fname_warped = f'{sep}'.join([config['out_dir'], config['seeg_contacts']['space_coords'].format(subject=subject_id, coords_space=get_age_appropriate_template_name(expand(subject_id,subject=subjects),'space'), coords_type='actual')])
         group: 'preproc'
@@ -42,7 +44,8 @@ if config['segmentation']['run']:
             fsv_actual=rules.warp_contact_coords_actual.output.fcsv_fname_warped,
             xfm_composite = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,suffix='InverseComposite.h5',from_='subject',to=get_age_appropriate_template_name(expand(subject_id,subject=subjects),'space')),
         params:
-            ants= get_antsApplyTransformsToPoints_cmd
+            ants=join(config['ext_libs']['ants'],'antsApplyTransformsToPoints'),
+            ants_ext=get_platform
         output:
             fcsv_fname_warped = f'{sep}'.join([config['out_dir'], config['seeg_contacts']['space_coords'].format(subject=subject_id, coords_space=get_age_appropriate_template_name(expand(subject_id,subject=subjects),'space'), coords_type='SEEGA')])
         group: 'preproc'

@@ -160,15 +160,15 @@ def get_electrodes_coords(subject_id,coords_space=None,coords_type=None):
     print(file)
     return file
 
-def get_antsApplyTransformsToPoints_cmd(subject_id):
+def get_platform(wildcards):
     import platform
     if platform.system().lower() == 'linux':
-        ants_cmd=join(config['ext_libs']['ants'],'antsApplyTransformsToPoints.glnxa64')
+        platform_ext='.glnxa64'
     elif platform.system() == 'Windows':
-        ants_cmd=join(config['ext_libs']['ants'],'antsApplyTransformsToPoints.exe')
+        platform_ext='.exe'
     elif platform.system() == 'Darwin':
-        ants_cmd=join(config['ext_libs']['ants'],'antsApplyTransformsToPoints.maci64')
-    return ants_cmd
+        platform_ext='.maci64'
+    return platform_ext
 
 def get_fsl_cmd(subject_id):
     import platform

@@ -290,7 +290,7 @@ MNIPediatricAsymCohort6:
     atlas_dseg_tsv: resources/tpl-MNI152NLin2009cSym/tpl-MNI152NLin2009cSym_atlas-{atlas}_dseg.tsv
 
 #number of times to dilate  (each time 3x3x3 mode dilation)
-n_atlas_dilate: 3
+n_atlas_dilate: 4
 n_init_mask_dilate: 1 
 
 #parameters for ants transformation
