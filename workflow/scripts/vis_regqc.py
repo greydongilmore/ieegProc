@@ -158,25 +158,12 @@ if debug:
 
 
 ref_img=nib.load(snakemake.input.ref)
-#ref_img.header.set_data_dtype('float32')
 ref_img.set_qform(ref_img.affine,1)
-ref_img_resamp = image.resample_img(ref_img, target_affine=np.eye(3), interpolation='linear',force_resample=True)
+ref_img_resamp = image.resample_img(ref_img, target_affine=np.eye(3), interpolation='linear',force_resample=True,copy_header=True)
 
 flo_img=nib.load(snakemake.input.flo)
-#flo_img.header.set_data_dtype('float32')
 flo_img.set_qform(flo_img.affine,1)
-flo_resamp = image.resample_to_img(flo_img, ref_img_resamp, interpolation='linear',force_resample=True)
-
-
-#mean_mm2vox = np.linalg.inv(ref_img_resamp.affine)
-#struct_vox2mean_vox = mean_mm2vox @ ref_img_resamp.affine
-#mat, vec = nib.affines.to_matvec(struct_vox2mean_vox)
-#resampled_mean = affine_transform(flo_resamp.get_fdata(), mat, vec, output_shape=ref_img_resamp.shape)
-#resampled_mean = nib.Nifti1Image(resampled_mean, header=flo_resamp.header, affine=ref_img_resamp.affine)
-#
-#flo_resamp_vox_center = (np.array(resampled_mean.shape) - 1) / 2.
-#flo_cut=(resampled_mean.affine.dot(list(flo_resamp_vox_center) + [1])).astype(int).tolist()
-
+flo_resamp = image.resample_to_img(flo_img, ref_img_resamp, interpolation='linear',force_resample=True,copy_header=True)
 
 plot_args_ref={'dim':-1, 'black_bg':True}
 plot_args_flo={'dim':0, 'black_bg':False}

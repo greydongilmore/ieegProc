@@ -2,7 +2,7 @@
 #--- filepaths
 
 
-bids_dir: /home/neurophys/Documents/data/emory_peds
+bids_dir: /home/greydon/Documents/data/lhsc_seeg
 
 subject_prefix: 'P'
 
@@ -17,7 +17,7 @@ fastsurfer:
 hippunfold:
     run: False
 meld:
-    run: True
+    run: False
 
 #
 #--- imaging volumes
@@ -30,8 +30,8 @@ contrast_t1:
     run: '02'
     suffix: 'T1w'
     ext: '.nii.gz'
-    position: -1
-    algo: ants
+    position: 1
+    algo: greedy
 
 noncontrast_t1:
     present: True
@@ -42,18 +42,18 @@ noncontrast_t1:
     suffix: 'T1w'
     ext: '.nii.gz'
     position: 0
-    algo: ants
+    algo: greedy
 
 post_image:
-    present: False
+    present: True
     session: 'post'
     datatype: 'ct'
     acq: 'Electrode'
     run: '01'
     suffix: 'ct'
     ext: '.nii.gz'
-    position: -1
-    algo: ants
+    position: 0
+    algo: greedy
 
 pet1:
     present: False
@@ -311,9 +311,9 @@ ants:
         gradient_step: 0.25
 
 ext_libs:
-    c3d_affine_tool: /home/neurophys/Documents/GitHub/ieegProc/resources/c3d-1.4.0/bin/c3d_affine_tool
-    c3d: /home/neurophys/Documents/GitHub/ieegProc/resources/c3d-1.4.0/bin/c3d
-    fsl: /home/neurophys/Documents/GitHub/ieegProc/resources/fsl
+    c3d_affine_tool: /home/greydon/Documents/GitHub/ieegProc/resources/c3d-1.4.0/bin/c3d_affine_tool
+    c3d: /home/greydon/Documents/GitHub/ieegProc/resources/c3d-1.4.0/bin/c3d
+    fsl: /home/greydon/Documents/GitHub/ieegProc/resources/fsl
 singularity:
     neuroglia-core: "docker://khanlab/neuroglia-core:latest"
     fastsurfer: "docker://deepmi/fastsurfer:latest"

@@ -152,7 +152,7 @@ def resample_img(img,voxel_dims=[1,1,1],target_shape=None):
 	
 	# Reconstruct the affine
 	target_affine[:3,:3] = u @ np.diag(voxel_dims) @ v
-	resampled_img = image.resample_img(img, target_affine=target_affine, target_shape=target_shape,interpolation='nearest')
+	resampled_img = image.resample_img(img, target_affine=target_affine, target_shape=target_shape,interpolation='nearest',copy_header=True,force_resample=True)
 	return resampled_img
 
 #%%

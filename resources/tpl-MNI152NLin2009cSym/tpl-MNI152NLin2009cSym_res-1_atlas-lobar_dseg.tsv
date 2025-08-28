@@ -1,0 +1,11 @@
+label	name	hemi	r	g	b
+1	R_Frontal	R	0	90	255
+2	R_Parietal	R	255	82	0
+3	R_Occipital	R	0	255	146
+4	R_Temporal	R	189	0	255
+5	R_WM	R	142	255	0
+6	L_Frontal	L	255	0	141
+7	L_Parietal	L	255	238	0
+8	L_Temporal	L	3	255	2
+9	L_Occipital	L	0	207	255
+10	L_WM	L	106	0	255

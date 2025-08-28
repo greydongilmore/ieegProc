@@ -171,7 +171,6 @@ def get_fsl_cmd(subject_id):
             fsl=join(config['ext_libs']['fsl'],'fslmaths.maci64'),
     else:
         fsl=join(config['ext_libs']['fsl'],'fslmaths')
-    print(fsl)
     return fsl
 
 def get_fslmerge_cmd(subject_id):
@@ -185,7 +184,6 @@ def get_fslmerge_cmd(subject_id):
             fsl=join(config['ext_libs']['fsl'],'fslmerge.maci64'),
     else:
         fsl=join(config['ext_libs']['fsl'],'fslmerge')
-    print(fsl)
     return fsl
 
 def get_age_appropriate_template_name(subject=None, key='t1w'):
