@@ -1,7 +1,6 @@
 #
 #--- filepaths
 
-
 bids_dir: /home/greydon/Documents/data/lhsc_seeg
 
 subject_prefix: 'P'
@@ -52,7 +51,7 @@ post_image:
     run: '01'
     suffix: 'ct'
     ext: '.nii.gz'
-    position: 0
+    position: -1
     algo: greedy
 
 pet1:
@@ -100,7 +99,7 @@ other_vol2:
     algo: ants
 
 seeg_contacts:
-    present: True
+    present: False
     space_coords: &space_coords derivatives/seeg_coordinates/sub-{subject}/sub-{subject}_space-{coords_space}_{coords_type}.fcsv
     scene_coords: &scene_coords derivatives/slicer_scene/sub-{subject}/sub-{subject}_{coords_type}.fcsv
 
@@ -187,7 +186,7 @@ tissue_labels:
 
 fastsurfer_config:
     ses: 'pre'
-    home: "/home/neurophys/Documents/GitHub/FastSurfer"
+    home: "/home/greydon/Documents/GitHub/FastSurfer"
     colors: resources/FreeSurferColorLUT.tsv
     py: "python3.10"
     sid: 'fastsurfer'

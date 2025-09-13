@@ -110,7 +110,7 @@ def determine_groups(iterable, numbered_labels=False):
 	vals,indexes,count = np.unique(values, return_index=True, return_counts=True)
 	values_unique = [values[index] for index in sorted(indexes)]
 	
-	return values_unique,count
+	return values_unique,vals
 
 
 def levenshtein_ratio_and_distance(s, t, ratio_calc = False):
@@ -222,14 +222,14 @@ if debug:
 		def __init__(self, **kwargs):
 			self.__dict__.update(kwargs)
 	
-	sub='P009'
+	sub='F004'
 	
-	config=dotdict({'out_dir':'/home/greydon/Documents/data/SEEG_peds'})
+	config=dotdict({'out_dir':'/home/greydon/Documents/data/lhsc_seeg'})
 	#config=dotdict({'out_dir':'/media/stereotaxy/3E7CE0407CDFF11F/data/SEEG/imaging/clinical'})
 	
 	params=dotdict({'sub':sub})
-	input=dotdict({'seega_scene':f'/home/greydon/Documents/data/SEEG_peds/derivatives/seeg_scenes/sub-{sub}/sub-{sub}_SEEGA.fcsv'})
-	output=dotdict({'seega_fcsv':f'/home/greydon/Documents/data/SEEG/derivatives/seeg_coordinates/sub-{sub}/sub-{sub}_space-native_SEEGA.fcsv'})
+	input=dotdict({'seega_scene':f'/home/greydon/Documents/data/lhsc_seeg/derivatives/slicer_scene/sub-{sub}/sub-{sub}_SEEGA.fcsv'})
+	output=dotdict({'seega_fcsv':f'/home/greydon/Documents/data/lhsc_seeg/derivatives/seeg_coordinates/sub-{sub}/sub-{sub}_space-native_SEEGA.fcsv'})
 	
 	snakemake = Namespace(params=params, input=input,output=output)
 
@@ -328,7 +328,6 @@ for ifile in patient_files:
 
 	if coords_type.lower().endswith('seega'):
 		groups,n_members = determine_groups(np.array(data_table_full['label'].values), True)
-		
 		group_pair = []
 		new_label = []
 		new_group = []
@@ -337,7 +336,7 @@ for ifile in patient_files:
 			if '_' in group_pair[-1]:
 				group_pair[-1] = "_".join(["".join(x for x in group_pair[-1].split('_')[0] if not x.isdigit())] + group_pair[-1].split('_')[1:])
 			
-			if "".join(x for x in group_pair[-1] if not x.isdigit()) in list(chan_label_dic):
+			if "".join(x for x in group_pair[-1]) in list(chan_label_dic):
 				temp = "".join(x for x in group_pair[-1] if not x.isdigit())
 				new_group.append(chan_label_dic[temp])
 				new_label.append(ichan.replace(temp, chan_label_dic[temp]))
@@ -370,8 +369,8 @@ for ifile in patient_files:
 			fid.write("# CoordinateSystem = 0\n")
 			fid.write("# columns = id,x,y,z,ow,ox,oy,oz,vis,sel,lock,label,desc,associatedNodeID\n")
 	
-		head = ['node_id', 'x_mcp', 'y_mcp', 'z_mcp', 'ow', 'ox', 'oy', 'oz', 'vis','sel', 'lock', 'label', 'desc', 'associatedNodeID']
-		data_table_full['node_id'] = ['vtkMRMLMarkupsFiducialNode_' + str(x) for x in range(data_table_full.shape[0])]
+		head = ['id', 'x_mcp', 'y_mcp', 'z_mcp', 'ow', 'ox', 'oy', 'oz', 'vis','sel', 'lock', 'label', 'desc', 'associatedNodeID']
+		data_table_full['id'] = ['vtkMRMLMarkupsFiducialNode_' + str(x) for x in range(data_table_full.shape[0])]
 		data_table_full['associatedNodeID'] = np.repeat('',data_table_full.shape[0])
 		data_table_full.round(6).to_csv(output_fname, sep=',', index=False, lineterminator="", columns = head, mode='a', header=False, float_format='%.6f')
 	
@@ -391,10 +390,10 @@ for ifile in patient_files:
 		fid.write("# CoordinateSystem = 0\n")
 		fid.write("# columns = id,x,y,z,ow,ox,oy,oz,vis,sel,lock,label,desc,associatedNodeID\n")
 	
-	head = ['node_id', 'x', 'y', 'z', 'ow', 'ox', 'oy', 'oz', 'vis','sel', 'lock', 'label', 'desc', 'associatedNodeID']
-	del data_table_full['node_id']
+	head = ['id', 'x', 'y', 'z', 'ow', 'ox', 'oy', 'oz', 'vis','sel', 'lock', 'label', 'desc', 'associatedNodeID']
+	del data_table_full['id']
 	del data_table_full['associatedNodeID']
-	data_table_full.insert(data_table_full.shape[1],'node_id',pd.Series(['vtkMRMLMarkupsFiducialNode_' + str(x) for x in range(data_table_full.shape[0])]))
+	data_table_full.insert(data_table_full.shape[1],'id',pd.Series(['vtkMRMLMarkupsFiducialNode_' + str(x) for x in range(data_table_full.shape[0])]))
 	data_table_full.insert(data_table_full.shape[1],'associatedNodeID', pd.Series(np.repeat('',data_table_full.shape[0])))
 	data_table_full.round(6).to_csv(output_fname, sep=',', index=False, lineterminator="", columns = head, mode='a', header=False, float_format='%.6f')
 

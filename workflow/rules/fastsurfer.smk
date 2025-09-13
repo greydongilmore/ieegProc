@@ -23,7 +23,6 @@ if config['fastsurfer_config']['version'] =='dev':
             fastsurfer_out = directory(join(config['out_dir'], 'derivatives', 'fastsurfer')),
             subjid=subject_id,
         output:
-            touch_fastsurfer=touch(join(config['out_dir'], 'logs', 'sub-' + subject_id + "_fastsurfer.done")),
             t1_fname = join(config['out_dir'],'derivatives','fastsurfer','sub-' + subject_id, 'mri','orig.mgz'),
             segs = join(config['out_dir'],'derivatives','fastsurfer','sub-' + subject_id, 'mri','aparc+aseg.mgz'),
         group: 'preproc'
@@ -45,7 +44,6 @@ elif config['fastsurfer_config']['version'] =='stable':
             fastsurfer_out = directory(join(config['out_dir'], 'derivatives', 'fastsurfer')),
             subjid=subject_id,
         output:
-            touch_fastsurfer=touch(join(config['out_dir'], 'logs', 'sub-' + subject_id + "_fastsurfer.done")),
             t1_fname = join(config['out_dir'],'derivatives','fastsurfer','sub-' + subject_id, 'mri','orig.mgz'),
             segs = join(config['out_dir'],'derivatives','fastsurfer','sub-' + subject_id, 'mri','aparc+aseg.mgz'),
         threads: 8
@@ -66,7 +64,6 @@ elif config['fastsurfer_config']['version'] =='master':
             fastsurfer_out = directory(join(config['out_dir'], 'derivatives', 'fastsurfer')),
             subjid=subject_id,
         output:
-            touch_fastsurfer=touch(join(config['out_dir'], 'logs', 'sub-' + subject_id + "_fastsurfer.done")),
             t1_fname = join(config['out_dir'],'derivatives','fastsurfer','sub-' + subject_id, 'mri','orig.mgz'),
             segs = join(config['out_dir'],'derivatives','fastsurfer','sub-' + subject_id, 'mri','aparc+aseg.mgz'),
         threads: 8
@@ -80,7 +77,6 @@ elif config['fastsurfer_config']['version'] =='master':
 rule fastsurfer_symlinks:
     input: 
         t1_fname = join(config['out_dir'],'derivatives','fastsurfer','sub-' + subject_id, 'mri','orig.mgz'),
-        touch_fastsurfer = rules.fastsurfer_seg.output.touch_fastsurfer,
     params:
         talairach_xfm = join(config['out_dir'],'derivatives','fastsurfer','sub-' + subject_id, 'mri','transforms','talairach.xfm.lta'),
         lh_pial_t1 = join(config['out_dir'],'derivatives','fastsurfer','sub-' + subject_id, 'surf','lh.pial.T1'),
@@ -91,7 +87,6 @@ rule fastsurfer_symlinks:
         rh_white_preaparc_k = join(config['out_dir'],'derivatives','fastsurfer','sub-' + subject_id, 'surf','lh.white.preaparc.K'),
         talairach_lta = join(config['out_dir'],'derivatives','fastsurfer','sub-' + subject_id, 'mri','transforms','talairach.lta'),
         talairach_skull_lta = join(config['out_dir'],'derivatives','fastsurfer','sub-' + subject_id, 'mri','transforms','talairach_with_skull.lta'),
-        rawavg = join(config['out_dir'],'derivatives','fastsurfer','sub-' + subject_id, 'mri','rawavg.mgz'),
         lh_pial = join(config['out_dir'],'derivatives','fastsurfer','sub-' + subject_id, 'surf','lh.pial'),
         rh_pial = join(config['out_dir'],'derivatives','fastsurfer','sub-' + subject_id, 'surf','rh.pial'),
         lh_white_h = join(config['out_dir'],'derivatives','fastsurfer','sub-' + subject_id, 'surf','lh.white.H'),
@@ -99,14 +94,13 @@ rule fastsurfer_symlinks:
         lh_white_k = join(config['out_dir'],'derivatives','fastsurfer','sub-' + subject_id, 'surf','lh.white.K'),
         rh_white_k = join(config['out_dir'],'derivatives','fastsurfer','sub-' + subject_id, 'surf','rh.white.K'),
     output:
-        touch_fastsurfer=touch(join(config['out_dir'], 'logs', 'sub-' + subject_id + "_fastsurfer_symlinks.done")),
+        rawavg = join(config['out_dir'],'derivatives','fastsurfer','sub-' + subject_id, 'mri','rawavg.mgz'),
     group: 'preproc'
     threads: 8
     shell:
-        "rm {params.talairach_lta} {params.talairach_skull_lta} {params.rawavg} {params.lh_pial} {params.rh_pial} {params.lh_white_h} {params.rh_white_h} {params.lh_white_k} {params.rh_white_k}&&\
-        cp {params.talairach_xfm} {params.talairach_lta}&&\
+        "cp {params.talairach_xfm} {params.talairach_lta}&&\
         cp {params.talairach_xfm} {params.talairach_skull_lta}&&\
-        cp {input.t1_fname} {params.rawavg}&&\
+        cp {input.t1_fname} {output.rawavg}&&\
         cp {params.lh_pial_t1} {params.lh_pial}&&\
         cp {params.rh_pial_t1} {params.rh_pial}&&\
         cp {params.lh_white_preaparc_h} {params.lh_white_h}&&\
@@ -119,7 +113,7 @@ rule fastsurfer_symlinks:
 rule aparcseg_to_nrrd:
     input:
         segs = join(config['out_dir'],'derivatives','fastsurfer','sub-' + subject_id, 'mri','aparc+aseg.mgz'),
-        touch_fastsurfer = rules.fastsurfer_symlinks.output.touch_fastsurfer,
+        touch_fastsurfer = rules.fastsurfer_symlinks.output.rawavg,
     params:
         atlas_labels = config['fastsurfer_config']['colors'],
         atlas_colors= config['fastsurfer_config']['colors'],
@@ -155,4 +149,5 @@ if config['seeg_contacts']['present']:
     final_outputs.extend(expand(bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),prefix='sub-'+subject_id+'/qc/sub-'+subject_id,suffix='electrodes.html',space='native',include_subject_dir=False),
                         subject=subjects))
 
+final_outputs.extend(expand(join(config['out_dir'],'derivatives','fastsurfer','sub-' + subject_id, 'mri','rawavg.mgz'), subject=subjects))
 final_outputs.extend(expand(join(config['out_dir'],'derivatives','fastsurfer','sub-' + subject_id, 'mri','aparc+aseg.seg.nrrd'), subject=subjects))

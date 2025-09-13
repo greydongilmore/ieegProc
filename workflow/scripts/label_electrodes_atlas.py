@@ -24,18 +24,18 @@ if debug:
 		def __init__(self, **kwargs):
 			self.__dict__.update(kwargs)
 	
-	isub="P002"
-	data_dir=r'/home/greydon/Documents/data/emory_peds/derivatives'
+	isub="F004"
+	data_dir=r'/home/greydon/Documents/data/lhsc_seeg/derivatives'
 	
 	input=dotdict({'fcsv':f'{data_dir}/seeg_coordinates/' + f'sub-{isub}/sub-{isub}_space-native_SEEGA.fcsv',
-				'fcsv_template':f'{data_dir}/seeg_coordinates/' + f'sub-{isub}/sub-{isub}_space-MNIPediatricAsymCohort4_SEEGA.fcsv',
-				'dseg_tsv':'/home/greydon/Documents/GitHub/ieegProc/resources/tpl-MNI152NLin2009cSym/tpl-MNI152NLin2009cSym_atlas-CerebrA_dseg.tsv',
-				'dseg_nii':f'{data_dir}/atlasreg/' + f'sub-{isub}/sub-{isub}_label-dilated_desc-nonlin_atlas-CerebrA_from-MNIPediatricAsymCohort4_dseg.nii.gz',
+				'fcsv_template':f'{data_dir}/seeg_coordinates/' + f'sub-{isub}/sub-{isub}_space-MNI152NLin2009cSym_SEEGA.fcsv',
+				'dseg_tsv':'/home/greydon/Documents/GitHub/ieegProc/resources/tpl-MNI152NLin2009cSym/tpl-MNI152NLin2009cSym_res-1_atlas-CerebrAThomasMiddle_dseg.tsv',
+				'dseg_nii':f'{data_dir}/atlasreg/' + f'sub-{isub}/sub-{isub}_label-dilated_desc-nonlin_atlas-CerebrAThomasMiddle_from-MNI152NLin2009cSym_dseg.nii.gz',
 				'tissue_seg':f'{data_dir}/atlasreg/' + f'sub-{isub}/sub-{isub}_label-*_desc-atropos3seg_probseg.nii.gz'
 				})
 	
-	output=dotdict({'html':f'{data_dir}/atlasreg/' + f'sub-{isub}/qc/sub-{isub}_space-MNIPediatricAsymCohort_desc-affine_electrodes.html',
-				'png':f'{data_dir}/atlasreg/' + f'sub-{isub}/qc/sub-{isub}_space-MNIPediatricAsymCohort_desc-affine_electrodevis.png'
+	output=dotdict({'html':f'{data_dir}/atlasreg/' + f'sub-{isub}/qc/sub-{isub}_space-MNI152NLin2009cSym_desc-affine_electrodes.html',
+				'png':f'{data_dir}/atlasreg/' + f'sub-{isub}/qc/sub-{isub}_space-MNI152NLin2009cSym_desc-affine_electrodevis.png'
 				})
 	config=dotdict({'tissue_labels':['GM','WM','CSF'],
 				})
@@ -109,10 +109,10 @@ for label in snakemake.config['tissue_labels']:
 
 #create new dataframe with selected variables and save it
 out_df = df_elec[['label','atlas_label'] + snakemake.config['tissue_labels'] + ['x','y','z']]
+out_df.insert(out_df.shape[1],'mni_x',df_template['x'].values)
+out_df.insert(out_df.shape[1],'mni_y',df_template['y'].values)
+out_df.insert(out_df.shape[1],'mni_z',df_template['z'].values)
 
-out_df['mni_x']=df_template['x']
-out_df['mni_y']=df_template['y']
-out_df['mni_z']=df_template['z']
 
 out_df.to_csv(snakemake.output.tsv,sep='\t',float_format='%.3f',index=False)
 out_df.to_excel(snakemake.output.exl,float_format='%.3f',index=False)
