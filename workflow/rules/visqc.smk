@@ -151,7 +151,7 @@ if config['segmentation']['run']:
             mapping = bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),subject=subject_id,suffix='mapping.json',desc='atropos3seg'),
         params:
             ct_png=bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),prefix='sub-'+subject_id+'/qc/sub-'+subject_id,suffix='regqc.png',from_=config['post_image']['suffix'], to='T1w',desc='masked',include_subject_dir=False),
-            tissue_classes=config['default_k_tissue_classes'],
+            tissue_classes=config['atropos']['tissue_classes'],
         output:
             png = report(bids(root=join(config['out_dir'], 'derivatives', 'atlasreg'),prefix='sub-'+subject_id+'/qc/sub-'+subject_id,suffix='probseg.png',desc='brainmask',label='atropos3seg',include_subject_dir=False),
                     caption='../reports/segqc.rst',

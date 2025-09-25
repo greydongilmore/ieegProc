@@ -58,10 +58,10 @@ pet1:
     present: False
     session: 'pre'
     datatype: 'pet'
-    acq: 'ac'
+    acq: Null
     run: '01'
     suffix: 'pet'
-    task: Null
+    task: 'rest'
     ext: '.nii.gz'
     position: 0
     algo: ants
@@ -170,15 +170,15 @@ template_reg:
 #
 #--- segmentation
 #
-
-default_k_tissue_classes: 3 #higher than 3 to capture contrast-enhanced regions too
-atropos_smoothing_factor: '[0.2,1x1x1]'
-convergence: '[3,0]'
-
-tissue_labels:
-    - GM
-    - WM
-    - CSF
+atropos:
+    method: 'cmd' # 'cmd' or 'python'
+    tissue_classes: 3 #higher than 3 to capture contrast-enhanced regions too
+    smoothing_factor: '[0.2,1x1x1]'
+    convergence: '[3,0]'
+    tissue_labels:
+        - GM
+        - WM
+        - CSF
 
 #
 #--- connected piplines

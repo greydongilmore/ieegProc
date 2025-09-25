@@ -3,6 +3,41 @@ import nibabel as nib
 import json
 import os
 
+
+debug = False
+
+if debug:
+	class dotdict(dict):
+		"""dot.notation access to dictionary attributes"""
+		__getattr__ = dict.get
+		__setattr__ = dict.__setitem__
+		__delattr__ = dict.__delitem__
+	
+	class Namespace:
+		def __init__(self, **kwargs):
+			self.__dict__.update(kwargs)
+	
+	isub="sub-P174"
+	data_dir=r'/home/greydon/Documents/data/lhsc_seeg/derivatives/atlasreg'
+
+	input=dotdict({
+				'tissue_priors':[f'{data_dir}/{isub}/{isub}_label-WM_desc-affine_from-MNI152NLin2009cSym_probseg.nii.gz',
+					f'{data_dir}/{isub}/{isub}_label-GM_desc-affine_from-MNI152NLin2009cSym_probseg.nii.gz',
+					f'{data_dir}/{isub}/{isub}_label-CSF_desc-affine_from-MNI152NLin2009cSym_probseg.nii.gz'],
+				'seg_channels_4d':f'{data_dir}/{isub}/{isub}_desc-atroposKseg_probseg.nii.gz',
+				't1_n4':f'{data_dir}/{isub}/{isub}_desc-n4_T1w.nii.gz',
+				})
+	
+	output=dotdict({
+				'tissue_segs':[f'{data_dir}/{isub}/{isub}_label-WM_dseg.nii.gz',
+					f'{data_dir}/{isub}/{isub}_label-GM_dseg.nii.gz',
+					f'{data_dir}/{isub}/{isub}_label-CSF_dseg.nii.gz']
+				})
+	config=dotdict({'atropos': {'tissue_labels':['WM','GM','CSF'],
+				}})
+	snakemake = Namespace(output=output, input=input,config=config)
+	
+
 #load up tissue probability, warped from template
 tissue_prob_vol = dict()
 

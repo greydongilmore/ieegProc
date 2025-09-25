@@ -24,24 +24,22 @@ if debug:
 		def __init__(self, **kwargs):
 			self.__dict__.update(kwargs)
 	
-	isub="F004"
-	data_dir=r'/home/greydon/Documents/data/lhsc_seeg/derivatives'
+	isub="P002"
+	data_dir=r'/home/greydon/Documents/data/emory_peds/derivatives'
 	
 	input=dotdict({'fcsv':f'{data_dir}/seeg_coordinates/' + f'sub-{isub}/sub-{isub}_space-native_SEEGA.fcsv',
-				'fcsv_template':f'{data_dir}/seeg_coordinates/' + f'sub-{isub}/sub-{isub}_space-MNI152NLin2009cSym_SEEGA.fcsv',
-				'dseg_tsv':'/home/greydon/Documents/GitHub/ieegProc/resources/tpl-MNI152NLin2009cSym/tpl-MNI152NLin2009cSym_res-1_atlas-CerebrAThomasMiddle_dseg.tsv',
-				'dseg_nii':f'{data_dir}/atlasreg/' + f'sub-{isub}/sub-{isub}_label-dilated_desc-nonlin_atlas-CerebrAThomasMiddle_from-MNI152NLin2009cSym_dseg.nii.gz',
+				'fcsv_template':f'{data_dir}/seeg_coordinates/' + f'sub-{isub}/sub-{isub}_space-MNIPediatricAsymCohort4_SEEGA.fcsv',
+				'dseg_tsv':'/home/greydon/Documents/GitHub/ieegProc/resources/tpl-MNI152NLin2009cSym/tpl-MNI152NLin2009cSym_atlas-CerebrA_dseg.tsv',
+				'dseg_nii':f'{data_dir}/atlasreg/' + f'sub-{isub}/sub-{isub}_label-dilated_desc-nonlin_atlas-CerebrA_from-MNIPediatricAsymCohort4_dseg.nii.gz',
 				'tissue_seg':f'{data_dir}/atlasreg/' + f'sub-{isub}/sub-{isub}_label-*_desc-atropos3seg_probseg.nii.gz'
 				})
 	
-	output=dotdict({'html':f'{data_dir}/atlasreg/' + f'sub-{isub}/qc/sub-{isub}_space-MNI152NLin2009cSym_desc-affine_electrodes.html',
-				'png':f'{data_dir}/atlasreg/' + f'sub-{isub}/qc/sub-{isub}_space-MNI152NLin2009cSym_desc-affine_electrodevis.png'
+	output=dotdict({'html':f'{data_dir}/atlasreg/' + f'sub-{isub}/qc/sub-{isub}_space-MNIPediatricAsymCohort_desc-affine_electrodes.html',
+				'png':f'{data_dir}/atlasreg/' + f'sub-{isub}/qc/sub-{isub}_space-MNIPediatricAsymCohort_desc-affine_electrodevis.png'
 				})
 	config=dotdict({'tissue_labels':['GM','WM','CSF'],
 				})
 	snakemake = Namespace(output=output, input=input,config=config)
-
-fuzzy_dist=5
 
 #read fcsv electrodes file
 df_elec = pd.read_table(snakemake.input.fcsv,sep=',',header=2)
@@ -79,49 +77,17 @@ labelnames = []
 
 for i in range(len(coords)):
 
-	coords_mm = np.hstack([coords[i,:],1])
-	coords_vx = nib.affines.apply_affine(np.linalg.inv(dseg_affine),coords_mm)
-	
-	used_fuzzy = False
-	coords_vx = np.round(coords_vx[:3]).astype(int)
-	try:
-		voxel_value = dseg_vol[coords_vx[0], coords_vx[1],coords_vx[2]]
-	except:
-		voxel_value = 0
+	vec = np.hstack([coords[i,:],1])
 
-	if (fuzzy_dist is not None) and (voxel_value == 0):
-		fuzzy_diameter = fuzzy_dist * 2 + 1
-		distances_mat = np.zeros((fuzzy_diameter, fuzzy_diameter, fuzzy_diameter))
-		for x in range(fuzzy_diameter):
-			for y in range(fuzzy_diameter):
-				for z in range(fuzzy_diameter):
-					distances_mat[x, y, z] = np.linalg.norm(np.array([fuzzy_dist, fuzzy_dist, fuzzy_dist])-np.array([x, y, z]))
+	#dseg_affine is used to xfm indices to RAS coords, 
+	# so we use the inverse to go the other way
+	tvec = np.linalg.inv(dseg_affine) @ vec.T   
+	inds = np.round(tvec[:3]).astype('int')
 
-		# check if the distances box will exceed image boundaries (super edgy case)
-		trim = np.zeros((3, 2), dtype=int)
-		for i in range(3):
-			if coords_vx[i] - fuzzy_dist < 0:
-				trim[i, 0] = fuzzy_dist - coords_vx[i]
-			if coords_vx[i] + fuzzy_dist + 1 > dseg_vol.shape[i]:
-				trim[i, 1] = coords_vx[i] + fuzzy_dist + 1 - dseg_vol.shape[i]
-
-		assert np.all(trim >= 0), 'Trim (' + str(trim) + ') should be non-negative'
-
-		# get nearest voxel that is not zero, but less than specified voxels away
-		selected_atlasdata = dseg_vol[
-								(coords_vx[0] - fuzzy_dist + trim[0, 0]):(coords_vx[0] + fuzzy_dist + 1 - trim[0, 1]),
-								(coords_vx[1] - fuzzy_dist + trim[1, 0]):(coords_vx[1] + fuzzy_dist + 1 - trim[1, 1]),
-								(coords_vx[2] - fuzzy_dist + trim[2, 0]):(coords_vx[2] + fuzzy_dist + 1 - trim[2, 1])
-							]
-		trimmed_distances = distances_mat[
-			trim[0, 0]:(-1 * trim[0, 1]) if trim[0, 1] != 0 else None,
-			trim[1, 0]:(-1 * trim[1, 1]) if trim[1, 1] != 0 else None,
-			trim[2, 0]:(-1 * trim[2, 1]) if trim[2, 1] != 0 else None]
-
-		distances = np.ma.masked_where((selected_atlasdata == 0) | (trimmed_distances > fuzzy_dist),trimmed_distances)
-		nearest_voxel = np.unravel_index(np.argmin(distances),distances.shape)
-		voxel_value = selected_atlasdata[nearest_voxel]
-		used_fuzzy = True
+	if inds[0] < dseg_vol.shape[0] and inds[1] < dseg_vol.shape[1]:
+		labelnum = dseg_vol[inds[0],inds[1],inds[2]]
+	else:
+		labelnum=0
 	
 	if labelnum >0:
 		labelnames.append(df_atlas.loc[df_atlas['label']==labelnum,'name'].to_list()[0])
@@ -142,10 +108,10 @@ for label in snakemake.config['tissue_labels']:
 
 #create new dataframe with selected variables and save it
 out_df = df_elec[['label','atlas_label'] + snakemake.config['tissue_labels'] + ['x','y','z']]
-out_df.insert(out_df.shape[1],'mni_x',df_template['x'].values)
-out_df.insert(out_df.shape[1],'mni_y',df_template['y'].values)
-out_df.insert(out_df.shape[1],'mni_z',df_template['z'].values)
 
+out_df['mni_x']=df_template['x']
+out_df['mni_y']=df_template['y']
+out_df['mni_z']=df_template['z']
 
 out_df.to_csv(snakemake.output.tsv,sep='\t',float_format='%.3f',index=False)
 out_df.to_excel(snakemake.output.exl,float_format='%.3f',index=False)
