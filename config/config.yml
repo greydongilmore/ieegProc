@@ -1,7 +1,7 @@
 #
 #--- filepaths
 
-bids_dir: /home/greydon/Documents/data/lhsc_seeg
+bids_dir: /home/greydon/Documents/data/lhsc_peds
 
 subject_prefix: 'P'
 
@@ -12,7 +12,7 @@ segmentation:
 visqc:
     run: True
 fastsurfer:
-    run: False
+    run: True
 hippunfold:
     run: False
 meld:
@@ -55,19 +55,19 @@ post_image:
     algo: greedy
 
 pet1:
-    present: False
+    present: True
     session: 'pre'
     datatype: 'pet'
-    acq: Null
+    acq: 'ac'
     run: '01'
     suffix: 'pet'
-    task: 'rest'
+    task: Null
     ext: '.nii.gz'
     position: 0
     algo: ants
 
 pet2:
-    present: False
+    present: True
     session: 'pre'
     datatype: 'pet'
     acq: 'nac'
@@ -79,11 +79,11 @@ pet2:
     algo: ants
 
 other_vol:
-    present: False
+    present: True
     session: 'pre'
     datatype: 'anat'
     acq: 'ROSA'
-    run: '02'
+    run: '01'
     suffix: 'T1w'
     ext: '.nii.gz'
     algo: ants
@@ -260,7 +260,7 @@ MNIPediatricAsymCohort2:
     tissue_probseg_gm: resources/tpl-MNIPediatricAsym_from-4.5_to-8.5/tpl-MNIPediatricAsym_from-4.5_to-8.5_label-GM_probseg.nii.gz
     tissue_probseg_csf: resources/tpl-MNIPediatricAsym_from-4.5_to-8.5/tpl-MNIPediatricAsym_from-4.5_to-8.5_label-CSF_probseg.nii.gz
     atlas_dseg_nii: resources/tpl-MNI152NLin2009cSym/tpl-MNI152NLin2009cSym_res-1_atlas-{atlas}_dseg.nii.gz
-    atlas_dseg_tsv: resources/tpl-MNI152NLin2009cSym/tpl-MNI152NLin2009cSym_atlas-{atlas}_dseg.tsv
+    atlas_dseg_tsv: resources/tpl-MNI152NLin2009cSym/tpl-MNI152NLin2009cSym_res-1_atlas-{atlas}_dseg.tsv
 
 MNIPediatricAsymCohort4:
     name: 'MNIPediatricAsymCohort4'
@@ -273,7 +273,7 @@ MNIPediatricAsymCohort4:
     tissue_probseg_gm: resources/tpl-MNIPediatricAsym_from-7.5_to-13.5/tpl-MNIPediatricAsym_from-7.5_to-13.5_label-GM_probseg.nii.gz
     tissue_probseg_csf: resources/tpl-MNIPediatricAsym_from-7.5_to-13.5/tpl-MNIPediatricAsym_from-7.5_to-13.5_label-CSF_probseg.nii.gz
     atlas_dseg_nii: resources/tpl-MNI152NLin2009cSym/tpl-MNI152NLin2009cSym_res-1_atlas-{atlas}_dseg.nii.gz
-    atlas_dseg_tsv: resources/tpl-MNI152NLin2009cSym/tpl-MNI152NLin2009cSym_atlas-{atlas}_dseg.tsv
+    atlas_dseg_tsv: resources/tpl-MNI152NLin2009cSym/tpl-MNI152NLin2009cSym_res-1_atlas-{atlas}_dseg.tsv
 
 MNIPediatricAsymCohort6:
     name: 'MNIPediatricAsymCohort6'
@@ -286,7 +286,7 @@ MNIPediatricAsymCohort6:
     tissue_probseg_gm: resources/tpl-MNIPediatricAsym_from-13.0_to-18.5/tpl-MNIPediatricAsym_from-13.0_to-18.5_label-GM_probseg.nii.gz
     tissue_probseg_csf: resources/tpl-MNIPediatricAsym_from-13.0_to-18.5/tpl-MNIPediatricAsym_from-13.0_to-18.5_label-CSF_probseg.nii.gz
     atlas_dseg_nii: resources/tpl-MNI152NLin2009cSym/tpl-MNI152NLin2009cSym_res-1_atlas-{atlas}_dseg.nii.gz
-    atlas_dseg_tsv: resources/tpl-MNI152NLin2009cSym/tpl-MNI152NLin2009cSym_atlas-{atlas}_dseg.tsv
+    atlas_dseg_tsv: resources/tpl-MNI152NLin2009cSym/tpl-MNI152NLin2009cSym_res-1_atlas-{atlas}_dseg.tsv
 
 #number of times to dilate  (each time 3x3x3 mode dilation)
 n_atlas_dilate: 4

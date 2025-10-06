@@ -104,7 +104,6 @@ for dirpath, subdirs, subfiles in os.walk(patient_output):
 nii_fname=glob.glob(os.path.join(patient_output,'*-contrast*_T1w.nii.gz'))
 acpc_file = glob.glob(os.path.join(patient_output,'*acpc.fcsv'))
 
-if acpc_file:
 orig_nifti=nb.load(nii_fname[0])
 orig_affine=orig_nifti.affine.copy()
 center_coordinates=np.array([x/ 2 for x in orig_nifti.header["dim"][1:4]])

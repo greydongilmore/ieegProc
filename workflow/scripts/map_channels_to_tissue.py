@@ -50,10 +50,10 @@ for nii in snakemake.input.tissue_priors:
 tissue_k_seg = nib.load(snakemake.input.seg_channels_4d)
 tissue_k_seg.shape
 
-sim_prior_k = np.zeros([len(snakemake.config['tissue_labels']),tissue_k_seg.shape[3]])
+sim_prior_k = np.zeros([len(snakemake.config['atropos']['tissue_labels']),tissue_k_seg.shape[3]])
 
 #for each prior, need to find the channel that best fits
-for i,label in enumerate(snakemake.config['tissue_labels']):
+for i,label in enumerate(snakemake.config['atropos']['tissue_labels']):
 	for k in range(tissue_k_seg.shape[3]):
 
 		print(f'Computing overlap of {label} prior and channel {k}... ')
@@ -64,7 +64,7 @@ for i,label in enumerate(snakemake.config['tissue_labels']):
 
 label_to_k_dict = dict()
 
-for i,label in enumerate(snakemake.config['tissue_labels']):
+for i,label in enumerate(snakemake.config['atropos']['tissue_labels']):
 	label_to_k_dict[label] = int(np.argmax(sim_prior_k[i,:]))
 	#write nii to file
 	print('writing image at channel {} to output file: {}'.format(label_to_k_dict[label], \

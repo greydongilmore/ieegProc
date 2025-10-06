@@ -346,13 +346,3 @@ src.spacing = [1, 1, 1.5]
 src.update_image_data = True
 
 
-# Extract some inner structures: the ventricles and the inter-hemisphere
-# fibers. We define a volume of interest (VOI) that restricts the
-# iso-surfaces to the inner of the brain. We do this with the ExtractGrid
-# filter.
-blur = mlab.pipeline.user_defined(src, filter='ImageGaussianSmooth')
-voi = mlab.pipeline.extract_grid(blur)
-voi.trait_set(x_min=125, x_max=193, y_min=92, y_max=125, z_min=34
-
-
-mlab.show()

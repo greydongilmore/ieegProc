@@ -56,9 +56,7 @@ def main():
         
         input_landmarks=glob.glob(os.path.join(config['input_dir'],'input_labels')+f'/{sub}*_contacts.nii.gz')
         
-        if not input_landmarks:
-        
-        else:
+        if input_landmarks :
             
             if not os.path.exists(os.path.join(args.output_dir,'data','niftis')):
                 os.makedirs(os.path.join(args.output_dir,'data','niftis'))

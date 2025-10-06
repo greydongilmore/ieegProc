@@ -202,7 +202,6 @@ bg_map = np.concatenate((lh_sulc_data, rh_sulc_data))
 
 
 mesh_3d = go.Mesh3d(x=all_ver_shift[:,0], y=all_ver_shift[:,1], z=all_ver_shift[:,2], i=all_face[:,0], j=all_face[:,1], k=all_face[:,2],opacity=.1,color='grey')
-					lighting=lighting_effects)
 
 
 value=np.arange(.1,.6,.05)

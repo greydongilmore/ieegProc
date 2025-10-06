@@ -15,6 +15,7 @@ import os
 import pandas as pd
 from collections import ChainMap
 np.set_printoptions(precision=3,suppress=True)
+
 def orient_to_ras(orig_nifti):
 	x, y, z = nb.aff2axcodes(orig_nifti.affine)
 	orig_aff=orig_nifti.affine.copy()
@@ -23,8 +24,7 @@ def orient_to_ras(orig_nifti):
 		if i == -1.0:
 			orig_aff = np.flip(orig_aff,k)
 	return orig_aff
-    
-    return img_trans
+
 def check_orientation(orig_nifti):
 
 	x, y, z = nb.aff2axcodes(orig_nifti.affine)
