@@ -58,7 +58,7 @@ if isinstance(snakemake.input.tissue_seg, str):
 else:
 	tissue_segs=snakemake.input.tissue_seg
 
-for label,nii in zip(snakemake.config['tissue_labels'], tissue_segs):
+for label,nii in zip(snakemake.config['atropos']['tissue_labels'], tissue_segs):
 	tissue_prob_vol[label] = nib.load(nii).get_fdata()
 	tissue_prob_elec[label] = list()
 
@@ -95,7 +95,7 @@ for i in range(len(coords)):
 		labelnames.append('None')
 	
 
-	for label in snakemake.config['tissue_labels']:
+	for label in snakemake.config['atropos']['tissue_labels']:
 		if inds[0] < dseg_vol.shape[0] and inds[1] < dseg_vol.shape[1]:
 			tissue_prob_elec[label].append(tissue_prob_vol[label][inds[0],inds[1],inds[2]])
 		else:
@@ -103,11 +103,11 @@ for i in range(len(coords)):
 	
 #add new columns to existing dataframe
 df_elec['atlas_label'] = labelnames
-for label in snakemake.config['tissue_labels']:
+for label in snakemake.config['atropos']['tissue_labels']:
 	df_elec[label] = tissue_prob_elec[label]
 
 #create new dataframe with selected variables and save it
-out_df = df_elec[['label','atlas_label'] + snakemake.config['tissue_labels'] + ['x','y','z']]
+out_df = df_elec[['label','atlas_label'] + snakemake.config['atropos']['tissue_labels'] + ['x','y','z']]
 
 out_df['mni_x']=df_template['x']
 out_df['mni_y']=df_template['y']

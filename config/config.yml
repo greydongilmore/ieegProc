@@ -16,7 +16,7 @@ fastsurfer:
 hippunfold:
     run: False
 meld:
-    run: False
+    run: True
 
 #
 #--- imaging volumes
@@ -82,11 +82,11 @@ other_vol:
     present: True
     session: 'pre'
     datatype: 'anat'
-    acq: 'ROSA'
+    acq: Null
     run: '01'
-    suffix: 'T1w'
+    suffix: 'FLAIR'
     ext: '.nii.gz'
-    algo: ants
+    algo: greedy
 
 other_vol2:
     present: False
@@ -96,10 +96,10 @@ other_vol2:
     run: '01'
     suffix: 'ct'
     ext: '.nii.gz'
-    algo: ants
+    algo: greedy
 
 seeg_contacts:
-    present: False
+    present: True
     space_coords: &space_coords derivatives/seeg_coordinates/sub-{subject}/sub-{subject}_space-{coords_space}_{coords_type}.fcsv
     scene_coords: &scene_coords derivatives/slicer_scene/sub-{subject}/sub-{subject}_{coords_type}.fcsv
 
@@ -252,7 +252,7 @@ adult_template:
 MNIPediatricAsymCohort2:
     name: 'MNIPediatricAsymCohort2'
     space: 'MNIPediatricAsymCohort2'
-    atlas: 'CerebrA'
+    atlas: 'CerebrAThomasMiddle'
     orien: 'ras'
     t1w: resources/tpl-MNIPediatricAsym_from-4.5_to-8.5/tpl-MNIPediatricAsym_from-4.5_to-8.5_T1w.nii.gz
     mask: resources/tpl-MNIPediatricAsym_from-4.5_to-8.5/tpl-MNIPediatricAsym_from-4.5_to-8.5_desc-brain_mask.nii.gz
@@ -265,7 +265,7 @@ MNIPediatricAsymCohort2:
 MNIPediatricAsymCohort4:
     name: 'MNIPediatricAsymCohort4'
     space: 'MNIPediatricAsymCohort4'
-    atlas: 'CerebrA'
+    atlas: 'CerebrAThomasMiddle'
     orien: 'ras'
     t1w: resources/tpl-MNIPediatricAsym_from-7.5_to-13.5/tpl-MNIPediatricAsym_from-7.5_to-13.5_T1w.nii.gz
     mask: resources/tpl-MNIPediatricAsym_from-7.5_to-13.5/tpl-MNIPediatricAsym_from-7.5_to-13.5_desc-brain_mask.nii.gz
@@ -278,7 +278,7 @@ MNIPediatricAsymCohort4:
 MNIPediatricAsymCohort6:
     name: 'MNIPediatricAsymCohort6'
     space: 'MNIPediatricAsymCohort6'
-    atlas: 'CerebrA'
+    atlas: 'CerebrAThomasMiddle'
     orien: 'ras'
     t1w: resources/tpl-MNIPediatricAsym_from-13.0_to-18.5/tpl-MNIPediatricAsym_from-13.0_to-18.5_T1w.nii.gz
     mask: resources/tpl-MNIPediatricAsym_from-13.0_to-18.5/tpl-MNIPediatricAsym_from-13.0_to-18.5_desc-brain_mask.nii.gz

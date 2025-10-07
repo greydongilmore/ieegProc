@@ -26,7 +26,7 @@ def determine_groups(iterable, numbered_labels=False):
 		if pattern.match(item):
 			temp = "".join(pattern.match(item)[0])
 		elif '-' in item:
-			temp=item.split('-')[0]
+			temp=re.sub(r'\d+$', '', item)
 		else:
 			if numbered_labels:
 				temp=''.join([x for x in item if not x.isdigit()])
@@ -63,7 +63,7 @@ def get_montage(ifile):
 		chan_info.append({key: value for (key, value) in chan_info_tmp})
 		
 	chan_info_df=pd.DataFrame(chan_info)
-	chan_info_df=chan_info_df.loc[chan_info_df["From_Name"].isin([0])].reset_index(drop=True)
+	chan_info_df=chan_info_df[chan_info_df.To_Name != 0].reset_index(drop=True)
 	chan_info_df["From_Name"]=[str(x) for x in chan_info_df["From_Name"].values]
 	chan_info_df["To_Name"]=[str(x) for x in chan_info_df["To_Name"].values]
 	
@@ -103,8 +103,8 @@ def padtrim(buf, num):
 #%%
 
 
-data_dir=r'/media/greydon/lhsc_data/datasets/emory_seeg/derivatives'
-isub='montages'
+data_dir=r'/home/greydon/Downloads/'
+isub='other'
 
 
 for isub in [x for x in os.listdir(data_dir) if os.path.isdir(os.path.join(data_dir,x))]:

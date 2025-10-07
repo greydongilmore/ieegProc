@@ -14,7 +14,7 @@ mayavi==4.8.3
 mne==1.10.1
 netneurotools==0.3.0
 nibabel==5.3.2
-nilearn==0.12.1
+nilearn==0.11.1
 nipype==1.9.2
 numpy==1.25.2
 ocrmypdf==13.4.0+dfsg

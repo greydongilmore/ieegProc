@@ -11,14 +11,14 @@ if config['meld']['run']:
 			meld_bids_config = config['meld_config']['meld_bids_config'],
 		params:
 			subjid='sub-' +subject_id,
-			demographics_out= join(config['out_dir'],'derivatives', 'meld_in','demographics_file.csv'),
-			meld_params_out=join(config['out_dir'],'derivatives', 'meld_in', 'meld_params'),
-			meld_models_out=join(config['out_dir'],'derivatives', 'meld_in', 'models'),
-			freesurfer_lic_out=join(config['out_dir'],'derivatives', 'meld_in', 'license.txt'),
-			dataset_description_out=join(config['out_dir'],'derivatives', 'meld_in', 'input','dataset_description.json'),
-			meld_bids_config_out=join(config['out_dir'],'derivatives', 'meld_in', 'input', 'meld_bids_config.json'),
+			demographics_out= join(config['out_dir'],'derivatives', 'meld','demographics_file.csv'),
+			meld_params_out=join(config['out_dir'],'derivatives', 'meld', 'meld_params'),
+			meld_models_out=join(config['out_dir'],'derivatives', 'meld', 'models'),
+			freesurfer_lic_out=join(config['out_dir'],'derivatives', 'meld', 'license.txt'),
+			dataset_description_out=join(config['out_dir'],'derivatives', 'meld', 'input','dataset_description.json'),
+			meld_bids_config_out=join(config['out_dir'],'derivatives', 'meld', 'input', 'meld_bids_config.json'),
 		output:
-			img_out=bids(root=join(config['out_dir'],'derivatives', 'meld_in','input'),subject=subject_id, datatype=config['meld_vol']['datatype'], suffix=config['meld_vol']['suffix']+config['meld_vol']['ext'], include_session_dir=False),
+			img_out=bids(root=join(config['out_dir'],'derivatives', 'meld','input'),subject=subject_id, datatype=config['meld_vol']['datatype'], suffix=config['meld_vol']['suffix']+config['meld_vol']['ext'], include_session_dir=False),
 		run:
 			import pandas as pd
 			import shutil,os
@@ -46,7 +46,7 @@ if config['meld']['run']:
 			img_in=rules.import_meld.output.img_out,
 		params:
 			subjid='sub-' +subject_id,
-			meld_in=directory(join(config['out_dir'],'derivatives', 'meld_in')),
+			meld_in=directory(join(config['out_dir'],'derivatives', 'meld')),
 			meld_container= config['singularity']['meld'],
 			freesurfer_lic = rules.import_meld.params.freesurfer_lic_out,
 			demographics_file = rules.import_meld.params.demographics_out,
@@ -58,5 +58,5 @@ if config['meld']['run']:
 			'export SINGULARITY_BINDPATH={params.meld_in}:/data,{params.freesurfer_lic}:/license.txt:ro&&export SINGULARITYENV_FS_LICENSE=/license.txt&&'
 			'singularity exec {params.meld_container} /bin/bash -c "cd /app && source \$FREESURFER_HOME/FreeSurferEnv.sh && python scripts/new_patient_pipeline/new_pt_pipeline.py -id {params.subjid} -demos {params.demographics_file} --fastsurfer --parallelise"'
 
-	final_outputs.extend(expand(bids(root=join(config['out_dir'],'derivatives', 'meld_in','input'),subject=subject_id, datatype=config['meld_vol']['datatype'], suffix=config['meld_vol']['suffix']+config['meld_vol']['ext'], include_session_dir=False),subject=subjects))
+	final_outputs.extend(expand(bids(root=join(config['out_dir'],'derivatives', 'meld','input'),subject=subject_id, datatype=config['meld_vol']['datatype'], suffix=config['meld_vol']['suffix']+config['meld_vol']['ext'], include_session_dir=False),subject=subjects))
 	final_outputs.extend(expand(rules.meld_run.output.touch_meld, subject=subjects))
