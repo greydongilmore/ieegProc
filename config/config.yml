@@ -1,23 +1,25 @@
 #
 #--- filepaths
 
-bids_dir: /home/greydon/Documents/data/lhsc_peds
+bids_dir: /home/greydon/Documents/data/lhsc_seeg
 
 subject_prefix: 'P'
 
 registration:
-    run: True
+    run: False
 segmentation:
-    run: True
+    run: False
 visqc:
-    run: True
+    run: False
 fastsurfer:
-    run: True
+    run: False
 hippunfold:
     run: False
 meld:
-    run: True
+    run: False
 
+pet_asymmetry:
+    run: True
 #
 #--- imaging volumes
 #
@@ -44,7 +46,7 @@ noncontrast_t1:
     algo: greedy
 
 post_image:
-    present: True
+    present: False
     session: 'post'
     datatype: 'ct'
     acq: 'Electrode'
@@ -67,7 +69,7 @@ pet1:
     algo: ants
 
 pet2:
-    present: True
+    present: False
     session: 'pre'
     datatype: 'pet'
     acq: 'nac'
@@ -78,8 +80,18 @@ pet2:
     position: 0
     algo: ants
 
-other_vol:
+flair_vol:
     present: True
+    session: 'pre'
+    datatype: 'anat'
+    acq: Null
+    run: '01'
+    suffix: 'FLAIR'
+    ext: '.nii.gz'
+    algo: greedy
+
+other_vol:
+    present: False
     session: 'pre'
     datatype: 'anat'
     acq: Null
@@ -99,7 +111,7 @@ other_vol2:
     algo: greedy
 
 seeg_contacts:
-    present: True
+    present: False
     space_coords: &space_coords derivatives/seeg_coordinates/sub-{subject}/sub-{subject}_space-{coords_space}_{coords_type}.fcsv
     scene_coords: &scene_coords derivatives/slicer_scene/sub-{subject}/sub-{subject}_{coords_type}.fcsv
 
@@ -214,6 +226,11 @@ meld_config:
     meld_models: resources/meld/models
     dataset_description: resources/meld/input/dataset_description.json
     meld_bids_config: resources/meld/input/meld_bids_config.json
+
+pet_asymmetry_config:
+    in_json: resources/pet_asymmetry.json
+    home: "/home/greydon/Documents/GitHub/PET_anton"
+    cmd: "run_PET_AI"
 #
 #--- template space/atlases
 #

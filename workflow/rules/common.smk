@@ -299,3 +299,15 @@ def get_pet2_filename(wildcards):
         file=files[config['pet2']['position']]
     print(file)
     return file
+
+def get_flair_filename(wildcards):
+    files=expand(bids(root=join(config['out_dir'], 'bids'), subject='{subject}', datatype=config['flair_vol']['datatype'], session=config['flair_vol']['session'], acq=config['flair_vol']['acq'], run=config['flair_vol']['run'], suffix=config['flair_vol']['suffix']+config['flair_vol']['ext']),subject=wildcards.subject)
+    if not files:
+        files=glob(bids(root=join(config['out_dir'], 'bids'), subject=f'{wildcards.subject}', datatype=config['flair_vol']['datatype'], session=config['flair_vol']['session'], acq=config['flair_vol']['acq'], run='*', suffix=config['flair_vol']['suffix']+config['flair_vol']['ext']))
+        files.sort(key=lambda f: int(re.sub('\D', '', f)),reverse=False)
+        file=files[config['flair_vol']['position']]
+    else:
+        file=files[0]
+    if file:
+        print(f'FLAIR file: {basename(file)}')
+    return file
