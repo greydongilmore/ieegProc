@@ -3,9 +3,9 @@
     "centre_of_mass": 1,
     "thr": 3,
     "cluster_size": 0.1,
-    "report": 1,
+    "report": 0,
     "blanks": 1,
     "regions": 0,
     "burnin": 0,
-    "viz": 1
+    "viz": 0
 }

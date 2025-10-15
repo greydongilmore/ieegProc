@@ -13,7 +13,8 @@ rule pet_asymmetry_copy:
         out_pet_nii=join(config['out_dir'], 'derivatives','pet_asymmetry','sub-' + subject_id, 'in',"PET.nii"),
         out_flair_nii=join(config['out_dir'], 'derivatives','pet_asymmetry','sub-' + subject_id, 'in',"FLAIR.nii"),
         out_json=join(config['out_dir'], 'derivatives','pet_asymmetry','sub-' + subject_id, 'in','sub-' + subject_id+".json"),
-        out_report=join(config['out_dir'], 'derivatives','pet_asymmetry','sub-' + subject_id, 'out','report',"report.html"),
+        #out_report=join(config['out_dir'], 'derivatives','pet_asymmetry','sub-' + subject_id, 'out','report',"report.html"),
+    log: join(config['out_dir'], 'derivatives','pet_asymmetry','sub-' + subject_id, 'out',"pet_ai_log.txt") 
     run:
         import shutil,os,gzip,json,re
 
@@ -45,7 +46,10 @@ rule pet_asymmetry_copy:
         import matlab.engine
         eng = matlab.engine.start_matlab()
         eng.cd(params.in_dir, nargout=0)
-        eng.run_PET_AI(output.out_json)
+        try:
+            eng.run_PET_AI(output.out_json)
+        except RuntimeError as e:
+            print(e)
 
 final_outputs.extend(expand(rules.pet_asymmetry_copy.output.out_t1w_nii, subject=subjects))
-final_outputs.extend(expand(rules.pet_asymmetry_copy.output.out_report, subject=subjects))
+#final_outputs.extend(expand(rules.pet_asymmetry_copy.output.out_report, subject=subjects))
