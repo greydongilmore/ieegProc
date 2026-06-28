@@ -30,8 +30,16 @@ border = Border(
 
 # Helper function to create ranges
 def create_ranges(labels):
-	leads = [re.match(r'^(.*?)-', label).group(1) for label in labels]
-	contacts = [int(re.match(r'.*-(\d+)$', label).group(1)) for label in labels]
+	if labels.str.extract(r'-(\d+)$').isna().all()[0]:
+		contacts = [int(label[0]) for label in labels.str.extract(r'(\d+)$').astype(int).values]
+	else:
+		contacts = [int(re.match(r'.*-(\d+)$', label).group(1)) for label in labels]
+	
+	if labels.str.extract(r'^(.*?)-').isna().all()[0]:
+		leads = labels.str.replace(r"\d+$", "", regex=True).tolist()
+	else:
+		leads = [re.match(r'^(.*?)-', label).group(1) for label in labels]
+	
 	unique_leads = set(leads)
 	ranges = []
 	for lead in unique_leads:
@@ -58,13 +66,13 @@ if debug:
 		def __init__(self, **kwargs):
 			self.__dict__.update(kwargs)
 	
-	input_file=r"/home/neurophys/Documents/data/emory_seeg/derivatives/atlasreg/sub-EMOP0249/sub-EMOP0249_desc-nonlin_atlas-CerebrA_from-MNI152NLin2009cSym_electrodes.xlsx"
+	input_file=r"/home/greydon/Documents/data/lhsc_peds/derivatives/atlasreg/sub-P023/sub-P023_desc-nonlin_atlas-Glasser_from-MNI152NLin2009aAsym_electrodes.xlsx"
 	
 	input=dotdict({
 				'input_file': input_file,
 				})
 	output=dotdict({
-		'out_excel': os.path.join(os.path.dirname(input_file), os.path.basename(input_file).replace("_electrodes","_tissue_map")),
+		'out_excel': os.path.join(os.path.dirname(input_file), os.path.basename(input_file).replace("_electrodes","_tissue_map2")),
 	})
 	
 	snakemake = Namespace(output=output, input=input)
@@ -94,16 +102,36 @@ if not os.path.exists(out_excel):
 	# Update atlas_label for CSF and WM
 	data['atlas_label'] = np.where(data['CSF'] > 0.8, "CSF", np.where(data['WM'] > 0.8, "WM", data['atlas_label']))
 	
-	# Extract leads and contacts
-	data['contact_number'] = data['label'].str.extract(r'-(\d+)$').astype(float)
-	max_contacts = int(data['contact_number'].max())
-	leads = data['label'].str.extract(r'^(.*?)-')[0].unique()
+	dash_present=True
+	if data['label'].str.extract(r'-(\d+)$').isna().all()[0]:
+		dash_present=False
 	
+	# Extract leads and contacts
+	if not dash_present:
+		data['contact_number'] = data['label'].str.extract(r'(\d+)$').astype(float)
+	else:
+		data['contact_number'] = data['label'].str.extract(r'-(\d+)$').astype(float)
+	
+	max_contacts = int(data['contact_number'].max())
+	
+	if not dash_present:
+		leads = data["label"].str.replace(r"\d+$", "", regex=True).unique()
+	else:
+		leads = data['label'].str.extract(r'^(.*?)-')[0].unique()
+	
+	if not dash_present:
+		data["group"] = data["label"].str.replace(r"\d+$", "", regex=True)
+	else:
+		data["group"] = data['label'].str.extract(r'^(.*?)-')[0]
+		
 	reformatted_table_tmp={}
 	# Populate reformatted table
 	for lead_idx,lead in enumerate(leads):
-		lead_data = data[data['label'].str.startswith(lead + '-')]
+		lead_data = data[data['group']==lead]
+		
+		side_value='L' if lead_data['mni_x'].values[-1]<0 else 'R'
 		reformatted_table_tmp[lead]=[]
+		reformatted_table_tmp[lead].append(side_value)
 		for _, row in lead_data.iterrows():
 			reformatted_table_tmp[lead].append(str(row['atlas_label']))
 		
@@ -111,7 +139,7 @@ if not os.path.exists(out_excel):
 			reformatted_table_tmp[lead].append(np.nan)
 	
 	reformatted_table = pd.DataFrame.from_dict(reformatted_table_tmp,orient='index')
-	reformatted_table = reformatted_table.rename(columns=dict(zip(reformatted_table.columns, [str(i) for i in range(1, max_contacts + 1)])))
+	reformatted_table = reformatted_table.rename(columns=dict(zip(reformatted_table.columns, ['side']+[str(i) for i in range(1, max_contacts + 1)])))
 	reformatted_table=reformatted_table.reset_index(names='lead')
 	reformatted_table = reformatted_table.fillna('NaN')
 	reformatted_table = reformatted_table.replace('nan', np.nan, regex=True)
@@ -126,25 +154,17 @@ if not os.path.exists(out_excel):
 	
 	# Generate summary statistics
 	total_electrodes = len(reformatted_table)
-	total_contacts = reformatted_table.notna().sum().sum() - total_electrodes
+	total_contacts = reformatted_table.notna().sum().sum() - (total_electrodes*2)
 	
 	# Right side is marked a few different mays over time (R*, *Rd, *')
 	# need to search for all markers
-	right_electrodes = sum(reformatted_table['lead'].str.startswith('R'))
-	if right_electrodes <=1:
-		right_electrodes = sum(reformatted_table['lead'].str.endswith("'"))
-		if right_electrodes <=1:
-			right_electrodes = sum(reformatted_table['lead'].str.endswith("Rd"))
-			r_idx=[i for i,x in enumerate(reformatted_table['lead'].str.endswith("Rd")) if x ==True]
-			right_contacts = reformatted_table[reformatted_table['lead'].str.endswith("Rd")].notna().sum().sum() - right_electrodes
-		else:
-			r_idx=[i for i,x in enumerate(reformatted_table['lead'].str.endswith("'")) if x ==True]
-			right_contacts = reformatted_table[reformatted_table['lead'].str.endswith("'")].notna().sum().sum() - right_electrodes
-	else:
-		r_idx=[i for i,x in enumerate(reformatted_table['lead'].str.startswith('R')) if x ==True]
-		right_contacts = reformatted_table[reformatted_table['lead'].str.startswith('R')].notna().sum().sum() - right_electrodes
+	right_electrodes = sum(reformatted_table['side'].str.endswith("R"))
+	r_idx=[i for i,x in enumerate(reformatted_table['side'].str.endswith("R")) if x ==True]
+	right_contacts = reformatted_table[reformatted_table['side'].str.endswith("R")].notna().sum().sum() - right_electrodes
+	left_electrodes = sum(reformatted_table['side'].str.endswith("L"))
 	
-	left_electrodes = total_electrodes-right_electrodes
+	assert (total_electrodes-right_electrodes)==left_electrodes
+	
 	if right_electrodes==0:
 		left_contacts = reformatted_table.notna().sum().sum() - left_electrodes
 		l_idx=list(np.arange(0,left_electrodes,1))
@@ -154,7 +174,6 @@ if not os.path.exists(out_excel):
 	
 	csf_contacts = len(csf_data)
 	wm_contacts = len(wm_data)
-	
 	
 	wb = Workbook()
 	ws = wb.active

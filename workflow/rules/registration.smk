@@ -442,7 +442,7 @@ if config['pet2']['present']:
 if config['other_vol']['present']:
     if config['other_vol']['datatype'] == 'anat':
         rule import_other_vol:
-            input: bids(root=join(config['out_dir'],'bids'), subject=subject_id, datatype=config['other_vol']['datatype'], session=config['other_vol']['session'], run=config['other_vol']['run'], acq=config['other_vol']['acq'], suffix=config['other_vol']['suffix']+config['other_vol']['ext']),
+            input: get_other_vol_filename,
             output: bids(root=join(config['out_dir'],'derivatives', 'atlasreg'),subject=subject_id, session=config['other_vol']['session'], acq=config['other_vol']['acq'], suffix=config['other_vol']['suffix']+config['other_vol']['ext'],include_session_dir=False)
             group: 'preproc'
             threads:4
@@ -451,7 +451,7 @@ if config['other_vol']['present']:
                 'N4BiasFieldCorrection -d 3 -i {input} -o {output} -s 4 -b [200] -c [50x50x50x50,0.000001]'
     else:
         rule import_other_vol:
-            input: bids(root=join(config['out_dir'],'bids'), subject=subject_id, datatype=config['other_vol']['datatype'], session=config['other_vol']['session'], run=config['other_vol']['run'], acq=config['other_vol']['acq'], suffix=config['other_vol']['suffix']+config['other_vol']['ext']),
+            input: get_other_vol_filename,
             output: bids(root=join(config['out_dir'],'derivatives', 'atlasreg'),subject=subject_id, session=config['other_vol']['session'], acq=config['other_vol']['acq'], suffix=config['other_vol']['suffix']+config['other_vol']['ext'],include_session_dir=False)
             group: 'preproc'
             shell: 'cp {input} {output}'
@@ -548,7 +548,7 @@ if config['other_vol']['present']:
 if config['other_vol2']['present']:
     if config['other_vol2']['datatype'] == 'anat':
         rule import_other_vol2:
-            input: bids(root=join(config['out_dir'],'bids'), subject=subject_id, datatype=config['other_vol2']['datatype'], session=config['other_vol2']['session'], run=config['other_vol2']['run'], acq=config['other_vol2']['acq'], suffix=config['other_vol2']['suffix']+config['other_vol2']['ext']),
+            input: get_other_vol2_filename,
             output: bids(root=join(config['out_dir'],'derivatives', 'atlasreg'),subject=subject_id, session=config['other_vol2']['session'], acq=config['other_vol2']['acq'], suffix=config['other_vol2']['suffix']+config['other_vol2']['ext'],include_session_dir=False)
             group: 'preproc'
             threads:4
@@ -557,7 +557,7 @@ if config['other_vol2']['present']:
                 'N4BiasFieldCorrection -d 3 -i {input} -o {output} -s 4 -b [200] -c [50x50x50x50,0.000001]'
     else:
         rule import_other_vol2:
-            input: bids(root=join(config['out_dir'],'bids'), subject=subject_id, datatype=config['other_vol2']['datatype'], session=config['other_vol2']['session'], run=config['other_vol2']['run'], acq=config['other_vol2']['acq'], suffix=config['other_vol2']['suffix']+config['other_vol2']['ext']),
+            input: get_other_vol2_filename,
             output: bids(root=join(config['out_dir'],'derivatives', 'atlasreg'),subject=subject_id, session=config['other_vol2']['session'], acq=config['other_vol2']['acq'], suffix=config['other_vol2']['suffix']+config['other_vol2']['ext'],include_session_dir=False)
             group: 'preproc'
             shell: 'cp {input} {output}'

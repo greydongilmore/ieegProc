@@ -60,6 +60,9 @@ if config['visqc']['run']:
 if config['pet_asymmetry']['run']:
     include: "rules/pet_asymmetry.smk"
 
+if config['contact_seg']['run']:
+    include: "rules/contact_seg.smk"
+
 rule all:
         input:
             final_outputs

@@ -84,7 +84,7 @@ for i in range(len(coords)):
 	tvec = np.linalg.inv(dseg_affine) @ vec.T   
 	inds = np.round(tvec[:3]).astype('int')
 
-	if inds[0] < dseg_vol.shape[0] and inds[1] < dseg_vol.shape[1]:
+	if inds[0] < dseg_vol.shape[0] and inds[1] < dseg_vol.shape[1] and inds[2] < dseg_vol.shape[2]:
 		labelnum = dseg_vol[inds[0],inds[1],inds[2]]
 	else:
 		labelnum=0
@@ -96,7 +96,7 @@ for i in range(len(coords)):
 	
 
 	for label in snakemake.config['atropos']['tissue_labels']:
-		if inds[0] < dseg_vol.shape[0] and inds[1] < dseg_vol.shape[1]:
+		if inds[0] < dseg_vol.shape[0] and inds[1] < dseg_vol.shape[1] and inds[2] < dseg_vol.shape[2]:
 			tissue_prob_elec[label].append(tissue_prob_vol[label][inds[0],inds[1],inds[2]])
 		else:
 			tissue_prob_elec[label].append(0)

@@ -1,25 +1,50 @@
 #
 #--- filepaths
-
-bids_dir: /home/greydon/Documents/data/lhsc_seeg
+#
+bids_dir: /home/greydon/Documents/data/emory_seeg
 
 subject_prefix: 'P'
 
 registration:
-    run: False
+    run: True
 segmentation:
-    run: False
+    run: True
 visqc:
-    run: False
+    run: True
 fastsurfer:
     run: False
 hippunfold:
     run: False
 meld:
     run: False
-
 pet_asymmetry:
-    run: True
+    run: False
+contact_seg:
+    run: False
+
+#
+#--- pipeline volumes
+#
+fastsurfer_vol:
+    present: True
+    session: 'pre'
+    datatype: 'anat'
+    acq: null
+    run: '01'
+    suffix: 'T1w'
+    ext: '.nii.gz'
+    position: 0
+
+meld_vol:
+    present: True
+    session: 'pre'
+    datatype: 'anat'
+    acq: null
+    run: '01'
+    suffix: 'T1w'
+    ext: '.nii.gz'
+    position: 0
+
 #
 #--- imaging volumes
 #
@@ -46,14 +71,14 @@ noncontrast_t1:
     algo: greedy
 
 post_image:
-    present: False
+    present: True
     session: 'post'
     datatype: 'ct'
     acq: 'Electrode'
     run: '01'
     suffix: 'ct'
     ext: '.nii.gz'
-    position: -1
+    position: 0
     algo: greedy
 
 pet1:
@@ -69,7 +94,7 @@ pet1:
     algo: ants
 
 pet2:
-    present: False
+    present: True
     session: 'pre'
     datatype: 'pet'
     acq: 'nac'
@@ -80,33 +105,35 @@ pet2:
     position: 0
     algo: ants
 
-flair_vol:
-    present: True
-    session: 'pre'
-    datatype: 'anat'
-    acq: Null
-    run: '01'
-    suffix: 'FLAIR'
-    ext: '.nii.gz'
-    algo: greedy
-
 other_vol:
     present: False
     session: 'pre'
     datatype: 'anat'
-    acq: Null
+    acq: 'ROSA'
     run: '01'
-    suffix: 'FLAIR'
+    suffix: 'T1w'
     ext: '.nii.gz'
+    position: 0
     algo: greedy
 
 other_vol2:
-    present: False
+    present: True
     session: 'pre'
     datatype: 'ct'
     acq: 'ROSA'
     run: '01'
     suffix: 'ct'
+    ext: '.nii.gz'
+    position: 1
+    algo: greedy
+
+flair_vol:
+    present: False
+    session: 'pre'
+    datatype: 'anat'
+    acq: Null
+    run: '01'
+    suffix: 'FLAIR'
     ext: '.nii.gz'
     algo: greedy
 
@@ -114,29 +141,6 @@ seeg_contacts:
     present: False
     space_coords: &space_coords derivatives/seeg_coordinates/sub-{subject}/sub-{subject}_space-{coords_space}_{coords_type}.fcsv
     scene_coords: &scene_coords derivatives/slicer_scene/sub-{subject}/sub-{subject}_{coords_type}.fcsv
-
-#
-#--- pipeline volumes
-#
-fastsurfer_vol:
-    present: True
-    session: 'pre'
-    datatype: 'anat'
-    acq: null
-    run: '01'
-    suffix: 'T1w'
-    ext: '.nii.gz'
-    position: 0
-
-meld_vol:
-    present: True
-    session: 'pre'
-    datatype: 'anat'
-    acq: null
-    run: '01'
-    suffix: 'T1w'
-    ext: '.nii.gz'
-    position: 0
 
 #
 #--- registration paramters
@@ -231,6 +235,11 @@ pet_asymmetry_config:
     in_json: resources/pet_asymmetry.json
     home: "/home/greydon/Documents/GitHub/PET_anton"
     cmd: "run_PET_AI"
+
+contact_seg_config:
+    home: "/home/greydon/Documents/GitHub/nnUNet_contact_seg"
+    cmd: "source .venv/bin/activate"
+
 #
 #--- template space/atlases
 #

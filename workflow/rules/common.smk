@@ -218,7 +218,8 @@ def get_postop_filename(wildcards):
         files=glob(bids(root=join(config['out_dir'], 'bids'), subject=f'{wildcards.subject}', datatype=config['post_image']['datatype'], session=config['post_image']['session'], acq=config['post_image']['acq'], run='*', suffix=config['post_image']['suffix']+config['post_image']['ext']))
         files.sort(key=lambda f: int(re.sub('\D', '', f)),reverse=False)
         file=files[config['post_image']['position']]
-    print(file)
+    if file:
+        print(f'Post-op volume: {basename(file)}')
     return file
 
 def get_reference_t1(wildcards):
@@ -240,7 +241,8 @@ def get_noncontrast_filename(wildcards):
     
     files.sort(key=lambda f: int(re.sub('\D', '', f)))
     file=files[0]
-    print(f'Pre T1w non-contrast file: {basename(file)}')
+    if file:
+        print(f'Pre T1w non-contrast volume: {basename(file)}')
     return file
 
 def get_noncontrast_filename_fs(wildcards):
@@ -252,8 +254,7 @@ def get_noncontrast_filename_fs(wildcards):
     else:
         file=files[0]
     if file:
-        print(f'Freesurfer file: {basename(file)}')
-
+        print(f'Freesurfer volume: {basename(file)}')
     return file
 
 def get_meld_filename(wildcards):
@@ -265,7 +266,7 @@ def get_meld_filename(wildcards):
     else:
         file=files[0]
     if file:
-        print(f'MELD file: {basename(file)}')
+        print(f'MELD volume: {basename(file)}')
     return file
 
 def get_pre_t1_filename(wildcards):
@@ -277,7 +278,7 @@ def get_pre_t1_filename(wildcards):
     else:
         file=files[0]
     if file:
-        print(f'Pre T1w contrast file: {basename(file)}')
+        print(f'Pre T1w contrast volume: {basename(file)}')
     return file
 
 def get_pet1_filename(wildcards):
@@ -287,7 +288,8 @@ def get_pet1_filename(wildcards):
         files=glob(bids(root=join(config['out_dir'], 'bids'), subject=f'{wildcards.subject}', datatype=config['pet1']['datatype'], session=config['pet1']['session'], task=config['pet1']['task'], acq=config['pet1']['acq'], run='*', suffix=config['pet1']['suffix']+config['pet1']['ext']))
         files.sort(key=lambda f: int(re.sub('\D', '', f)),reverse=False)
         file=files[config['pet1']['position']]
-    print(file)
+    if file:
+        print(f'PET volume 1 volume: {basename(file)}')
     return file
 
 def get_pet2_filename(wildcards):
@@ -297,7 +299,8 @@ def get_pet2_filename(wildcards):
         files=glob(bids(root=join(config['out_dir'], 'bids'), subject=f'{wildcards.subject}', datatype=config['pet2']['datatype'], session=config['pet2']['session'], task=config['pet2']['task'], acq=config['pet2']['acq'], run='*', suffix=config['pet2']['suffix']+config['pet2']['ext']))
         files.sort(key=lambda f: int(re.sub('\D', '', f)),reverse=False)
         file=files[config['pet2']['position']]
-    print(file)
+    if file:
+        print(f'PET volume 2 volume: {basename(file)}')
     return file
 
 def get_flair_filename(wildcards):
@@ -309,5 +312,29 @@ def get_flair_filename(wildcards):
     else:
         file=files[0]
     if file:
-        print(f'FLAIR file: {basename(file)}')
+        print(f'FLAIR volume: {basename(file)}')
+    return file
+
+def get_other_vol_filename(wildcards):
+    files=expand(bids(root=join(config['out_dir'], 'bids'), subject='{subject}', datatype=config['other_vol']['datatype'], session=config['other_vol']['session'], acq=config['other_vol']['acq'], run=config['other_vol']['run'], suffix=config['other_vol']['suffix']+config['other_vol']['ext']),subject=wildcards.subject)
+    if not files:
+        files=glob(bids(root=join(config['out_dir'], 'bids'), subject=f'{wildcards.subject}', datatype=config['other_vol']['datatype'], session=config['other_vol']['session'], acq=config['other_vol']['acq'], run='*', suffix=config['other_vol']['suffix']+config['other_vol']['ext']))
+        files.sort(key=lambda f: int(re.sub('\D', '', f)),reverse=False)
+        file=files[config['other_vol']['position']]
+    else:
+        file=files[0]
+    if file:
+        print(f'Other volume volume: {basename(file)}')
+    return file
+
+def get_other_vol2_filename(wildcards):
+    files=expand(bids(root=join(config['out_dir'], 'bids'), subject='{subject}', datatype=config['other_vol2']['datatype'], session=config['other_vol2']['session'], acq=config['other_vol2']['acq'], run=config['other_vol2']['run'], suffix=config['other_vol2']['suffix']+config['other_vol2']['ext']),subject=wildcards.subject)
+    if not files:
+        files=glob(bids(root=join(config['out_dir'], 'bids'), subject=f'{wildcards.subject}', datatype=config['other_vol2']['datatype'], session=config['other_vol2']['session'], acq=config['other_vol2']['acq'], run='*', suffix=config['other_vol2']['suffix']+config['other_vol2']['ext']))
+        files.sort(key=lambda f: int(re.sub('\D', '', f)),reverse=False)
+        file=files[config['other_vol2']['position']]
+    else:
+        file=files[0]
+    if file:
+        print(f'Other volume 2 volume: {basename(file)}')
     return file
