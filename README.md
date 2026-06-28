@@ -1,119 +1,253 @@
-# clinical-atlasreg
+# electrodeProc
 
---- DOCS UNDER CONSTRUCTION ---
+A Snakemake workflow for processing SEEG electrode imaging data in BIDS-style datasets.
 
-Inputs:
-- participants.tsv with target subject IDs
-- bids folder
-  - other folder containing bids-like processed data
+## Overview
 
-Singularity containers required:
- - khanlab/neuroglia-core:latest
+`electrodeProc` is a neuroimaging workflow for processing intracranial electrode datasets, with emphasis on SEEG imaging, anatomical registration, tissue segmentation, electrode localization, atlas labeling, and visual quality control.
 
-## Authors
+The workflow is built around Snakemake and is configured through `config/config.yml`. It supports modular execution, allowing users to turn major processing stages on or off depending on the dataset and analysis goal.
 
-* Your name here @yourgithubid
+## Main Features
 
-## Usage
-
-If you use this workflow in a paper, don't forget to give credits to the authors by citing the URL of this (original) repository and, if available, its DOI (see above).
-
-### Step 1: Obtain a copy of this workflow
-
-1. Create a new github repository using this workflow [as a template](https://help.github.com/en/articles/creating-a-repository-from-a-template).
-2. [Clone](https://help.github.com/en/articles/cloning-a-repository) the newly created repository to your local system, into the place where you want to perform the data analysis.
-
-### Step 2: Configure workflow
-
-Configure the workflow according to your needs via editing the files in the `config/` folder. Adjust `config.yml` to configure the workflow execution, and `participants.tsv` to specify your subjects.
-
-### Step 3: Install Snakemake
-
-Install Snakemake using [conda](https://conda.io/projects/conda/en/latest/user-guide/install/index.html):
-
-    conda create -c bioconda -c conda-forge -n snakemake snakemake
-
-For installation details, see the [instructions in the Snakemake documentation](https://snakemake.readthedocs.io/en/stable/getting_started/installation.html).
-
-### Step 4: Execute workflow
-
-Activate the conda environment:
-
-    conda activate snakemake
-
-Test your configuration by performing a dry-run via
-
-    snakemake --use-singularity -n
-
-Execute the workflow locally via
-
-    snakemake --use-singularity --cores $N
-
-using `$N` cores or run it in a cluster environment via
-
-    snakemake --use-singularity --cluster qsub --jobs 100
-
-or
-
-    snakemake --use-singularity --drmaa --jobs 100
+* BIDS-style subject discovery
+* Subject-level anatomical registration
+* Tissue segmentation
+* SEEG electrode coordinate processing
+* Atlas-based electrode labeling
+* Native and template-space visualization
+* Registration quality control
+* Segmentation quality control
+* Optional FastSurfer integration
+* Optional fMRIPrep integration
+* Optional HippUnfold integration
+* Optional MELD integration
+* Optional PET asymmetry workflow
+* Optional contact segmentation workflow
 
 
-If you are using Compute Canada, you can use the [cc-slurm](https://github.com/khanlab/cc-slurm) profile, which submits jobs and takes care of requesting the correct resources per job (including GPUs). Once it is set-up with cookiecutter, run:
+## Installation
 
-    snakemake --profile cc-slurm
+Clone the repository:
 
-Or, with [neuroglia-helpers](https://github.com/khanlab/neuroglia-helpers) can get a 8-core, 32gb node and run locally there. First, get a node (default 8-core, 32gb, 3 hour limit):
+```bash
+git clone https://github.com/greydongilmore/electrodeProc.git
+cd electrodeProc
+git checkout development
+```
 
-    regularInteractive 
-    
-Then, run:
+Create and activate a Python environment:
 
-    snakemake --use-singularity --cores 8 --resources mem=32000 
+```bash
+python -m venv .venv
+source .venv/bin/activate
+```
 
+Install Python dependencies:
 
-See the [Snakemake documentation](https://snakemake.readthedocs.io/en/stable/executable.html) for further details.
+```bash
+pip install -r requirements.txt
+```
 
-### Step 5: Investigate results
+For larger datasets or cluster use, a Conda or Mamba environment is recommended.
 
-After successful execution, you can create a self-contained interactive HTML report with all results via:
+## External Dependencies
 
-    snakemake --report report.html
+This workflow may require external neuroimaging tools depending on which modules are enabled.
 
-This report can, e.g., be forwarded to your collaborators.
-An example (using some trivial test data) can be seen [here](https://cdn.rawgit.com/snakemake-workflows/rna-seq-kallisto-sleuth/master/.test/report.html).
+Common dependencies include:
 
-### Step 6: Commit changes
+* Snakemake
+* ANTs
+* FSL
+* Convert3D / c3d
+* Singularity or Apptainer
+* FreeSurfer, if using FreeSurfer-based modules
+* FastSurfer, if `fastsurfer.run` is enabled
+* fMRIPrep, if `fmriprep.run` is enabled
+* HippUnfold, if `hippunfold.run` is enabled
+* MELD, if `meld.run` is enabled
 
-Whenever you change something, don't forget to commit the changes back to your github copy of the repository:
+Several container paths and external tool paths are configured in `config/config.yml`.
 
-    git commit -a
-    git push
+## Input Data
 
-### Step 7: Obtain updates from upstream
+The workflow expects a BIDS-style dataset.
 
-Whenever you want to synchronize your workflow copy with new developments from upstream, do the following.
+At minimum, the dataset should contain a BIDS folder with subject directories:
 
-1. Once, register the upstream repository in your local copy: `git remote add -f upstream git@github.com:snakemake-workflows/{{cookiecutter.repo_name}}.git` or `git remote add -f upstream https://github.com/snakemake-workflows/{{cookiecutter.repo_name}}.git` if you do not have setup ssh keys.
-2. Update the upstream version: `git fetch upstream`.
-3. Create a diff with the current version: `git diff HEAD upstream/master workflow > upstream-changes.diff`.
-4. Investigate the changes: `vim upstream-changes.diff`.
-5. Apply the modified diff via: `git apply upstream-changes.diff`.
-6. Carefully check whether you need to update the config files: `git diff HEAD upstream/master config`. If so, do it manually, and only where necessary, since you would otherwise likely overwrite your settings and samples.
+```text
+bids/
+├── sub-001/
+├── sub-002/
+└── sub-003/
+```
 
+The workflow can identify subjects in one of two ways:
 
-### Step 8: Contribute back
+1. From a `participants_run.tsv` file in the configured BIDS directory
+2. From subject folders in the BIDS dataset
 
-In case you have also changed or added steps, please consider contributing them back to the original repository:
+The configured subject prefix is defined in `config/config.yml`.
 
-1. [Fork](https://help.github.com/en/articles/fork-a-repo) the original repo to a personal or lab account.
-2. [Clone](https://help.github.com/en/articles/cloning-a-repository) the fork to your local system, to a different place than where you ran your analysis.
-3. Copy the modified files from your analysis to the clone of your fork, e.g., `cp -r workflow path/to/fork`. Make sure to **not** accidentally copy config file contents or sample sheets. Instead, manually update the example config files if necessary.
-4. Commit and push your changes to your fork.
-5. Create a [pull request](https://help.github.com/en/articles/creating-a-pull-request) against the original repository.
+## Configuration
 
-## Testing
+Set the main BIDS directory:
 
-TODO: create some test datasets 
+```yaml
+bids_dir: /path/to/project
+```
 
+Enable or disable workflow modules:
 
+```yaml
+registration:
+  run: True
 
+segmentation:
+  run: True
+
+visqc:
+  run: True
+
+fastsurfer:
+  run: False
+
+hippunfold:
+  run: False
+
+meld:
+  run: False
+
+pet_asymmetry:
+  run: False
+
+contact_seg:
+  run: False
+```
+
+Configure input image types in the imaging volume section. Example:
+
+```yaml
+contrast_t1:
+  present: True
+  session: 'pre'
+  datatype: 'anat'
+  run: '02'
+  suffix: 'T1w'
+  ext: '.nii.gz'
+  algo: greedy
+
+post_image:
+  present: True
+  session: 'post'
+  datatype: 'ct'
+  acq: 'Electrode'
+  run: '01'
+  suffix: 'ct'
+  ext: '.nii.gz'
+  algo: greedy
+```
+
+## Running the Workflow
+
+Perform a dry run first:
+
+```bash
+snakemake -nr
+```
+
+Run locally using available CPU cores:
+
+```bash
+snakemake -j8
+```
+
+## Main Workflow Modules
+
+### Registration
+
+Handles subject-level and template-level registration.
+
+Supported registration backends include:
+
+* `greedy`
+* `reg_aladin`
+* `ants`
+
+Registration parameters are configured in `config/config.yml`.
+
+### Segmentation
+
+Runs tissue segmentation workflows and generates tissue-class outputs.
+
+Default tissue labels include:
+
+```text
+GM
+WM
+CSF
+```
+
+### Electrode Processing
+
+Processes SEEG coordinate files and related electrode localization outputs when electrode inputs are enabled.
+
+Expected coordinate patterns are configured in `config/config.yml`.
+
+### Visual QC
+
+Generates visual outputs for checking:
+
+* Registration quality
+* Tissue segmentation
+* Atlas segmentation
+* Electrode localization
+* Native-space and template-space outputs
+
+### Optional Connected Pipelines
+
+The workflow includes optional hooks for:
+
+* FastSurfer
+* fMRIPrep
+* HippUnfold
+* MELD
+* PET asymmetry analysis
+* Contact segmentation
+
+Enable these only after confirming the required containers, licenses, and external paths are available.
+
+## Outputs
+
+Outputs are written under the configured project directory, typically inside derivative folders.
+
+Expected outputs may include:
+
+* Registered anatomical images
+* Transform files
+* Tissue segmentations
+* Electrode coordinate derivatives
+* Atlas labels
+* Visual QC images
+* HTML or image-based reports
+* Pipeline-specific derivative folders
+
+Exact outputs depend on which modules are enabled.
+
+## Citation
+
+If you use this workflow in a publication or project, cite the repository:
+
+```text
+Gilmore G. electrodeProc. GitHub repository.
+https://github.com/greydongilmore/electrodeProc
+```
+
+## License
+
+This project is distributed under the MIT License. See `LICENSE` for details.
+
+## Author
+
+* Greydon Gilmore @greydongilmore
